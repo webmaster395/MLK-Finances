@@ -139,3 +139,16 @@
     padding: 1.5rem;
   }
 }
+
+@layer components {
+  /* Logo sur une ligne, pour la barre du haut sur téléphone */
+  .logo-compact .logo-mlk {
+    font-size: 2.1rem;
+  }
+  .logo-compact .logo-parcours,
+  .logo-compact .logo-finances {
+    display: inline;
+    font-size: 1.05rem;
+    margin: 0 0 0 0.35rem;
+  }
+}

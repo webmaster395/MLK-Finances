@@ -90,4 +90,5 @@ Phase 2 (plus tard) : espace administrateur.
 - [x] Ancien site HTML archivé
 - [x] Plan validé par l'utilisateur
 - [x] Lot 0 : projet Next.js, charte (couleurs, polices, logo), CLAUDE.md, branches main / preview
-- [ ] Lot 1 : coquille (menu, en-tête, pages vides avec loading.tsx)
+- [x] Lot 1 : coquille (menu latéral repliable, barre du haut sur téléphone, en-tête, 7 pages vides avec loading.tsx)
+- [ ] Lot 2 : base de données locale + migrations + test RLS + données de démo
