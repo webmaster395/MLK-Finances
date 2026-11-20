@@ -88,5 +88,6 @@ Phase 2 (plus tard) : espace administrateur.
 ## Avancement
 - [x] Questions de cadrage répondues
 - [x] Ancien site HTML archivé
-- [ ] Plan et schéma validés par l'utilisateur
-- [ ] Lot 0
+- [x] Plan validé par l'utilisateur
+- [x] Lot 0 : projet Next.js, charte (couleurs, polices, logo), CLAUDE.md, branches main / preview
+- [ ] Lot 1 : coquille (menu, en-tête, pages vides avec loading.tsx)

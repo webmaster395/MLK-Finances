@@ -1,0 +1,141 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   Charte MLK Parcours Finances (issue de la maquette Canva, slide 1).
+   Règle : tout le CSS maison est dans un @layer, sinon les utilitaires
+   Tailwind seraient battus.
+   Mode sombre : réservé à l'espace connecté, via l'attribut
+   data-theme="sombre" (pas de prefers-color-scheme global).
+------------------------------------------------------------------- */
+@theme {
+  --color-orange: #e95609;
+  --color-rose: #d634ba;
+  --color-rose-clair: #ecb6e5;
+  --color-noir: #070707;
+  --color-texte: #333333;
+  --color-fond: #e9e9e8;
+  --color-carte: #ededec;
+  --font-titre: var(--font-antonio), "Arial Narrow", sans-serif;
+  --font-corps: var(--font-poppins), Arial, sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--color-fond);
+    color: var(--color-texte);
+    font-family: var(--font-corps);
+  }
+  img {
+    display: block;
+    max-width: 100%;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-rose);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Titres condensés en majuscules */
+  .titre-charte {
+    font-family: var(--font-titre);
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 0.95;
+    color: var(--color-noir);
+  }
+
+  /* Trait de pinceau rose derrière un titre */
+  .pinceau {
+    position: relative;
+    display: inline-block;
+    z-index: 0;
+  }
+  .pinceau::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    left: -0.4em;
+    top: 0.06em;
+    width: calc(100% + 0.9em);
+    height: 0.87em;
+    background: url("/images/pinceau-titre.png") left center / 100% 100% no-repeat;
+  }
+
+  /* Logo : MLK / Parcours / Finances */
+  .logo {
+    display: inline-block;
+    font-family: var(--font-titre);
+    text-transform: uppercase;
+    line-height: 0.95;
+    color: var(--color-noir);
+  }
+  .logo-mlk {
+    position: relative;
+    display: inline-block;
+    z-index: 0;
+    font-weight: 700;
+    font-size: 4rem;
+    transform: scaleX(0.84);
+    transform-origin: left;
+  }
+  .logo-mlk::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    left: -0.326em;
+    top: 0.549em;
+    width: 2.425em;
+    height: 0.507em;
+    background: url("/images/pinceau-logo.png") center / 100% 100% no-repeat;
+  }
+  .logo-parcours {
+    display: block;
+    font-weight: 400;
+    font-size: 1.75rem;
+    margin-top: 0.25rem;
+  }
+  .logo-finances {
+    display: block;
+    font-weight: 600;
+    font-size: 1.75rem;
+    margin-left: 2rem;
+  }
+
+  /* Boutons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0 1.5rem;
+    border-radius: 0.4rem;
+    color: #fff;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgb(0 0 0 / 0.12);
+    transition: transform 0.15s, filter 0.15s;
+  }
+  .btn:hover {
+    filter: brightness(1.07);
+    transform: translateY(-1px);
+  }
+  .btn-orange {
+    background: var(--color-orange);
+  }
+  .btn-rose {
+    background: var(--color-rose);
+  }
+
+  /* Cartes */
+  .carte {
+    background: var(--color-carte);
+    border-radius: 0.65rem;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.12);
+    padding: 1.5rem;
+  }
+}
