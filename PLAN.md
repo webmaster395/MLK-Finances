@@ -91,4 +91,13 @@ Phase 2 (plus tard) : espace administrateur.
 - [x] Plan validé par l'utilisateur
 - [x] Lot 0 : projet Next.js, charte (couleurs, polices, logo), CLAUDE.md, branches main / preview
 - [x] Lot 1 : coquille (menu latéral repliable, barre du haut sur téléphone, en-tête, 7 pages vides avec loading.tsx)
-- [ ] Lot 2 : base de données locale + migrations + test RLS + données de démo
+- [x] Lot 2 : 3 migrations (tables, droits + RLS, stockage), seed « test », test d'isolation RLS (`npm run test:rls`, 40 vérifications)
+- [ ] Lot 3 : connexion / inscription / mot de passe oublié
+
+## Décisions et limites du lot 2
+- **Un cours est rattaché à un seul groupe** (`cours.groupe_id`) ; ressources et devoirs héritent de la visibilité du cours. Si un même cours doit servir plusieurs groupes, il faudra une table de liaison (migration future).
+- **Docker et la CLI Supabase ne sont pas installés** : les migrations sont testées sur une base PostgreSQL embarquée (PGlite) avec une simulation de Supabase. À rejouer sur une vraie base locale dès l'installation (voir `supabase/README.md`).
+- **Types TypeScript de la base : pas encore générés** (nécessite la CLI Supabase). À faire au lot 3, avant d'écrire les accès aux données.
+- Création des comptes de démo dans `seed.sql` : méthode habituelle mais non vérifiée contre le vrai Supabase Auth.
+- Pas encore de projet Supabase en ligne ni d'hébergement : rien n'est en production.
+- Les statuts « à rendre / bientôt dû / en retard / rendu » s'affichent à partir de l'échéance et de la présence d'un rendu ; seul `rendus.statut` (`depose` / `corrige`) est stocké.
