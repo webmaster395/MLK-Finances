@@ -1,5 +1,11 @@
-import { Chargement } from "@/components/coquille/chargement";
+import { TitrePage } from "@/components/coquille/titre-page";
+import { ListeDevoirsChargement } from "@/components/devoirs/liste-devoirs";
 
 export default function Loading() {
-  return <Chargement />;
+  return (
+    <div className="flex flex-col gap-6">
+      <TitrePage titre="Devoirs" sousTitre="Votre travail à rendre" />
+      <ListeDevoirsChargement />
+    </div>
+  );
 }

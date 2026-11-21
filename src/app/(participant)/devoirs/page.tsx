@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
-import { FilePen } from "lucide-react";
-import { PageVide } from "@/components/coquille/page-vide";
+import { Suspense } from "react";
+import { TitrePage } from "@/components/coquille/titre-page";
+import { ListeDevoirs, ListeDevoirsChargement } from "@/components/devoirs/liste-devoirs";
 
 export const metadata: Metadata = { title: "Devoirs" };
 
 export default function Page() {
   return (
-    <PageVide
-      titre="Devoirs"
-      sousTitre="Votre travail à rendre"
-      icone={FilePen}
-      contenu="Vos devoirs, leur date limite et le dépôt de vos fichiers apparaîtront ici."
-      lot="lot 8"
-    />
+    <div className="flex flex-col gap-6">
+      <TitrePage titre="Devoirs" sousTitre="Votre travail à rendre" />
+      {/* La liste lit les données de la personne : sous <Suspense>. Le titre reste statique. */}
+      <Suspense fallback={<ListeDevoirsChargement />}>
+        <ListeDevoirs />
+      </Suspense>
+    </div>
   );
 }

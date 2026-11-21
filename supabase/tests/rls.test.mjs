@@ -292,6 +292,19 @@ describe("stockage de fichiers", () => {
     assert.equal(r.rows.length, 1);
   });
 
+  test("A ne peut plus remplacer le fichier d'un devoir corrigé", async () => {
+    // Le rendu du devoir 1 a été marqué « corrigé » plus haut
+    const r = await en(A, `update storage.objects set name = name where bucket_id = 'rendus' and name like '${A}/${DEVOIR_G1}/%' returning name`);
+    assert.equal(r.rows.length, 0);
+  });
+
+  test("A peut remplacer le fichier d'un devoir non corrigé", async () => {
+    const devoir2 = "dddddddd-0000-4000-8000-000000000002";
+    await en(A, `insert into storage.objects (bucket_id, name, owner) values ('rendus', '${A}/${devoir2}/depot', '${A}')`);
+    const r = await en(A, `update storage.objects set name = name where bucket_id = 'rendus' and name = '${A}/${devoir2}/depot' returning name`);
+    assert.equal(r.rows.length, 1);
+  });
+
   test("A ne peut pas envoyer dans le dossier de B", async () => {
     await assert.rejects(en(A, `
       insert into storage.objects (bucket_id, name) values ('rendus', '${B}/${DEVOIR_G1}/x.pdf')`), REFUS);
