@@ -1,8 +1,9 @@
 import { Suspense } from "react";
-import { BandeauSansGroupe, EnTete, EnTeteSquelette } from "@/components/coquille/en-tete";
-import { MenuLateral, MenuSquelette } from "@/components/coquille/menu-lateral";
+import { BandeauSansGroupe } from "@/components/coquille/bandeau-sans-groupe";
+import { MenuSquelette } from "@/components/coquille/menu-lateral";
+import { MenuParticipant } from "@/components/coquille/menu-participant";
 
-/** Coquille de l'espace participant : menu + en-tête + contenu de la page. */
+/** Coquille de l'espace participant : menu (avec la personne en bas) + contenu de la page. */
 export default function Layout({ children }: LayoutProps<"/">) {
   return (
     <div className="flex flex-1 flex-col md:flex-row">
@@ -12,16 +13,12 @@ export default function Layout({ children }: LayoutProps<"/">) {
       >
         Aller au contenu
       </a>
-      {/* Le menu lit l'adresse de la page : il est sous <Suspense> (Cache Components). */}
+      {/* Le menu lit la session et l'adresse de la page : il est sous <Suspense> (Cache Components). */}
       <Suspense fallback={<MenuSquelette />}>
-        <MenuLateral />
+        <MenuParticipant />
       </Suspense>
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* L'en-tête lit la session de la personne : sous <Suspense> également. */}
-        <Suspense fallback={<EnTeteSquelette />}>
-          <EnTete />
-        </Suspense>
-        <main id="contenu" className="flex-1 px-4 pb-10 pt-2 sm:px-6 lg:px-8">
+        <main id="contenu" className="flex-1 px-4 pb-10 pt-6 sm:px-6 lg:px-8">
           <Suspense fallback={null}>
             <BandeauSansGroupe />
           </Suspense>

@@ -94,6 +94,7 @@ Phase 2 (plus tard) : espace administrateur.
 - [x] Lot 2 : 3 migrations (tables, droits + RLS, stockage), seed « test », test d'isolation RLS (`npm run test:rls`, 45 vérifications)
 - [x] Base appliquée sur le projet Supabase en ligne `mlk-parcours-finances` (organisation MLK, région Irlande eu-west-1, id `wfsbdlyksvxjgwogamsn`) : 3 migrations, 9 tables avec RLS, 3 seaux privés. Sans données de démo.
 - [x] Lot 3 : connexion, inscription, mot de passe oublié, nouveau mot de passe, retour des e-mails, déconnexion, protection des pages (proxy), en-tête avec la vraie personne, message « inscription enregistrée » tant qu'il n'y a pas de groupe. Types de la base générés. **Reste à tester par l'utilisateur : une vraie inscription avec e-mail de confirmation, puis connexion et déconnexion.**
+- [x] Menu remodelé d'après les images de l'utilisateur : bouton flèche en haut pour replier / déplier (choix mémorisé), icônes séparées en groupes, pastille de la personne en bas (menu : Mon profil, Déconnexion). L'en-tête du haut est supprimé. Photo de profil : pas encore (initiales ; photo au lot 10). Pastille rouge de notification prête dans le code (aucune page ne l'utilise encore ; prévue pour « Devoirs » au lot 8).
 - [ ] Lot 4 : accueil
 
 ## Décisions et limites du lot 2
@@ -128,3 +129,4 @@ Phase 2 (plus tard) : espace administrateur.
 - Les réponses d'inscription et de mot de passe oublié sont identiques que l'adresse existe ou non (on ne révèle pas quels comptes existent).
 - **À régler dans le tableau de bord Supabase avant la mise en production :** Authentication > URL Configuration (Site URL = adresse Vercel, Redirect URLs = `<adresse Vercel>/auth/callback`), modèles d'e-mails en français, et un vrai service d'envoi d'e-mails (le service par défaut est très limité). Variables à ajouter sur Vercel : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SITE_URL`.
 - Le contrôle de connexion du proxy lit la session sans appel réseau ; chaque page de l'espace connecté revérifie la personne auprès de Supabase (`obtenirPersonne`).
+- Correction : la vérification de session lit l'heure ; `await connection()` ajouté avant, pour que Next.js ne la fasse pas pendant la préparation des pages (erreur « Date.now() » sur /accueil).

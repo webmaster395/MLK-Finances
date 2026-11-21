@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { CarteAuth, CarteAuthChargement } from "@/components/auth/carte-auth";
 import { FormulaireReinitialisation } from "@/components/auth/formulaire-reinitialisation";
@@ -17,6 +18,7 @@ export default function Page() {
 
 /** On arrive ici depuis le lien de l'e-mail : la personne doit avoir une session valide. */
 async function Contenu() {
+  await connection(); // la vérification de session lit l'heure : à faire au moment de la requête
   const supabase = await creerClientServeur();
   const { data } = await supabase.auth.getUser();
 
