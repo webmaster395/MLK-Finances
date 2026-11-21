@@ -348,3 +348,76 @@
     }
   }
 }
+
+/* ------------------------------------------------------------------
+   Mode sombre — réservé à l'espace connecté.
+   Il s'applique uniquement sous un élément portant data-theme="sombre"
+   (le conteneur #espace-connecte). Les pages publiques restent claires.
+   Les surcharges sont dans @layer utilities pour passer après les utilitaires Tailwind.
+------------------------------------------------------------------- */
+@layer base {
+  #espace-connecte {
+    background: var(--color-fond);
+    color: var(--color-texte);
+  }
+  #espace-connecte[data-theme="sombre"] {
+    color-scheme: dark;
+    --color-noir: #f4f1ee;
+    --color-texte: #d9d5d1;
+    --color-fond: #121212;
+    --color-carte: #1e1e1e;
+  }
+}
+
+@layer utilities {
+  /* Sur un fond de couleur de la charte, le texte « noir » reste foncé */
+  #espace-connecte[data-theme="sombre"] :is(.bg-rose-clair, .bg-orange, .bg-rose) {
+    --color-noir: #070707;
+  }
+  /* Surfaces à texture claire : fond uni sombre */
+  #espace-connecte[data-theme="sombre"] :is(.menu-fond, .accueil-carte, .hero-accueil, .session-accueil, .temoignages-accueil) {
+    background-image: none;
+    background-color: #181818;
+  }
+  #espace-connecte[data-theme="sombre"] :is(.accueil-carte, .carte) {
+    background-color: var(--color-carte);
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.5);
+  }
+  #espace-connecte[data-theme="sombre"] .hero-accueil {
+    background-color: var(--color-carte);
+  }
+  /* Les photos de la maquette ont un fond clair : on les adoucit sur fond sombre */
+  #espace-connecte[data-theme="sombre"] :is(.hero-accueil__img, .tuile-accueil__photo, .session-accueil__photo, .temoignages-accueil__portrait img) {
+    filter: brightness(0.82) contrast(1.05);
+  }
+  /* Traits et voiles : du noir transparent devient du blanc transparent */
+  #espace-connecte[data-theme="sombre"] .bg-black\/5 {
+    background-color: rgb(255 255 255 / 0.06);
+  }
+  #espace-connecte[data-theme="sombre"] .bg-black\/10 {
+    background-color: rgb(255 255 255 / 0.12);
+  }
+  #espace-connecte[data-theme="sombre"] .hover\:bg-black\/5:hover {
+    background-color: rgb(255 255 255 / 0.1);
+  }
+  #espace-connecte[data-theme="sombre"] :is(.border-black\/10, .border-black\/15, .border-black\/25) {
+    border-color: rgb(255 255 255 / 0.22);
+  }
+  /* Champs de formulaire */
+  #espace-connecte[data-theme="sombre"] .bg-white {
+    background-color: #262626;
+  }
+  #espace-connecte[data-theme="sombre"] input[type="file"]::file-selector-button {
+    color: #070707;
+  }
+  /* Avatar noir : gris plutôt que clair ; messages d'erreur lisibles */
+  #espace-connecte[data-theme="sombre"] .bg-noir {
+    background-color: #4a4846;
+  }
+  #espace-connecte[data-theme="sombre"] .text-\[\#8f3306\] {
+    color: #ffb892;
+  }
+  #espace-connecte[data-theme="sombre"] .bg-orange\/15 {
+    background-color: rgb(233 86 9 / 0.28);
+  }
+}

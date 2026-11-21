@@ -25,11 +25,14 @@ Prompt modèle d'origine : `docs/prompt-portail-modele.md`.
 - Auth : connexion et déconnexion par actions serveur ; redirections après lien d'e-mail protégées.
 - **CSS** : styles de base et classes de charte dans des `@layer` (voir `src/app/globals.css`), rien hors couche.
 - Données de démo : clairement marquées « test » dans les titres de cours.
+- **Accès aux données** : jamais depuis un composant client. Les lectures passent par `src/lib/donnees/` (côté serveur, après `await connection()`, sous `<Suspense>`). Le seul usage du client Supabase du navigateur est l'envoi de fichiers (devoirs, photo) vers le stockage, suivi d'une action serveur qui enregistre le chemin (calculé côté serveur).
+- **Vérifications avant chaque envoi** : `npm run lint`, `npx tsc --noEmit`, `npm run build`, `npm run test:unit`, `npm run test:rls`.
+- Les statuts des devoirs ne sont pas stockés : ils se déduisent (`src/lib/devoirs.ts`).
 
 ## Charte graphique (issue de la maquette Canva, slide 1)
 - Couleurs : orange `#e95609`, rose `#d634ba`, rose clair `#ecb6e5`, noir `#070707`, texte `#333333`, fond `#e9e9e8`, cartes `#ededec`.
 - Polices : **Antonio** (titres, condensés, majuscules) et **Poppins** (texte), via `next/font`.
 - Éléments : logo MLK / Parcours / Finances avec trait de pinceau rose, boutons orange ou rose à coins légèrement arrondis, cartes gris clair, photos en noir et blanc.
 - Ne reprendre **ni style, ni icônes, ni logos, ni textes** d'un autre projet (notamment `Campus-MLK-Portail`). Un logo fourni sous forme de fichier est utilisé tel quel, jamais redessiné.
-- Mode sombre : réservé à l'espace connecté, via `data-theme="sombre"`.
+- Mode sombre : réservé à l'espace connecté, via `data-theme="sombre"` sur le conteneur `#espace-connecte` (bouton lune / soleil en haut à droite, choix mémorisé sur l'appareil). Les surcharges sombres sont dans `@layer utilities` à la fin de `src/app/globals.css` ; toute nouvelle couleur doit y être vérifiée.
 - Page de référence visuelle : `/charte`. Ancien site HTML de référence : `archive/maquette-html/`.

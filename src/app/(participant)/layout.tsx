@@ -1,12 +1,15 @@
 import { Suspense } from "react";
 import { MenuSquelette } from "@/components/coquille/menu-lateral";
 import { EnTeteDeconnexion } from "@/components/coquille/en-tete-deconnexion";
+import { SCRIPT_THEME } from "@/components/coquille/bascule-theme";
 import { MenuParticipant } from "@/components/coquille/menu-participant";
 
 /** Coquille de l'espace participant : menu (lien du profil en bas) + bouton de déconnexion en haut à droite + contenu de la page. */
 export default function Layout({ children }: LayoutProps<"/">) {
   return (
-    <div className="flex flex-1 flex-col md:flex-row">
+    // Le thème (clair / sombre) est posé sur ce conteneur par le script ci-dessous : React ne touche pas à cet attribut
+    <div id="espace-connecte" suppressHydrationWarning className="flex flex-1 flex-col md:flex-row">
+      <script dangerouslySetInnerHTML={{ __html: SCRIPT_THEME }} />
       <a
         href="#contenu"
         className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2"

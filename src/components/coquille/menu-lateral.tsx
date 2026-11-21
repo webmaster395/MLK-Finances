@@ -132,7 +132,7 @@ export function MenuLateral({ personne, pastilles = {} }: Props) {
     <>
       {/* Ordinateur */}
       <aside
-        className={`sticky top-0 hidden h-screen shrink-0 flex-col bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-top transition-[width] duration-200 md:flex ${
+        className={`sticky top-0 hidden h-screen shrink-0 flex-col menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-top transition-[width] duration-200 md:flex ${
           replie ? "w-[4.75rem]" : "w-64"
         }`}
       >
@@ -175,7 +175,7 @@ export function MenuLateral({ personne, pastilles = {} }: Props) {
       </aside>
 
       {/* Téléphone */}
-      <div className="sticky top-0 z-30 flex items-center justify-between bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-center px-4 py-2 shadow-md md:hidden">
+      <div className="sticky top-0 z-30 flex items-center justify-between menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-center px-4 py-2 shadow-md md:hidden">
         <Logo lien="/accueil" compact />
         <button
           type="button"
@@ -196,7 +196,7 @@ export function MenuLateral({ personne, pastilles = {} }: Props) {
             onClick={() => setOuvert(false)}
             className="absolute inset-0 bg-noir/50"
           />
-          <div className="relative flex h-full w-[82%] max-w-80 flex-col bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-top shadow-2xl">
+          <div className="relative flex h-full w-[82%] max-w-80 flex-col menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-top shadow-2xl">
             <div className="flex items-start justify-between p-4">
               <Logo lien="/accueil" />
               <button
@@ -235,8 +235,8 @@ export function MenuLateral({ personne, pastilles = {} }: Props) {
 export function MenuSquelette() {
   return (
     <>
-      <aside className="hidden h-screen w-64 shrink-0 bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-top md:block" />
-      <div className="h-[3.75rem] bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-center md:hidden" />
+      <aside className="hidden h-screen w-64 shrink-0 menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-top md:block" />
+      <div className="h-[3.75rem] menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-center md:hidden" />
     </>
   );
 }
