@@ -3,10 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment, useEffect, useState, useSyncExternalStore } from "react";
-import { ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, LogOut, Menu, X } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Avatar } from "@/components/profil/avatar";
+import { deconnexion } from "@/lib/auth/actions";
+import type { Annonce } from "@/lib/donnees/annonces";
 import { GROUPES_MENU, PAGE_PROFIL } from "@/lib/navigation";
+import { BasculeTheme } from "./bascule-theme";
+import { BoutonMessages } from "./bouton-messages";
 
 export type PersonneMenu = {
   nomComplet: string;
@@ -19,6 +23,10 @@ type Props = {
   personne: PersonneMenu;
   /** Pages qui affichent une pastille rouge (ex. devoirs à rendre). Vide pour l'instant. */
   pastilles?: Record<string, boolean>;
+  /** Libellé de la promotion (ex. « Promotion 2026–2027 ») affiché sur la barre du haut mobile. */
+  promotion?: string | null;
+  /** Messages publiés de l'équipe (affichés via l'icône mégaphone). */
+  messages?: Annonce[];
 };
 
 const CLE_MEMOIRE = "menu-replie";
@@ -62,7 +70,7 @@ function Separateur() {
  * - Téléphone : barre du haut avec un bouton qui ouvre le menu.
  * Ce composant lit l'adresse de la page : il doit toujours être sous <Suspense>.
  */
-export function MenuLateral({ personne, pastilles = {} }: Props) {
+export function MenuLateral({ personne, pastilles = {}, promotion = null, messages = [] }: Props) {
   const chemin = usePathname();
   // Côté serveur et au premier affichage : déplié ; ensuite on applique le choix mémorisé
   const replie = useSyncExternalStore(abonnerReplie, lireReplie, () => false);
@@ -155,37 +163,60 @@ export function MenuLateral({ personne, pastilles = {} }: Props) {
           {groupes(!replie)}
         </nav>
 
-        {/* Lien vers le profil, en bas */}
-        <div className="border-t border-black/10 p-3">
+        {/* Lien vers le profil et bouton de déconnexion, en bas */}
+        <div
+          className={`border-t border-black/10 p-3 ${
+            replie ? "flex flex-col items-center gap-1.5" : "flex items-center gap-1"
+          }`}
+        >
           <Link
             href={PAGE_PROFIL.href}
             aria-current={sur(PAGE_PROFIL.href) ? "page" : undefined}
             aria-label={`Mon profil (${personne.nomComplet})`}
             title={replie ? `Mon profil — ${personne.nomComplet}` : undefined}
-            className={`flex w-full items-center gap-3 rounded-[0.6rem] p-1.5 text-left hover:bg-black/5 ${
+            className={`flex min-w-0 flex-1 items-center gap-3 rounded-[0.6rem] p-1.5 text-left hover:bg-black/5 ${
               sur(PAGE_PROFIL.href) ? "bg-black/10" : ""
-            } ${replie ? "justify-center" : ""}`}
+            } ${replie ? "w-full justify-center" : ""}`}
           >
             {avatar}
             {replie ? null : (
               <span className="block min-w-0 truncate text-sm font-semibold text-noir">{personne.nomComplet}</span>
             )}
           </Link>
+          <form action={deconnexion}>
+            <button
+              type="submit"
+              aria-label="Se déconnecter"
+              title="Se déconnecter"
+              className="flex size-10 shrink-0 items-center justify-center rounded-[0.6rem] text-texte transition-colors hover:bg-black/5 hover:text-noir"
+            >
+              <LogOut aria-hidden className="size-5" strokeWidth={1.85} />
+            </button>
+          </form>
         </div>
       </aside>
 
-      {/* Téléphone */}
-      <div className="sticky top-0 z-30 flex items-center justify-between menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-center px-4 py-2 shadow-md md:hidden">
+      {/* Téléphone : logo + messages + promotion + clair/sombre + menu sur la même ligne */}
+      <div className="sticky top-0 z-30 flex items-center justify-between gap-1.5 menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-center px-2.5 py-2 shadow-md md:hidden">
         <Logo lien="/accueil" compact />
-        <button
-          type="button"
-          onClick={() => setOuvert(true)}
-          aria-label="Ouvrir le menu"
-          aria-expanded={ouvert}
-          className="flex size-11 items-center justify-center rounded-[0.6rem] bg-rose-clair text-noir"
-        >
-          <Menu aria-hidden className="size-7" />
-        </button>
+        <div className="flex shrink-0 items-center gap-1">
+          <BoutonMessages messages={messages} />
+          {promotion ? (
+            <span className="whitespace-nowrap rounded-full border border-black/25 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.04em] text-noir sm:px-3 sm:text-xs">
+              {promotion}
+            </span>
+          ) : null}
+          <BasculeTheme />
+          <button
+            type="button"
+            onClick={() => setOuvert(true)}
+            aria-label="Ouvrir le menu"
+            aria-expanded={ouvert}
+            className="flex size-8 items-center justify-center rounded-[0.5rem] bg-rose-clair text-noir sm:size-10"
+          >
+            <Menu aria-hidden className="size-5 sm:size-6" />
+          </button>
+        </div>
       </div>
 
       {ouvert && (
@@ -211,18 +242,28 @@ export function MenuLateral({ personne, pastilles = {} }: Props) {
             <nav aria-label="Menu principal" className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-3 pb-3">
               {groupes(true, () => setOuvert(false))}
             </nav>
-            <div className="border-t border-black/10 p-3">
+            <div className="flex items-center gap-1 border-t border-black/10 p-3">
               <Link
                 href={PAGE_PROFIL.href}
                 onClick={() => setOuvert(false)}
                 aria-current={sur(PAGE_PROFIL.href) ? "page" : undefined}
-                className={`flex items-center gap-3 rounded-[0.6rem] p-1.5 hover:bg-black/5 ${
+                className={`flex min-w-0 flex-1 items-center gap-3 rounded-[0.6rem] p-1.5 hover:bg-black/5 ${
                   sur(PAGE_PROFIL.href) ? "bg-black/10" : ""
                 }`}
               >
                 {avatar}
                 <span className="block min-w-0 truncate text-sm font-semibold text-noir">{personne.nomComplet}</span>
               </Link>
+              <form action={deconnexion}>
+                <button
+                  type="submit"
+                  aria-label="Se déconnecter"
+                  title="Se déconnecter"
+                  className="flex size-10 shrink-0 items-center justify-center rounded-[0.6rem] text-texte transition-colors hover:bg-black/5 hover:text-noir"
+                >
+                  <LogOut aria-hidden className="size-5" strokeWidth={1.85} />
+                </button>
+              </form>
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { connection } from "next/server";
 import { creerClientServeur } from "@/lib/supabase/serveur";
 
@@ -10,17 +11,24 @@ export type Annonce = {
 };
 
 /**
- * Le message le plus récent de l'équipe, pour tous ou pour le groupe de la personne.
- * Les règles de la base ne renvoient que les messages publiés qui la concernent.
+ * Tous les messages publiés de l'équipe visibles par la personne (pour tous ou pour son groupe),
+ * du plus récent au plus ancien. Partagé pendant une même requête.
  */
-export async function lireDernierMessage(): Promise<Annonce | null> {
+export const lireMessages = cache(async (): Promise<Annonce[]> => {
   await connection();
   const supabase = await creerClientServeur();
   const { data } = await supabase
     .from("annonces")
     .select("id, titre, message, cree_le")
-    .order("cree_le", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  return data;
+    .order("cree_le", { ascending: false });
+  return data ?? [];
+});
+
+/**
+ * Le message le plus récent de l'équipe, pour tous ou pour le groupe de la personne.
+ * Les règles de la base ne renvoient que les messages publiés qui la concernent.
+ */
+export async function lireDernierMessage(): Promise<Annonce | null> {
+  const messages = await lireMessages();
+  return messages[0] ?? null;
 }
