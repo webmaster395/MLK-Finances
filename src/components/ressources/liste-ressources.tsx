@@ -20,7 +20,7 @@ function LigneRessource({ ressource, rubrique }: { ressource: Ressource; rubriqu
           <Icone className="size-4" />
         </span>
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="text-base font-semibold leading-snug text-noir [overflow-wrap:anywhere]">{ressource.titre}</span>
+          <span className="text-sm font-semibold leading-snug text-noir sm:text-base [overflow-wrap:anywhere]">{ressource.titre}</span>
           <span className="text-xs font-semibold">{estLien ? "Lien externe" : "Document à télécharger"}</span>
         </span>
       </span>
@@ -79,7 +79,7 @@ export async function ListeRessources({ erreurFichier }: { erreurFichier?: boole
                       <span className="text-xs font-semibold">Cours</span>
                     )}
                   </div>
-                  <h2 id={`cours-${cours.id}`} className="titre-charte text-3xl !leading-tight sm:text-4xl">
+                  <h2 id={`cours-${cours.id}`} className="titre-charte text-2xl !leading-tight sm:text-3xl lg:text-4xl">
                     <Link href={cible} className="underline-offset-4 hover:underline">
                       {cours.titre}
                     </Link>

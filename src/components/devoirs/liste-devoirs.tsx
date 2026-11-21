@@ -31,7 +31,7 @@ function CarteDevoir({ devoir }: { devoir: DevoirListe }) {
             <BadgeStatut statut={devoir.statut} />
           </span>
 
-          <span className="text-base font-semibold leading-snug text-noir group-hover:underline [overflow-wrap:anywhere]">
+          <span className="text-sm font-semibold leading-snug text-noir group-hover:underline sm:text-base [overflow-wrap:anywhere]">
             {devoir.titre}
           </span>
 
@@ -94,8 +94,8 @@ export async function ListeDevoirs() {
       <section className="accueil-carte p-5 sm:p-7" aria-labelledby="titre-a-rendre">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-sm">Travail à faire</p>
-            <h2 id="titre-a-rendre" className="titre-charte mt-1 text-3xl !leading-tight sm:text-4xl">
+            <p className="text-xs sm:text-sm">Travail à faire</p>
+            <h2 id="titre-a-rendre" className="titre-charte mt-1 text-2xl !leading-tight sm:text-3xl lg:text-4xl">
               À rendre
             </h2>
           </div>
@@ -144,8 +144,8 @@ export async function ListeDevoirs() {
         <section className="accueil-carte p-5 sm:p-7" aria-labelledby="titre-rendus">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-sm">Travaux déposés</p>
-              <h2 id="titre-rendus" className="titre-charte mt-1 text-3xl !leading-tight sm:text-4xl">
+              <p className="text-xs sm:text-sm">Travaux déposés</p>
+              <h2 id="titre-rendus" className="titre-charte mt-1 text-2xl !leading-tight sm:text-3xl lg:text-4xl">
                 Rendus
               </h2>
             </div>

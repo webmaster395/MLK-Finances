@@ -14,8 +14,8 @@ export async function EnTete() {
   const prenom = personne.prenom || personne.email;
 
   return (
-    <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 sm:px-6 lg:px-8">
-      <p className="text-xl font-semibold text-noir sm:text-2xl">Bonjour {prenom}</p>
+    <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 sm:px-6 sm:py-3 lg:px-8">
+      <p className="text-lg font-semibold text-noir sm:text-2xl">Bonjour {prenom}</p>
       <div className="hidden flex-wrap items-center justify-end gap-2.5 md:flex">
         <BoutonMessages messages={messages} />
         {promotion ? (

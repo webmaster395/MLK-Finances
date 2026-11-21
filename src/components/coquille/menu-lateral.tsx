@@ -107,12 +107,12 @@ export function MenuLateral({ personne, pastilles = {}, promotion = null, messag
                     onClick={apresClic}
                     aria-current={actif ? "page" : undefined}
                     title={afficherNoms ? undefined : nom}
-                    className={`relative flex min-h-11 items-center gap-3 rounded-[0.6rem] px-3 text-[1.02rem] font-semibold tracking-tight text-texte transition-colors hover:bg-black/5 ${
+                    className={`relative flex min-h-10 items-center gap-3 rounded-[0.6rem] px-3 text-sm font-semibold tracking-tight text-texte transition-colors hover:bg-black/5 sm:min-h-11 sm:text-[0.95rem] ${
                       actif ? "bg-black/10 shadow-sm" : ""
                     } ${afficherNoms ? "" : "justify-center"}`}
                   >
                     <span className="relative">
-                      <Icone aria-hidden className="size-6 shrink-0 text-noir" strokeWidth={1.75} />
+                      <Icone aria-hidden className="size-5 shrink-0 text-noir sm:size-[1.35rem]" strokeWidth={1.75} />
                       {pastilles[href] ? (
                         <span
                           aria-hidden
@@ -144,17 +144,17 @@ export function MenuLateral({ personne, pastilles = {}, promotion = null, messag
           replie ? "w-[4.75rem]" : "w-64"
         }`}
       >
-        <div className={`flex items-center px-3 py-3 ${replie ? "justify-center" : "justify-between pl-6"}`}>
-          {replie ? null : <Logo lien="/accueil" />}
+        <div className={`flex items-center px-3 py-3 ${replie ? "flex-col justify-center gap-1" : "justify-between pl-5"}`}>
+          <Logo lien="/accueil" monogramme={replie} />
           <button
             type="button"
             onClick={basculer}
             aria-label={replie ? "Déplier le menu" : "Replier le menu"}
             aria-expanded={!replie}
             title={replie ? "Déplier le menu" : "Replier le menu"}
-            className="flex size-11 shrink-0 items-center justify-center rounded-[0.6rem] text-texte hover:bg-black/5"
+            className="flex size-10 shrink-0 items-center justify-center rounded-[0.6rem] text-texte hover:bg-black/5"
           >
-            {replie ? <ChevronRight aria-hidden className="size-6" /> : <ChevronLeft aria-hidden className="size-6" />}
+            {replie ? <ChevronRight aria-hidden className="size-5" /> : <ChevronLeft aria-hidden className="size-5" />}
           </button>
         </div>
         <Separateur />
@@ -202,7 +202,7 @@ export function MenuLateral({ personne, pastilles = {}, promotion = null, messag
         <div className="flex shrink-0 items-center gap-1">
           <BoutonMessages messages={messages} />
           {promotion ? (
-            <span className="whitespace-nowrap rounded-full border border-black/25 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.04em] text-noir sm:px-3 sm:text-xs">
+            <span className="whitespace-nowrap rounded-full border border-black/25 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.04em] text-noir sm:px-3 sm:py-1 sm:text-xs">
               {promotion}
             </span>
           ) : null}
@@ -227,16 +227,16 @@ export function MenuLateral({ personne, pastilles = {}, promotion = null, messag
             onClick={() => setOuvert(false)}
             className="absolute inset-0 bg-noir/50"
           />
-          <div className="relative flex h-full w-[82%] max-w-80 flex-col menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-top shadow-2xl">
-            <div className="flex items-start justify-between p-4">
+          <div className="relative flex h-full w-[78%] max-w-72 flex-col menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-top shadow-2xl">
+            <div className="flex items-start justify-between p-3.5">
               <Logo lien="/accueil" />
               <button
                 type="button"
                 onClick={() => setOuvert(false)}
                 aria-label="Fermer le menu"
-                className="flex size-11 items-center justify-center rounded-[0.6rem] bg-rose-clair text-noir"
+                className="flex size-9 items-center justify-center rounded-[0.5rem] bg-rose-clair text-noir"
               >
-                <X aria-hidden className="size-7" />
+                <X aria-hidden className="size-5" />
               </button>
             </div>
             <nav aria-label="Menu principal" className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-3 pb-3">

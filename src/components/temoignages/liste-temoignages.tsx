@@ -29,8 +29,8 @@ export async function ListeTemoignages() {
     <section className="accueil-carte p-5 sm:p-7" aria-labelledby="titre-temoignages">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm">Paroles de participants</p>
-          <h2 id="titre-temoignages" className="titre-charte mt-1 text-3xl !leading-tight sm:text-4xl">
+          <p className="text-xs sm:text-sm">Paroles de participants</p>
+          <h2 id="titre-temoignages" className="titre-charte mt-1 text-2xl !leading-tight sm:text-3xl lg:text-4xl">
             Retours d&apos;expérience
           </h2>
         </div>
@@ -50,7 +50,7 @@ export async function ListeTemoignages() {
           >
             <div className="flex flex-col gap-3">
               <Quote aria-hidden className="size-5 text-rose" />
-              <blockquote className="text-base font-semibold leading-relaxed text-noir [overflow-wrap:anywhere]">
+              <blockquote className="text-sm font-semibold leading-relaxed text-noir sm:text-base [overflow-wrap:anywhere]">
                 « {t.texte} »
               </blockquote>
             </div>

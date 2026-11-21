@@ -33,17 +33,17 @@ export async function JourneeAccueil() {
     <section className="accueil-carte p-5 sm:p-7" aria-labelledby="titre-journee">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm">Prochaine journée</p>
-          <h2 id="titre-journee" className="titre-charte mt-1 text-3xl !leading-tight sm:text-4xl">
+          <p className="text-xs sm:text-sm">Prochaine journée</p>
+          <h2 id="titre-journee" className="titre-charte mt-1 text-2xl !leading-tight sm:text-3xl lg:text-4xl">
             Votre prochaine journée de formation
           </h2>
         </div>
-        <span className="shrink-0 rounded-full bg-black/5 px-3.5 py-2 text-xs font-semibold tracking-[0.08em] text-noir">
+        <span className="shrink-0 rounded-full bg-black/5 px-3 py-1.5 text-xs font-semibold tracking-[0.08em] text-noir sm:px-3.5 sm:py-2">
           {reste <= 0 ? "Aujourd'hui" : `J-${reste}`}
         </span>
       </div>
 
-      <p className="mt-3 text-base font-semibold text-noir">
+      <p className="mt-3 text-sm font-semibold text-noir sm:text-base">
         <span className="first-letter:uppercase">{formaterJourIso(jour)}</span>
         <span className="mx-2">·</span>
         {formaterHoraires(premiere.debut, derniere.fin ?? derniere.debut)}
@@ -77,9 +77,9 @@ export async function JourneeAccueil() {
                   />
                   {dernierElement ? null : <span aria-hidden className="w-px flex-1 bg-black/20" />}
                 </div>
-                <div className="col-start-2 row-start-2 pb-7 pt-2 md:col-start-3 md:row-start-1 md:pt-0">
+                <div className="col-start-2 row-start-2 pb-6 pt-1.5 md:col-start-3 md:row-start-1 md:pb-7 md:pt-0">
                   <PastilleRubrique rubrique={s.rubrique} />
-                  <p className="mt-2 text-base font-semibold leading-snug text-noir group-hover:underline">
+                  <p className="mt-2 text-sm font-semibold leading-snug text-noir group-hover:underline sm:text-base">
                     {s.cours?.titre ?? s.titre}
                   </p>
                   {s.cours && s.titre !== s.cours.titre ? <p className="mt-0.5 text-sm">{s.titre}</p> : null}

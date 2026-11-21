@@ -160,8 +160,8 @@ export function CalendrierMois({
         </section>
 
         <section className="accueil-carte p-5 sm:p-6" aria-labelledby="titre-jour">
-          <p className="text-sm">{choisi === aujourdhui ? "Aujourd'hui" : choisi === prochainJour ? "Prochaine journée" : "Journée"}</p>
-          <h2 id="titre-jour" className="titre-charte mt-1 text-3xl !leading-tight first-letter:uppercase">
+          <p className="text-xs sm:text-sm">{choisi === aujourdhui ? "Aujourd'hui" : choisi === prochainJour ? "Prochaine journée" : "Journée"}</p>
+          <h2 id="titre-jour" className="titre-charte mt-1 text-2xl !leading-tight first-letter:uppercase sm:text-3xl">
             {formaterJourIso(choisi, true)}
           </h2>
           {seancesDuJour[0]?.lieu ? (

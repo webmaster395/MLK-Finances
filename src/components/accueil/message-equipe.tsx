@@ -9,7 +9,7 @@ export async function MessageEquipe() {
 
   return (
     <section className="accueil-carte p-5 sm:p-6" aria-labelledby="titre-message">
-      <h2 id="titre-message" className="titre-charte flex items-center gap-2.5 text-2xl">
+      <h2 id="titre-message" className="titre-charte flex items-center gap-2.5 text-xl sm:text-2xl">
         <Megaphone aria-hidden className="size-5 text-rose" />
         Message de l&apos;équipe
       </h2>

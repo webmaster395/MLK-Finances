@@ -43,7 +43,7 @@ async function Detail({ params }: { params: PageProps<"/sessions/[id]">["params"
         <div>
           <PastilleRubrique rubrique={seance.rubrique} />
         </div>
-        <h1 className="titre-charte text-4xl sm:text-5xl">
+        <h1 className="titre-charte text-3xl sm:text-5xl">
           <span className="pinceau">{seance.titre}</span>
         </h1>
       </div>

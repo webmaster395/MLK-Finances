@@ -47,7 +47,7 @@ async function Detail({
           <BadgeStatut statut={devoir.statut} />
           {devoir.seance?.rubrique ? <PastilleRubrique rubrique={devoir.seance.rubrique} /> : null}
         </div>
-        <h1 className="titre-charte text-4xl sm:text-5xl">
+        <h1 className="titre-charte text-3xl sm:text-5xl">
           <span className="pinceau">{devoir.titre}</span>
         </h1>
       </div>
