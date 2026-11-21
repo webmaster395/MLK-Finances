@@ -93,7 +93,8 @@ Phase 2 (plus tard) : espace administrateur.
 - [x] Lot 1 : coquille (menu latéral repliable, barre du haut sur téléphone, en-tête, 7 pages vides avec loading.tsx)
 - [x] Lot 2 : 3 migrations (tables, droits + RLS, stockage), seed « test », test d'isolation RLS (`npm run test:rls`, 41 vérifications)
 - [x] Base appliquée sur le projet Supabase en ligne `mlk-parcours-finances` (organisation MLK, région Irlande eu-west-1, id `wfsbdlyksvxjgwogamsn`) : 3 migrations, 9 tables avec RLS, 3 seaux privés. Sans données de démo.
-- [ ] Lot 3 : connexion / inscription / mot de passe oublié (voir « Lot 3 : ce qui est prévu » ci-dessous)
+- [x] Lot 3 : connexion, inscription, mot de passe oublié, nouveau mot de passe, retour des e-mails, déconnexion, protection des pages (proxy), en-tête avec la vraie personne, message « inscription enregistrée » tant qu'il n'y a pas de groupe. Types de la base générés. **Reste à tester par l'utilisateur : une vraie inscription avec e-mail de confirmation, puis connexion et déconnexion.**
+- [ ] Lot 4 : accueil
 
 ## Décisions et limites du lot 2
 - **Un cours est rattaché à un seul groupe** (`cours.groupe_id`) ; ressources et devoirs héritent de la visibilité du cours. Si un même cours doit servir plusieurs groupes, il faudra une table de liaison (migration future).
@@ -117,3 +118,12 @@ Phase 2 (plus tard) : espace administrateur.
 **Variables locales** (`.env.local`, jamais enregistré dans git) : adresse du projet et clé publique (« publishable / anon »). Aucune clé secrète.
 **Décisions prises (par l'utilisateur) :** inscription **ouverte**, avec **confirmation d'e-mail obligatoire** ; rattachement à un groupe **manuel** en phase 1 (ajout dans la table `inscriptions` depuis Supabase). Tant qu'il n'est pas rattaché, un nouveau participant voit un état vide clair (« Votre inscription est enregistrée, vous serez rattaché à votre groupe prochainement »). L'espace administrateur automatisera cela en phase 2.
 **Hors périmètre du lot 3 :** pages accueil, sessions, etc. (lots suivants), espace administrateur (phase 2).
+
+## Décisions et limites du lot 3
+- Testé automatiquement : redirections protégées (`npm run test:redirection`). Testé à la main sur Supabase en ligne : page protégée → connexion, messages d'erreur, mauvais identifiants, lien d'e-mail piégé refusé.
+- **Non testé** (nécessite une vraie adresse e-mail) : inscription réelle + e-mail de confirmation + lien de retour, mot de passe oublié réel, connexion réussie, déconnexion, en-tête avec la vraie personne.
+- Fichiers : `.env.local` (adresse du projet et clé publique, non enregistré dans git), `.env.example` (modèle), `src/proxy.ts`, `src/lib/auth/`, `src/lib/supabase/`, `src/components/auth/`, `src/app/(public)/`, `src/app/auth/callback/`.
+- Mot de passe : 8 caractères minimum, avec au moins une lettre et un chiffre (règle de l'application).
+- Les réponses d'inscription et de mot de passe oublié sont identiques que l'adresse existe ou non (on ne révèle pas quels comptes existent).
+- **À régler dans le tableau de bord Supabase avant la mise en production :** Authentication > URL Configuration (Site URL = adresse Vercel, Redirect URLs = `<adresse Vercel>/auth/callback`), modèles d'e-mails en français, et un vrai service d'envoi d'e-mails (le service par défaut est très limité). Variables à ajouter sur Vercel : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SITE_URL`.
+- Le contrôle de connexion du proxy lit la session sans appel réseau ; chaque page de l'espace connecté revérifie la personne auprès de Supabase (`obtenirPersonne`).

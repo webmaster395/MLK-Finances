@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { EnTete } from "@/components/coquille/en-tete";
+import { BandeauSansGroupe, EnTete, EnTeteSquelette } from "@/components/coquille/en-tete";
 import { MenuLateral, MenuSquelette } from "@/components/coquille/menu-lateral";
 
 /** Coquille de l'espace participant : menu + en-tête + contenu de la page. */
@@ -17,8 +17,14 @@ export default function Layout({ children }: LayoutProps<"/">) {
         <MenuLateral />
       </Suspense>
       <div className="flex min-w-0 flex-1 flex-col">
-        <EnTete />
+        {/* L'en-tête lit la session de la personne : sous <Suspense> également. */}
+        <Suspense fallback={<EnTeteSquelette />}>
+          <EnTete />
+        </Suspense>
         <main id="contenu" className="flex-1 px-4 pb-10 pt-2 sm:px-6 lg:px-8">
+          <Suspense fallback={null}>
+            <BandeauSansGroupe />
+          </Suspense>
           {children}
         </main>
       </div>
