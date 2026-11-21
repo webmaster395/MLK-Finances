@@ -92,11 +92,14 @@ Phase 2 (plus tard) : espace administrateur.
 - [x] Lot 0 : projet Next.js, charte (couleurs, polices, logo), CLAUDE.md, branches main / preview
 - [x] Lot 1 : coquille (menu latéral repliable, barre du haut sur téléphone, en-tête, 7 pages vides avec loading.tsx)
 - [x] Lot 2 : 3 migrations (tables, droits + RLS, stockage), seed « test », test d'isolation RLS (`npm run test:rls`, 40 vérifications)
+- [x] Base appliquée sur le projet Supabase en ligne `mlk-parcours-finances` (organisation MLK, région Irlande eu-west-1, id `wfsbdlyksvxjgwogamsn`) : 3 migrations, 9 tables avec RLS, 3 seaux privés. Sans données de démo.
 - [ ] Lot 3 : connexion / inscription / mot de passe oublié
 
 ## Décisions et limites du lot 2
 - **Un cours est rattaché à un seul groupe** (`cours.groupe_id`) ; ressources et devoirs héritent de la visibilité du cours. Si un même cours doit servir plusieurs groupes, il faudra une table de liaison (migration future).
-- **Docker et la CLI Supabase ne sont pas installés** : les migrations sont testées sur une base PostgreSQL embarquée (PGlite) avec une simulation de Supabase. À rejouer sur une vraie base locale dès l'installation (voir `supabase/README.md`).
+- **Docker n'est pas utilisé** (l'hébergement se fait sur Vercel, la base sur Supabase en ligne). Les migrations sont testées sur une base PostgreSQL embarquée (PGlite) avec une simulation de Supabase, puis appliquées sur le projet en ligne.
+- Les fichiers de migration ont été renommés avec les versions enregistrées par Supabase (20261121093400, ...09, ...18).
+- Alerte de sécurité Supabase à traiter (en attente d'accord) : la fonction `public.rls_auto_enable()` (créée par l'option « RLS automatique » de Supabase, pas par nous) est exécutable par `anon` et `authenticated`.
 - **Types TypeScript de la base : pas encore générés** (nécessite la CLI Supabase). À faire au lot 3, avant d'écrire les accès aux données.
 - Création des comptes de démo dans `seed.sql` : méthode habituelle mais non vérifiée contre le vrai Supabase Auth.
 - Pas encore de projet Supabase en ligne ni d'hébergement : rien n'est en production.
