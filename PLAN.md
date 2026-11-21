@@ -91,16 +91,29 @@ Phase 2 (plus tard) : espace administrateur.
 - [x] Plan validé par l'utilisateur
 - [x] Lot 0 : projet Next.js, charte (couleurs, polices, logo), CLAUDE.md, branches main / preview
 - [x] Lot 1 : coquille (menu latéral repliable, barre du haut sur téléphone, en-tête, 7 pages vides avec loading.tsx)
-- [x] Lot 2 : 3 migrations (tables, droits + RLS, stockage), seed « test », test d'isolation RLS (`npm run test:rls`, 40 vérifications)
+- [x] Lot 2 : 3 migrations (tables, droits + RLS, stockage), seed « test », test d'isolation RLS (`npm run test:rls`, 41 vérifications)
 - [x] Base appliquée sur le projet Supabase en ligne `mlk-parcours-finances` (organisation MLK, région Irlande eu-west-1, id `wfsbdlyksvxjgwogamsn`) : 3 migrations, 9 tables avec RLS, 3 seaux privés. Sans données de démo.
-- [ ] Lot 3 : connexion / inscription / mot de passe oublié
+- [ ] Lot 3 : connexion / inscription / mot de passe oublié (voir « Lot 3 : ce qui est prévu » ci-dessous)
 
 ## Décisions et limites du lot 2
 - **Un cours est rattaché à un seul groupe** (`cours.groupe_id`) ; ressources et devoirs héritent de la visibilité du cours. Si un même cours doit servir plusieurs groupes, il faudra une table de liaison (migration future).
 - **Docker n'est pas utilisé** (l'hébergement se fait sur Vercel, la base sur Supabase en ligne). Les migrations sont testées sur une base PostgreSQL embarquée (PGlite) avec une simulation de Supabase, puis appliquées sur le projet en ligne.
 - Les fichiers de migration ont été renommés avec les versions enregistrées par Supabase (20261121093400, ...09, ...18).
 - Alerte Supabase traitée : la fonction `public.rls_auto_enable()` (créée par l'option « RLS automatique », pas par nous) n'est plus exécutable par `anon` ni `authenticated` (migration 20261121093547). Plus aucune alerte de sécurité.
-- **Types TypeScript de la base : pas encore générés** (nécessite la CLI Supabase). À faire au lot 3, avant d'écrire les accès aux données.
+- **Types TypeScript de la base : pas encore générés.** À faire au lot 3 avant d'écrire les accès aux données, soit via l'outil Supabase connecté (génération des types du projet en ligne), soit à la main si besoin.
 - Création des comptes de démo dans `seed.sql` : méthode habituelle mais non vérifiée contre le vrai Supabase Auth.
-- Pas encore de projet Supabase en ligne ni d'hébergement : rien n'est en production.
+- Le projet Supabase en ligne existe (voir Avancement). **Pas encore d'hébergement Vercel** : rien n'est en production.
 - Les statuts « à rendre / bientôt dû / en retard / rendu » s'affichent à partir de l'échéance et de la présence d'un rendu ; seul `rendus.statut` (`depose` / `corrige`) est stocké.
+
+## Lot 3 : ce qui est prévu (à valider avant de coder)
+**Pages publiques** (sans défilement sur ordinateur, charte MLK) : `/connexion`, `/inscription`, `/mot-de-passe-oublie`, et `/reinitialiser-mot-de-passe` (page où mène le lien reçu par e-mail).
+**Fonctionnement :**
+- Connexion et déconnexion par **actions serveur** ; session lue côté serveur dans un composant sous `<Suspense>` (Cache Components).
+- Un visiteur non connecté qui ouvre une page du portail est renvoyé vers `/connexion` ; `/` envoie vers `/connexion` ou `/accueil` selon la session.
+- Redirections après lien d'e-mail **protégées** (adresse de retour limitée au site).
+- L'en-tête affiche la vraie personne (prénom, nom) et le bouton « Déconnexion » devient actif.
+- Le profil est créé automatiquement à l'inscription (déclencheur déjà en base) ; le rôle est toujours « participant ».
+**À régler dans Supabase (tableau de bord) :** adresse du site et adresses de retour autorisées, confirmation d'e-mail, modèles d'e-mails en français. Les e-mails d'envoi par défaut de Supabase sont limités en nombre : suffisant pour les essais, à remplacer par un vrai service d'envoi avant la mise en production.
+**Variables locales** (`.env.local`, jamais enregistré dans git) : adresse du projet et clé publique (« publishable / anon »). Aucune clé secrète.
+**Questions à trancher avant de coder :** inscription ouverte à tous ou sur invitation ? Confirmation d'e-mail obligatoire ? Comment un nouveau participant est-il rattaché à son groupe (par un administrateur en phase 2, ou un code de groupe) ? Le plan de la phase 1 suppose, faute de mieux, un rattachement manuel au début.
+**Hors périmètre du lot 3 :** pages accueil, sessions, etc. (lots suivants), espace administrateur (phase 2).
