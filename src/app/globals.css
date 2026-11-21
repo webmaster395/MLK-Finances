@@ -78,7 +78,7 @@
     display: inline-block;
     z-index: 0;
     font-weight: 700;
-    font-size: 2.6rem;
+    font-size: 3.6rem;
     transform: scaleX(0.84);
     transform-origin: left;
   }
@@ -95,25 +95,25 @@
   .logo-parcours {
     display: block;
     font-weight: 400;
-    font-size: 1.15rem;
-    margin-top: 0.2rem;
+    font-size: 1.6rem;
+    margin-top: 0.25rem;
   }
   .logo-finances {
     display: block;
     font-weight: 600;
-    font-size: 1.15rem;
-    margin-left: 1.25rem;
+    font-size: 1.6rem;
+    margin-left: 1.75rem;
   }
   @media (min-width: 768px) {
     .logo-mlk {
-      font-size: 4rem;
+      font-size: 4.4rem;
     }
     .logo-parcours {
-      font-size: 1.75rem;
+      font-size: 1.9rem;
       margin-top: 0.25rem;
     }
     .logo-finances {
-      font-size: 1.75rem;
+      font-size: 1.9rem;
       margin-left: 2rem;
     }
   }
@@ -159,22 +159,22 @@
     white-space: nowrap;
   }
   .logo-compact .logo-mlk {
-    font-size: 1.25rem;
+    font-size: 1.75rem;
   }
   .logo-compact .logo-parcours,
   .logo-compact .logo-finances {
     display: inline;
-    font-size: 0.75rem;
-    margin: 0 0 0 0.2rem;
+    font-size: 0.95rem;
+    margin: 0 0 0 0.22rem;
   }
   @media (min-width: 640px) {
     .logo-compact .logo-mlk {
-      font-size: 1.85rem;
+      font-size: 2.2rem;
     }
     .logo-compact .logo-parcours,
     .logo-compact .logo-finances {
-      font-size: 0.95rem;
-      margin: 0 0 0 0.3rem;
+      font-size: 1.1rem;
+      margin: 0 0 0 0.35rem;
     }
   }
 }
