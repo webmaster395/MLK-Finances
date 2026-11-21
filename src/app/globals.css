@@ -106,15 +106,15 @@
   }
   @media (min-width: 768px) {
     .logo-mlk {
-      font-size: 3.4rem;
+      font-size: 4rem;
     }
     .logo-parcours {
-      font-size: 1.5rem;
+      font-size: 1.75rem;
       margin-top: 0.25rem;
     }
     .logo-finances {
-      font-size: 1.5rem;
-      margin-left: 1.75rem;
+      font-size: 1.75rem;
+      margin-left: 2rem;
     }
   }
 
@@ -176,13 +176,6 @@
       font-size: 0.95rem;
       margin: 0 0 0 0.3rem;
     }
-  }
-
-  /* Monogramme MLK seul avec son trait de pinceau rose (menu latéral replié) */
-  .logo-monogramme .logo-mlk {
-    font-size: 1.85rem;
-    transform: scaleX(0.84);
-    transform-origin: center;
   }
 }
 

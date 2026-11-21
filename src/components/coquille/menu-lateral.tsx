@@ -107,12 +107,12 @@ export function MenuLateral({ personne, pastilles = {}, promotion = null, messag
                     onClick={apresClic}
                     aria-current={actif ? "page" : undefined}
                     title={afficherNoms ? undefined : nom}
-                    className={`relative flex min-h-10 items-center gap-3 rounded-[0.6rem] px-3 text-sm font-semibold tracking-tight text-texte transition-colors hover:bg-black/5 sm:min-h-11 sm:text-[0.95rem] ${
+                    className={`relative flex min-h-10 items-center gap-3 rounded-[0.6rem] px-3 text-sm font-semibold tracking-tight text-texte transition-colors hover:bg-black/5 md:min-h-11 md:text-[1.02rem] ${
                       actif ? "bg-black/10 shadow-sm" : ""
                     } ${afficherNoms ? "" : "justify-center"}`}
                   >
                     <span className="relative">
-                      <Icone aria-hidden className="size-5 shrink-0 text-noir sm:size-[1.35rem]" strokeWidth={1.75} />
+                      <Icone aria-hidden className="size-5 shrink-0 text-noir md:size-6" strokeWidth={1.75} />
                       {pastilles[href] ? (
                         <span
                           aria-hidden
@@ -144,17 +144,17 @@ export function MenuLateral({ personne, pastilles = {}, promotion = null, messag
           replie ? "w-[4.75rem]" : "w-64"
         }`}
       >
-        <div className={`flex items-center px-3 py-3 ${replie ? "flex-col justify-center gap-1" : "justify-between pl-5"}`}>
-          <Logo lien="/accueil" monogramme={replie} />
+        <div className={`flex items-center px-3 py-3 ${replie ? "justify-center" : "justify-between pl-6"}`}>
+          {replie ? null : <Logo lien="/accueil" />}
           <button
             type="button"
             onClick={basculer}
             aria-label={replie ? "Déplier le menu" : "Replier le menu"}
             aria-expanded={!replie}
             title={replie ? "Déplier le menu" : "Replier le menu"}
-            className="flex size-10 shrink-0 items-center justify-center rounded-[0.6rem] text-texte hover:bg-black/5"
+            className="flex size-11 shrink-0 items-center justify-center rounded-[0.6rem] text-texte hover:bg-black/5"
           >
-            {replie ? <ChevronRight aria-hidden className="size-5" /> : <ChevronLeft aria-hidden className="size-5" />}
+            {replie ? <ChevronRight aria-hidden className="size-6" /> : <ChevronLeft aria-hidden className="size-6" />}
           </button>
         </div>
         <Separateur />
