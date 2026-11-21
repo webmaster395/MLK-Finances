@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { BandeauSansGroupe } from "@/components/coquille/bandeau-sans-groupe";
 import { MenuSquelette } from "@/components/coquille/menu-lateral";
 import { EnTeteDeconnexion } from "@/components/coquille/en-tete-deconnexion";
 import { MenuParticipant } from "@/components/coquille/menu-participant";
@@ -21,9 +20,6 @@ export default function Layout({ children }: LayoutProps<"/">) {
       <div className="flex min-w-0 flex-1 flex-col">
         <EnTeteDeconnexion />
         <main id="contenu" className="flex-1 px-4 pb-10 pt-2 sm:px-6 lg:px-8">
-          <Suspense fallback={null}>
-            <BandeauSansGroupe />
-          </Suspense>
           {children}
         </main>
       </div>

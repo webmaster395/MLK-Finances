@@ -93,7 +93,7 @@ Phase 2 (plus tard) : espace administrateur.
 - [x] Lot 1 : coquille (menu latéral repliable, barre du haut sur téléphone, en-tête, 7 pages vides avec loading.tsx)
 - [x] Lot 2 : 3 migrations (tables, droits + RLS, stockage), seed « test », test d'isolation RLS (`npm run test:rls`, 45 vérifications)
 - [x] Base appliquée sur le projet Supabase en ligne `mlk-parcours-finances` (organisation MLK, région Irlande eu-west-1, id `wfsbdlyksvxjgwogamsn`) : 3 migrations, 9 tables avec RLS, 3 seaux privés. Sans données de démo.
-- [x] Lot 3 : connexion, inscription, mot de passe oublié, nouveau mot de passe, retour des e-mails, déconnexion, protection des pages (proxy), en-tête avec la vraie personne, message « inscription enregistrée » tant qu'il n'y a pas de groupe. Types de la base générés. **Reste à tester par l'utilisateur : une vraie inscription avec e-mail de confirmation, puis connexion et déconnexion.**
+- [x] Lot 3 : connexion, inscription, mot de passe oublié, nouveau mot de passe, retour des e-mails, déconnexion, protection des pages (proxy), en-tête avec la vraie personne, (le message « Inscription enregistrée » affiché tant qu'il n'y a pas de groupe a été retiré à la demande de l'utilisateur ; `compterGroupes` reste disponible dans `src/lib/auth/personne.ts`). Types de la base générés. **Reste à tester par l'utilisateur : une vraie inscription avec e-mail de confirmation, puis connexion et déconnexion.**
 - [x] Menu remodelé d'après les images de l'utilisateur : bouton flèche en haut pour replier / déplier (choix mémorisé), icônes séparées en groupes, pastille de la personne en bas (nom seulement, sans adresse e-mail ; lien vers la page Profil). Bouton « Déconnexion » en haut à droite de chaque page (demande de l'utilisateur). Photo de profil : pas encore (initiales ; photo au lot 10). Pastille rouge de notification prête dans le code (aucune page ne l'utilise encore ; prévue pour « Devoirs » au lot 8).
 - [ ] Lot 4 : accueil
 
@@ -117,7 +117,7 @@ Phase 2 (plus tard) : espace administrateur.
 - Le profil est créé automatiquement à l'inscription (déclencheur déjà en base) ; le rôle est toujours « participant ».
 **À régler dans Supabase (tableau de bord) :** adresse du site et adresses de retour autorisées, confirmation d'e-mail, modèles d'e-mails en français. Les e-mails d'envoi par défaut de Supabase sont limités en nombre : suffisant pour les essais, à remplacer par un vrai service d'envoi avant la mise en production.
 **Variables locales** (`.env.local`, jamais enregistré dans git) : adresse du projet et clé publique (« publishable / anon »). Aucune clé secrète.
-**Décisions prises (par l'utilisateur) :** inscription **ouverte**, avec **confirmation d'e-mail obligatoire** ; rattachement à un groupe **manuel** en phase 1 (ajout dans la table `inscriptions` depuis Supabase). Tant qu'il n'est pas rattaché, un nouveau participant voit un état vide clair (« Votre inscription est enregistrée, vous serez rattaché à votre groupe prochainement »). L'espace administrateur automatisera cela en phase 2.
+**Décisions prises (par l'utilisateur) :** inscription **ouverte**, avec **confirmation d'e-mail obligatoire** ; rattachement à un groupe **manuel** en phase 1 (ajout dans la table `inscriptions` depuis Supabase). Tant qu'il n'est pas rattaché, il n'y a pas de contenu à afficher (le message d'attente a été retiré). L'espace administrateur automatisera cela en phase 2.
 **Hors périmètre du lot 3 :** pages accueil, sessions, etc. (lots suivants), espace administrateur (phase 2).
 
 ## Décisions et limites du lot 3
