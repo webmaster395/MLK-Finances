@@ -1,9 +1,10 @@
 import { Suspense } from "react";
 import { BandeauSansGroupe } from "@/components/coquille/bandeau-sans-groupe";
 import { MenuSquelette } from "@/components/coquille/menu-lateral";
+import { EnTeteDeconnexion } from "@/components/coquille/en-tete-deconnexion";
 import { MenuParticipant } from "@/components/coquille/menu-participant";
 
-/** Coquille de l'espace participant : menu (avec la personne en bas) + contenu de la page. */
+/** Coquille de l'espace participant : menu (lien du profil en bas) + bouton de déconnexion en haut à droite + contenu de la page. */
 export default function Layout({ children }: LayoutProps<"/">) {
   return (
     <div className="flex flex-1 flex-col md:flex-row">
@@ -18,7 +19,8 @@ export default function Layout({ children }: LayoutProps<"/">) {
         <MenuParticipant />
       </Suspense>
       <div className="flex min-w-0 flex-1 flex-col">
-        <main id="contenu" className="flex-1 px-4 pb-10 pt-6 sm:px-6 lg:px-8">
+        <EnTeteDeconnexion />
+        <main id="contenu" className="flex-1 px-4 pb-10 pt-2 sm:px-6 lg:px-8">
           <Suspense fallback={null}>
             <BandeauSansGroupe />
           </Suspense>

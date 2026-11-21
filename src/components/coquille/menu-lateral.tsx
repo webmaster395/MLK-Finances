@@ -2,15 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Fragment, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { ChevronLeft, ChevronRight, LogOut, Menu, X } from "lucide-react";
+import { Fragment, useEffect, useState, useSyncExternalStore } from "react";
+import { ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
 import { Logo } from "@/components/logo";
-import { deconnexion } from "@/lib/auth/actions";
 import { GROUPES_MENU, PAGE_PROFIL } from "@/lib/navigation";
 
 export type PersonneMenu = {
   nomComplet: string;
-  email: string;
   initiales: string;
 };
 
@@ -57,7 +55,7 @@ function Separateur() {
 
 /**
  * Menu de l'espace participant.
- * - Ordinateur : barre latérale repliable (bouton flèche en haut), pastille de la personne en bas.
+ * - Ordinateur : barre latérale repliable (bouton flèche en haut), lien vers le profil en bas.
  * - Téléphone : barre du haut avec un bouton qui ouvre le menu.
  * Ce composant lit l'adresse de la page : il doit toujours être sous <Suspense>.
  */
@@ -66,35 +64,20 @@ export function MenuLateral({ personne, pastilles = {} }: Props) {
   // Côté serveur et au premier affichage : déplié ; ensuite on applique le choix mémorisé
   const replie = useSyncExternalStore(abonnerReplie, lireReplie, () => false);
   const [ouvert, setOuvert] = useState(false); // menu du téléphone
-  const [profilOuvert, setProfilOuvert] = useState(false);
-  const zoneProfil = useRef<HTMLDivElement>(null);
 
   function basculer() {
     ecrireReplie(!replie);
-    setProfilOuvert(false);
   }
 
-  // Échap ferme les menus ; un clic à côté ferme le menu du profil
+  // Échap ferme le menu du téléphone
   useEffect(() => {
-    if (!ouvert && !profilOuvert) return;
+    if (!ouvert) return;
     const surTouche = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setOuvert(false);
-        setProfilOuvert(false);
-      }
-    };
-    const surClic = (e: MouseEvent) => {
-      if (profilOuvert && zoneProfil.current && !zoneProfil.current.contains(e.target as Node)) {
-        setProfilOuvert(false);
-      }
+      if (e.key === "Escape") setOuvert(false);
     };
     window.addEventListener("keydown", surTouche);
-    window.addEventListener("mousedown", surClic);
-    return () => {
-      window.removeEventListener("keydown", surTouche);
-      window.removeEventListener("mousedown", surClic);
-    };
-  }, [ouvert, profilOuvert]);
+    return () => window.removeEventListener("keydown", surTouche);
+  }, [ouvert]);
 
   const sur = (href: string) => chemin === href || chemin.startsWith(`${href}/`);
 
@@ -149,30 +132,6 @@ export function MenuLateral({ personne, pastilles = {} }: Props) {
     </span>
   );
 
-  const actionsProfil = (apresClic?: () => void) => (
-    <>
-      <Link
-        href={PAGE_PROFIL.href}
-        role="menuitem"
-        onClick={apresClic}
-        className="flex min-h-11 items-center gap-3 rounded-lg px-3 font-semibold text-noir hover:bg-black/5"
-      >
-        <PAGE_PROFIL.icone aria-hidden className="size-5" />
-        {PAGE_PROFIL.nom}
-      </Link>
-      <form action={deconnexion}>
-        <button
-          type="submit"
-          role="menuitem"
-          className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-left font-semibold text-noir hover:bg-black/5"
-        >
-          <LogOut aria-hidden className="size-5" />
-          Déconnexion
-        </button>
-      </form>
-    </>
-  );
-
   return (
     <>
       {/* Ordinateur */}
@@ -200,38 +159,22 @@ export function MenuLateral({ personne, pastilles = {} }: Props) {
           {groupes(!replie)}
         </nav>
 
-        {/* Pastille de la personne, en bas */}
-        <div ref={zoneProfil} className="relative border-t border-black/10 p-3">
-          <button
-            type="button"
-            onClick={() => setProfilOuvert((v) => !v)}
-            aria-haspopup="menu"
-            aria-expanded={profilOuvert}
-            aria-label={`Menu de ${personne.nomComplet}`}
-            title={replie ? personne.nomComplet : undefined}
+        {/* Lien vers le profil, en bas */}
+        <div className="border-t border-black/10 p-3">
+          <Link
+            href={PAGE_PROFIL.href}
+            aria-current={sur(PAGE_PROFIL.href) ? "page" : undefined}
+            aria-label={`Mon profil (${personne.nomComplet})`}
+            title={replie ? `Mon profil — ${personne.nomComplet}` : undefined}
             className={`flex w-full items-center gap-3 rounded-[0.6rem] p-1.5 text-left hover:bg-black/5 ${
               sur(PAGE_PROFIL.href) ? "bg-black/10" : ""
             } ${replie ? "justify-center" : ""}`}
           >
             {avatar}
             {replie ? null : (
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-semibold text-noir">{personne.nomComplet}</span>
-                <span className="block truncate text-xs">{personne.email}</span>
-              </span>
+              <span className="block min-w-0 truncate text-sm font-semibold text-noir">{personne.nomComplet}</span>
             )}
-          </button>
-          {profilOuvert ? (
-            <div
-              role="menu"
-              aria-label="Mon compte"
-              className={`absolute z-50 w-56 rounded-xl bg-white p-2 shadow-xl ring-1 ring-black/10 ${
-                replie ? "bottom-3 left-full ml-2" : "bottom-full left-3 mb-2"
-              }`}
-            >
-              {actionsProfil(() => setProfilOuvert(false))}
-            </div>
-          ) : null}
+          </Link>
         </div>
       </aside>
 
@@ -273,16 +216,17 @@ export function MenuLateral({ personne, pastilles = {} }: Props) {
               {groupes(true, () => setOuvert(false))}
             </nav>
             <div className="border-t border-black/10 p-3">
-              <div className="mb-1 flex items-center gap-3 p-1.5">
+              <Link
+                href={PAGE_PROFIL.href}
+                onClick={() => setOuvert(false)}
+                aria-current={sur(PAGE_PROFIL.href) ? "page" : undefined}
+                className={`flex items-center gap-3 rounded-[0.6rem] p-1.5 hover:bg-black/5 ${
+                  sur(PAGE_PROFIL.href) ? "bg-black/10" : ""
+                }`}
+              >
                 {avatar}
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-semibold text-noir">{personne.nomComplet}</span>
-                  <span className="block truncate text-xs">{personne.email}</span>
-                </span>
-              </div>
-              <div role="menu" aria-label="Mon compte">
-                {actionsProfil(() => setOuvert(false))}
-              </div>
+                <span className="block min-w-0 truncate text-sm font-semibold text-noir">{personne.nomComplet}</span>
+              </Link>
             </div>
           </div>
         </div>

@@ -15,7 +15,6 @@ export async function MenuParticipant() {
     <MenuLateral
       personne={{
         nomComplet,
-        email: personne.email,
         initiales: initiales(personne.prenom, personne.nom, personne.email),
       }}
     />
