@@ -34,14 +34,21 @@ Pour voir le site : `npm run dev` puis http://localhost:3000 (compte de test : `
 ## 4. Où en est le projet
 - Phase 1 (espace participant) terminée : connexion, accueil, sessions, devoirs, ressources, témoignages, profil.
 - **Dernière refonte** (fait par Claude, commit `89a415b`) : accueil « journée de formation » et calendrier des sessions fusionné avec les cours (inspiré de Ministry School, charte MLK conservée).
-- **Pas encore refaites dans cet esprit** : Devoirs, Ressources, Témoignages (elles fonctionnent mais gardent l'ancien style en cartes simples).
+- **Refaites dans cet esprit par Gemini** (voir le journal §6, lots 1 à 3) : Devoirs, Ressources, Témoignages ; lot 4 : ajustements de la coquille (messages, déconnexion). Tout cela reste **à relire par Claude**.
+- **Décision de l'utilisateur sur la photo de la jeune fille** (celle du Canva, avec le panneau « Apprendre aujourd'hui pour demain ») : elle ne revient pas en grand bandeau sur l'accueil (il est devenu un tableau de bord), mais elle ne doit pas disparaître du site → voir la tâche 1 du §5.
 - Ce qui reste avant la mise en ligne est dans `PLAN.md` (section « Avant la mise en ligne »).
 
 ## 5. Tâches possibles (une à la fois, dans cet ordre, uniquement si l'utilisateur le demande)
-1. **Devoirs** : reprendre la page dans le même esprit que l'accueil / le calendrier (cartes plus sobres, regroupement par jour ou par séance, statuts bien visibles). Ne pas changer les règles de dépôt de fichier.
-2. **Ressources** : classement par séance / rubrique, mêmes principes.
-3. **Témoignages** : mise en page seulement (lecture seule).
-4. Corrections de détails signalées par l'utilisateur.
+1. **(À FAIRE MAINTENANT — lot 5) Remettre la photo de la jeune fille sur les pages publiques** `/connexion`, `/inscription`, `/mot-de-passe-oublie`, `/reinitialiser-mot-de-passe`.
+   - L'image existe déjà dans le projet : `public/images/hero.webp` (1952×721, fond clair, la jeune fille et le panneau « Apprendre aujourd'hui pour demain »). `public/images/hero-fond.webp` est le fond texturé d'origine.
+   - Où : dans `src/app/(public)/layout.tsx` (et les composants de `src/components/auth/`). Idée : sur ordinateur, la carte de connexion à côté de l'image (deux colonnes) ou l'image en bandeau au-dessus de la carte ; sur téléphone, l'image réduite en bandeau au-dessus de la carte, ou masquée si elle repousse trop le formulaire (le formulaire doit rester visible sans défiler à 375 px).
+   - Utiliser `next/image` avec `alt` descriptif (« Une étudiante souriante, à côté d'un panneau “Apprendre aujourd'hui pour demain” »), `priority` seulement si elle est visible dès l'ouverture.
+   - Les pages publiques restent **toujours en mode clair** (elles ne sont pas dans `#espace-connecte`) : ne pas ajouter de règle sombre.
+   - **Ne PAS toucher** à la logique de connexion (`src/lib/auth/`, `src/proxy.ts`, actions serveur, redirections) ni aux champs et messages des formulaires : changer seulement la mise en page.
+   - Vérifier à 1366 px et 375 px, formulaire utilisable, aucun débordement horizontal.
+   - **Seulement si l'utilisateur le confirme ensuite** : un bandeau fin avec la même photo au-dessus de la frise de l'accueil (masqué sur téléphone). Ne pas le faire sans accord.
+2. Corrections de détails signalées par l'utilisateur.
+(Les anciennes tâches Devoirs, Ressources et Témoignages sont faites : voir le journal.)
 **Hors périmètre sans accord explicite** : base de données, authentification, dépôt de fichiers, mise en ligne, espace administrateur (phase 2).
 
 ## 6. Journal (à compléter par l'assistant qui travaille)
@@ -53,6 +60,7 @@ Pour chaque lot : date, ce qui a été demandé, fichiers modifiés, commandes d
 | 21/11/2026 | Lot 2 — Refonte de la page Ressources (classement par séance / cours, panneaux avec pastille de rubrique, date de séance et compteur de supports, lignes sobres à liseré coloré selon la rubrique, lien signé de 60 s inchangé) | `src/lib/donnees/ressources.ts`, `src/components/ressources/liste-ressources.tsx`, `PLAN.md`, `docs/passation-assistant.md` | `npm run lint` (OK), `npx tsc --noEmit` (OK), `npm run build` (OK), `npm run test:unit` (25/25 OK), `npm run test:rls` (57/57 OK) | Vérifier le rendu visuel à l'écran (1366 px et 375 px, clair et sombre) sur `/ressources`. Téléchargement par lien signé de 60 s inchangé. |
 | 21/11/2026 | Lot 3 — Refonte de la mise en page de Témoignages (lecture seule, panneau « Retours d'expérience » avec compteur, grille de cartes sobres à liseré rose/orange de la charte et initiales sobres) | `src/components/temoignages/liste-temoignages.tsx`, `PLAN.md`, `docs/passation-assistant.md` | `npm run lint` (OK), `npx tsc --noEmit` (OK), `npm run build` (OK), `npm run test:unit` (25/25 OK), `npm run test:rls` (57/57 OK) | Vérifier le rendu visuel à l'écran (1366 px et 375 px, clair et sombre) sur `/temoignages`. Lecture seule et règles RLS inchangées. |
 | 21/11/2026 | Lot 4 — Ajustements coquille demandés par l'utilisateur : icône messages (mégaphone + compteur avec panneau des messages) à côté de la promotion, bouton icône Déconnexion déplacé en bas du menu à côté de Profil, et alignement en mobile sur la même ligne que le logo MLK Parcours Finances | `src/lib/donnees/annonces.ts`, `src/components/coquille/bouton-messages.tsx`, `src/components/coquille/bascule-theme.tsx`, `src/components/coquille/en-tete.tsx`, `src/components/coquille/menu-participant.tsx`, `src/components/coquille/menu-lateral.tsx`, `src/app/globals.css`, `PLAN.md`, `docs/passation-assistant.md` | `npm run lint` (OK), `npx tsc --noEmit` (OK), `npm run build` (OK), `npm run test:unit` (25/25 OK), `npm run test:rls` (57/57 OK) | Vérifier à l'écran (1366 px et 375 px, clair et sombre) la barre mobile sur une ligne, le panneau des messages au clic sur le mégaphone et le bouton de déconnexion en bas du menu. |
+| 21/11/2026 | Lot 5 — Remise en place de la photo de la jeune fille (`public/images/hero.webp`) sur les pages publiques (`/connexion`, `/inscription`, `/mot-de-passe-oublie`, `/reinitialiser-mot-de-passe`) en 2 colonnes sur ordinateur et en bandeau compact sur téléphone | `src/app/(public)/layout.tsx`, `PLAN.md`, `docs/passation-assistant.md` | `npm run lint` (OK), `npx tsc --noEmit` (OK), `npm run build` (OK), `npm run test:unit` (25/25 OK), `npm run test:rls` (57/57 OK) | Vérifier à l'écran (1366 px et 375 px, toujours en clair) les 4 pages publiques. Aucune modification de la logique d'authentification ni des formulaires. |
 
 ## 7. Pour Claude (reprise)
 1. Lire ce journal, puis `git log --oneline 89a415b..HEAD` et `git diff 89a415b..HEAD --stat`.
