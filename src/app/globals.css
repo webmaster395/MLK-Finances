@@ -152,3 +152,199 @@
     margin: 0 0 0 0.35rem;
   }
 }
+
+/* ------------------------------------------------------------------
+   Page d'accueil (reproduction de la maquette Canva, slide 1)
+------------------------------------------------------------------- */
+@layer components {
+  .accueil-carte {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.65rem;
+    background: var(--color-carte) url("/images/carte-fond.webp") center / cover;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.12);
+  }
+
+  /* Bandeau d'accueil */
+  .hero-accueil {
+    position: relative;
+    display: block;
+    min-height: 15rem;
+    overflow: hidden;
+    border-radius: 0.65rem;
+    background: url("/images/hero-fond.webp") center / cover;
+  }
+  .hero-accueil__texte {
+    position: relative;
+    z-index: 1;
+    padding: 1.5rem 1.5rem 1rem 2rem;
+  }
+  .hero-accueil h1 {
+    font-size: clamp(2.6rem, 5.4vw, 4.65rem);
+  }
+  .hero-accueil h1 > span {
+    display: block;
+    width: max-content;
+    white-space: nowrap;
+    transform: scaleX(0.88);
+    transform-origin: left;
+  }
+  .hero-accueil__sous {
+    margin-top: 0.5rem;
+    font-family: var(--font-titre);
+    font-weight: 500;
+    font-size: clamp(1.5rem, 2.9vw, 2.5rem);
+    line-height: 0.95;
+    letter-spacing: 0.03em;
+    color: var(--color-noir);
+  }
+  .hero-accueil__img {
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    right: -1rem;
+    height: 100%;
+    width: auto;
+    max-width: none;
+  }
+
+  /* Prochaine session */
+  .session-accueil {
+    padding: 1.5rem 2rem;
+    min-height: 11rem;
+    background: var(--color-carte) url("/images/session.webp") right center / cover no-repeat;
+  }
+  .session-accueil__photo {
+    display: none;
+  }
+
+  /* Tuiles Mes cours / Mes devoirs / Ressources */
+  .tuile-accueil {
+    display: flex;
+    min-height: 12.5rem;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 1rem 1.25rem 1.1rem;
+  }
+  .tuile-accueil > h2,
+  .tuile-accueil > a {
+    position: relative;
+    z-index: 1;
+  }
+  .tuile-accueil__photo {
+    position: absolute;
+    z-index: 0;
+    max-width: none;
+    height: auto;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 14%, #000 94%, transparent 100%),
+      linear-gradient(to bottom, transparent 0, #000 10%, #000 88%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to right, transparent 0, #000 14%, #000 94%, transparent 100%),
+      linear-gradient(to bottom, transparent 0, #000 10%, #000 88%, transparent 100%);
+    mask-composite: intersect;
+  }
+  .tuile-accueil__photo--cours {
+    right: 4%;
+    top: 2.25rem;
+    width: 57%;
+  }
+  .tuile-accueil__photo--devoirs {
+    right: 8%;
+    top: 2.25rem;
+    width: 56%;
+  }
+  .tuile-accueil__photo--ressources {
+    right: 0;
+    top: 2rem;
+    width: 72%;
+  }
+
+  /* Témoignages */
+  .temoignages-accueil {
+    display: grid;
+    grid-template-columns: minmax(0, 1.9fr) repeat(3, minmax(0, 1fr));
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem 1rem 2rem;
+    min-height: 9rem;
+    background: var(--color-carte) url("/images/temoignages-fond.webp") center / cover;
+  }
+  .temoignages-accueil__portrait {
+    display: block;
+    height: 7.2rem;
+    overflow: hidden;
+    border-radius: 0.5rem;
+  }
+  .temoignages-accueil__portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+  }
+  .temoignages-accueil__portrait:hover img {
+    transform: scale(1.04);
+  }
+
+  /* Tablette et téléphone : les blocs s'empilent */
+  @media (max-width: 1023px) {
+    .hero-accueil__texte {
+      padding: 1.5rem 1.25rem 0.5rem;
+    }
+    .hero-accueil h1 > span {
+      width: auto;
+      white-space: normal;
+      transform: none;
+    }
+    .hero-accueil__img {
+      position: static;
+      width: 100%;
+      height: auto;
+    }
+    .session-accueil {
+      padding: 1.5rem 1.25rem 0;
+      background-image: url("/images/carte-fond.webp");
+      background-size: cover;
+    }
+    .session-accueil__photo {
+      display: block;
+      width: calc(100% + 2.5rem);
+      max-width: none;
+      height: auto;
+      margin: 1rem -1.25rem 0;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18%);
+      mask-image: linear-gradient(to bottom, transparent 0, #000 18%);
+    }
+    .tuile-accueil {
+      min-height: 13.5rem;
+    }
+    .tuile-accueil__photo--cours {
+      top: auto;
+      bottom: 1rem;
+      width: min(58%, 20rem);
+    }
+    .tuile-accueil__photo--devoirs {
+      top: auto;
+      bottom: 0.75rem;
+      right: 5%;
+      width: min(56%, 20rem);
+    }
+    .tuile-accueil__photo--ressources {
+      top: auto;
+      bottom: 1rem;
+      width: min(70%, 24rem);
+    }
+    .temoignages-accueil {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      padding: 1.25rem 1rem 1rem;
+    }
+    .temoignages-accueil__texte {
+      grid-column: 1 / -1;
+      padding: 0 0.25rem 0.5rem;
+    }
+    .temoignages-accueil__portrait {
+      height: auto;
+      aspect-ratio: 3 / 4;
+    }
+  }
+}
