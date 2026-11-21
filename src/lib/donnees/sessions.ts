@@ -12,7 +12,7 @@ export type ProchaineSession = {
 
 export type SessionListe = ProchaineSession & {
   /** Titre du cours lié (absent si la session n'a pas de cours ou si le cours n'est pas publié). */
-  cours: { titre: string } | null;
+  cours: { id: string; titre: string } | null;
 };
 
 export type SessionDetail = SessionListe & { description: string };
@@ -42,7 +42,7 @@ export async function lireSessions(): Promise<{ aVenir: SessionListe[]; passees:
   const supabase = await creerClientServeur();
   const { data } = await supabase
     .from("sessions")
-    .select("id, titre, debut, fin, lieu, cours(titre)")
+    .select("id, titre, debut, fin, lieu, cours(id, titre)")
     .order("debut", { ascending: true });
 
   const maintenant = Date.now();
@@ -63,7 +63,7 @@ export async function lireSession(id: string): Promise<SessionDetail | null> {
   const supabase = await creerClientServeur();
   const { data } = await supabase
     .from("sessions")
-    .select("id, titre, debut, fin, lieu, description, cours(titre)")
+    .select("id, titre, debut, fin, lieu, description, cours(id, titre)")
     .eq("id", id)
     .maybeSingle();
   return data;

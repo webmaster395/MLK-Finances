@@ -54,7 +54,9 @@ async function Detail({ params }: { params: PageProps<"/sessions/[id]">["params"
         {session.cours ? (
           <p className="flex items-start gap-3 font-semibold text-noir">
             <BookOpen aria-hidden className="mt-0.5 size-5 shrink-0" />
-            {session.cours.titre}
+            <Link href={`/cours/${session.cours.id}`} className="underline underline-offset-2">
+              {session.cours.titre}
+            </Link>
           </p>
         ) : null}
       </section>

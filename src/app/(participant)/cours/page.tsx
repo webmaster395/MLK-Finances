@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
-import { BookOpen } from "lucide-react";
-import { PageVide } from "@/components/coquille/page-vide";
+import { Suspense } from "react";
+import { TitrePage } from "@/components/coquille/titre-page";
+import { ListeCours, ListeCoursChargement } from "@/components/cours/liste-cours";
 
 export const metadata: Metadata = { title: "Cours" };
 
 export default function Page() {
   return (
-    <PageVide
-      titre="Cours"
-      sousTitre="Les modules de votre parcours"
-      icone={BookOpen}
-      contenu="Les modules, leurs objectifs et leurs séances apparaîtront ici."
-      lot="lot 6"
-    />
+    <div className="flex flex-col gap-6">
+      <TitrePage titre="Cours" sousTitre="Les modules de votre parcours" />
+      {/* La liste lit les données de la personne : sous <Suspense>. Le titre reste statique. */}
+      <Suspense fallback={<ListeCoursChargement />}>
+        <ListeCours />
+      </Suspense>
+    </div>
   );
 }
