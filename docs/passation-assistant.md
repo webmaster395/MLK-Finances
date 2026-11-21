@@ -49,7 +49,7 @@ Pour chaque lot : date, ce qui a été demandé, fichiers modifiés, commandes d
 
 | Date | Demande | Fichiers modifiés | Vérifications (résultat) | Reste / à vérifier par Claude |
 |---|---|---|---|---|
-| | | | | |
+| 21/11/2026 | Lot 1 — Refonte de la page Devoirs dans l'esprit de l'accueil et du calendrier (cartes sobres à liseré coloré par statut, regroupement par jour d'échéance, liaison avec la séance et sa pastille de rubrique, règles de dépôt inchangées) | `src/app/globals.css`, `src/components/devoirs/badge-statut.tsx`, `src/components/devoirs/liste-devoirs.tsx`, `src/app/(participant)/devoirs/[id]/page.tsx`, `src/lib/devoirs.ts`, `src/lib/devoirs.test.ts`, `src/lib/donnees/devoirs.ts`, `PLAN.md`, `docs/passation-assistant.md` | `npm run lint` (OK), `npx tsc --noEmit` (OK), `npm run build` (OK), `npm run test:unit` (25/25 OK), `npm run test:rls` (57/57 OK) | Vérifier le rendu visuel à l'écran (1366 px et 375 px, clair et sombre) sur `/devoirs` et `/devoirs/[id]`. Aucune modification de base ni des règles de dépôt. |
 
 ## 7. Pour Claude (reprise)
 1. Lire ce journal, puis `git log --oneline 89a415b..HEAD` et `git diff 89a415b..HEAD --stat`.

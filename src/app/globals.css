@@ -201,7 +201,7 @@
     box-shadow: 0 1px 4px rgb(0 0 0 / 0.5);
   }
   /* Traits et voiles : du noir transparent devient du blanc transparent */
-  #espace-connecte[data-theme="sombre"] .bg-black\/5 {
+  #espace-connecte[data-theme="sombre"] :is(.bg-black\/5, .bg-white\/40) {
     background-color: rgb(255 255 255 / 0.06);
   }
   #espace-connecte[data-theme="sombre"] .bg-black\/10 {

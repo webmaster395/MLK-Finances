@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { ArrowLeft, BookOpen, CalendarClock, Download, FileText, TriangleAlert } from "lucide-react";
+import { ArrowLeft, BookOpen, CalendarClock, CalendarDays, Download, FileText, TriangleAlert } from "lucide-react";
 import { BadgeStatut } from "@/components/devoirs/badge-statut";
 import { FormulaireDepot } from "@/components/devoirs/formulaire-depot";
+import { PastilleRubrique } from "@/components/seances/pastille-rubrique";
 import { obtenirPersonne } from "@/lib/auth/personne";
 import { lireDevoir } from "@/lib/donnees/devoirs";
-import { depotPossible, renduEnRetard } from "@/lib/devoirs";
-import { formaterCreneau } from "@/lib/format";
+import { depotPossible } from "@/lib/devoirs";
+import { formaterCreneau, formaterJourIso } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Devoir" };
 
@@ -39,17 +40,16 @@ async function Detail({
   const [devoir, personne] = await Promise.all([lireDevoir(id), obtenirPersonne()]);
   if (!devoir) notFound();
 
-  const enRetard = renduEnRetard(devoir.echeance, devoir.rendu);
-
   return (
     <article className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <BadgeStatut statut={devoir.statut} />
+          {devoir.seance?.rubrique ? <PastilleRubrique rubrique={devoir.seance.rubrique} /> : null}
+        </div>
         <h1 className="titre-charte text-4xl sm:text-5xl">
           <span className="pinceau">{devoir.titre}</span>
         </h1>
-        <div>
-          <BadgeStatut statut={devoir.statut} />
-        </div>
       </div>
 
       {erreur === "fichier" ? (
@@ -66,7 +66,17 @@ async function Detail({
             <span>À rendre pour le {formaterCreneau(devoir.echeance).replace(/^./, (c) => c.toLowerCase())} (heure de Paris)</span>
           </p>
         ) : null}
-        {devoir.cours ? (
+        {devoir.seance ? (
+          <p className="flex items-start gap-3 font-semibold text-noir">
+            <CalendarDays aria-hidden className="mt-0.5 size-5 shrink-0" />
+            <span>
+              <Link href={`/sessions/${devoir.seance.id}`} className="underline underline-offset-2">
+                {devoir.cours?.titre ?? devoir.seance.titre}
+              </Link>
+              <span> — séance du {formaterJourIso(devoir.seance.jour, true)}</span>
+            </span>
+          </p>
+        ) : devoir.cours ? (
           <p className="flex items-start gap-3 font-semibold text-noir">
             <BookOpen aria-hidden className="mt-0.5 size-5 shrink-0" />
             <Link href={`/cours/${devoir.cours.id}`} className="underline underline-offset-2">
@@ -97,7 +107,7 @@ async function Detail({
               <p className="[overflow-wrap:anywhere]">{devoir.rendu.nom_fichier ?? "Fichier déposé"}</p>
               <p className="font-normal">
                 Déposé le {formaterCreneau(devoir.rendu.depose_le).replace(/^./, (c) => c.toLowerCase())}
-                {enRetard ? " — après la date limite" : ""}
+                {devoir.enRetard ? " — après la date limite" : ""}
               </p>
             </div>
             <a href={`/devoirs/${devoir.id}/telecharger`} className="btn btn-rose min-h-10 gap-2 px-4 text-sm">

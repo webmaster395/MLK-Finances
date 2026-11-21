@@ -69,3 +69,19 @@ export function verifierFichier(fichier: { size: number; type: string }): string
 export function cheminRendu(participantId: string, devoirId: string) {
   return `${participantId}/${devoirId}/depot`;
 }
+
+/** Regroupe des devoirs consécutifs ayant le même jour d'échéance (préserve l'ordre chronologique reçu). */
+export function grouperParJourEcheance<T extends { jourEcheance: string | null }>(
+  devoirs: T[],
+): { jour: string | null; devoirs: T[] }[] {
+  const groupes: { jour: string | null; devoirs: T[] }[] = [];
+  for (const d of devoirs) {
+    const dernier = groupes[groupes.length - 1];
+    if (dernier && dernier.jour === d.jourEcheance) {
+      dernier.devoirs.push(d);
+    } else {
+      groupes.push({ jour: d.jourEcheance, devoirs: [d] });
+    }
+  }
+  return groupes;
+}

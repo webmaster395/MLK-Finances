@@ -1,7 +1,7 @@
 // Test des règles des devoirs : npm run test:unit
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { cheminRendu, depotPossible, estAFaire, renduEnRetard, statutDevoir, verifierFichier } from "./devoirs.ts";
+import { cheminRendu, depotPossible, estAFaire, grouperParJourEcheance, renduEnRetard, statutDevoir, verifierFichier } from "./devoirs.ts";
 
 const JOUR = 24 * 60 * 60 * 1000;
 const maintenant = new Date("2026-11-21T12:00:00Z").getTime();
@@ -58,4 +58,22 @@ test("vérification du fichier : taille et type", () => {
 
 test("le chemin du rendu est dans le dossier de la personne, sans nom de fichier choisi par elle", () => {
   assert.equal(cheminRendu("u1", "d1"), "u1/d1/depot");
+});
+
+test("regroupement par jour d'échéance dans l'ordre chronologique", () => {
+  const elements = [
+    { id: "1", jourEcheance: "2026-11-23" },
+    { id: "2", jourEcheance: "2026-11-23" },
+    { id: "3", jourEcheance: "2026-12-03" },
+    { id: "4", jourEcheance: null },
+  ];
+  const groupes = grouperParJourEcheance(elements);
+  assert.equal(groupes.length, 3);
+  assert.equal(groupes[0].jour, "2026-11-23");
+  assert.deepEqual(
+    groupes[0].devoirs.map((d) => d.id),
+    ["1", "2"],
+  );
+  assert.equal(groupes[1].jour, "2026-12-03");
+  assert.equal(groupes[2].jour, null);
 });
