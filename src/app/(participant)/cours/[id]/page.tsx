@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { ArrowLeft, CalendarDays, CircleCheck, ExternalLink, File, MapPin } from "lucide-react";
+import { ArrowLeft, CalendarDays, CircleCheck, Download, ExternalLink, MapPin } from "lucide-react";
 import { formaterHoraires, partiesDate } from "@/lib/format";
 import { lireCoursDetail } from "@/lib/donnees/cours";
 
@@ -130,13 +130,14 @@ async function Detail({ params }: { params: PageProps<"/cours/[id]">["params"] }
                     <span className="sr-only"> (s&apos;ouvre dans un nouvel onglet)</span>
                   </a>
                 ) : (
-                  <>
-                    <File aria-hidden className="size-5 shrink-0" />
-                    <span className="min-w-0 flex-1 truncate">{r.titre}</span>
-                    <Link href="/ressources" className="shrink-0 text-sm underline underline-offset-2">
-                      Voir les ressources
-                    </Link>
-                  </>
+                  <a
+                    href={`/ressources/${r.id}/telecharger`}
+                    className="flex min-w-0 flex-1 items-center gap-3 underline-offset-2 hover:underline"
+                  >
+                    <Download aria-hidden className="size-5 shrink-0" />
+                    <span className="min-w-0 truncate">{r.titre}</span>
+                    <span className="sr-only"> (télécharger le fichier)</span>
+                  </a>
                 )}
               </li>
             ))}

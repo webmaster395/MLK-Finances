@@ -98,7 +98,8 @@ Phase 2 (plus tard) : espace administrateur.
 - [x] Lot 4 : accueil d'après la maquette Canva (bandeau, prochaine session lue en base, 3 tuiles cours / devoirs / ressources, aperçu des témoignages). Testé : `npm run test:unit` (dates à l'heure de Paris). Vérifié à l'écran à 1366, 900 et 375 px. **Non vérifié avec de vraies données** : la carte « Prochaine session » affiche le texte d'attente de la maquette tant qu'il n'y a pas de session dans la base.
 - [x] Lot 5 : page Sessions (à venir, puis passées ; petite carte jour / mois, horaires et lieu à l'heure de Paris, cours lié) et page de détail `/sessions/[id]` (date, horaires, lieu, cours, description, session introuvable). Vérifié à l'écran : état vide et session introuvable. Vérifié ensuite avec les données de démo : liste (3 sessions du groupe 1, aucune du groupe 2), détail, session d'un autre groupe = « introuvable », carte « Prochaine session » de l'accueil. Pas de vue calendrier mois / semaine (prévue dans le prompt, absente de la maquette : lot optionnel).
 - [x] Lot 6 : page Cours (modules numérotés, nombre de séances et de supports) et détail `/cours/[id]` (description, objectifs, séances liées avec lien vers chaque session, supports). Le détail d'une session renvoie vers son cours. Vérifié à l'écran avec les données de démo : 3 modules visibles, brouillon et cours du groupe 2 = « introuvable », affichage téléphone. Les supports de type lien s'ouvrent dans un nouvel onglet ; ceux de type fichier ne se téléchargent pas encore (lot 7).
-- [ ] Lot 7 : ressources
+- [x] Lot 7 : page Ressources classées par module (liens : « Ouvrir » dans un nouvel onglet ; fichiers : « Télécharger » par lien signé de 60 secondes créé à chaque clic, route `/ressources/[id]/telecharger`, jamais de lien public) et téléchargement depuis le détail d'un cours. Vérifié à l'écran : liste, ressource d'un autre groupe refusée, fichier absent = message d'erreur, téléphone. **Non vérifié : un vrai téléchargement** (aucun fichier n'est encore déposé dans le seau `ressources` ; voir ci-dessous).
+- [ ] Lot 8 : devoirs et dépôt de fichier
 
 ## Décisions et limites du lot 2
 - **Un cours est rattaché à un seul groupe** (`cours.groupe_id`) ; ressources et devoirs héritent de la visibilité du cours. Si un même cours doit servir plusieurs groupes, il faudra une table de liaison (migration future).
@@ -139,3 +140,6 @@ Phase 2 (plus tard) : espace administrateur.
 - Les dates des sessions et devoirs sont relatives au jour de l'ajout (21/11/2026) : elles vieilliront ; à régénérer si besoin.
 - La ressource « Guide de l'épargne (fichier) » pointe vers un fichier `test/guide-epargne.pdf` qui n'existe pas dans le stockage (téléchargement impossible tant qu'on n'a pas déposé un fichier test, lot 7).
 - Pour tout supprimer : supprimer les lignes dont le titre commence par « [test] » (groupes, cours, sessions, ressources, devoirs, témoignages ; les suppressions en cascade s'occupent du reste).
+
+## À faire par l'utilisateur pour vérifier le téléchargement (lot 7)
+Dans le tableau de bord Supabase du projet `mlk-parcours-finances` : Storage > seau `ressources` > créer le dossier `test` > y déposer un petit PDF nommé exactement `guide-epargne.pdf`. Ensuite, sur la page Ressources (compte de test), cliquer sur « Télécharger » du « Guide de l'épargne ».
