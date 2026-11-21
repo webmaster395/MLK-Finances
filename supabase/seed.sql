@@ -18,12 +18,12 @@ insert into auth.users (
   ('00000000-0000-0000-0000-000000000000', '11111111-1111-4111-8111-111111111111',
    'authenticated', 'authenticated', 'participant.test1@example.com',
    extensions.crypt('Test-Mlk-2026!', extensions.gen_salt('bf')), now(),
-   '{"provider":"email","providers":["email"]}', '{"prenom":"Alex","nom":"Test Un"}',
+   '{"provider":"email","providers":["email"]}', '{"prenom":"Alex","nom":"Test Un","civilite":"monsieur","tranche_age":"26_35"}',
    now(), now(), '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000', '22222222-2222-4222-8222-222222222222',
    'authenticated', 'authenticated', 'participant.test2@example.com',
    extensions.crypt('Test-Mlk-2026!', extensions.gen_salt('bf')), now(),
-   '{"provider":"email","providers":["email"]}', '{"prenom":"Sam","nom":"Test Deux"}',
+   '{"provider":"email","providers":["email"]}', '{"prenom":"Sam","nom":"Test Deux","civilite":"madame","tranche_age":"18_25"}',
    now(), now(), '', '', '', '');
 
 insert into auth.identities (

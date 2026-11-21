@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { creerClientServeur } from "@/lib/supabase/serveur";
 import { adresseSite } from "./site";
 import { cheminSur } from "./redirection";
+import { civiliteValide, trancheAgeValide } from "./profil";
 
 /** État renvoyé aux formulaires. Le mot de passe n'est JAMAIS renvoyé. */
 export type EtatFormulaire = {
@@ -68,16 +69,21 @@ export async function connexion(_: EtatFormulaire, formData: FormData): Promise<
 // Inscription (ouverte, avec confirmation par e-mail)
 // ---------------------------------------------------------------------------
 export async function inscription(_: EtatFormulaire, formData: FormData): Promise<EtatFormulaire> {
+  const civilite = texte(formData, "civilite");
   const prenom = texte(formData, "prenom");
   const nom = texte(formData, "nom");
+  const trancheAge = texte(formData, "tranche_age");
   const email = texte(formData, "email").toLowerCase();
   const mdp = motDePasse(formData, "motdepasse");
   const confirmation = motDePasse(formData, "confirmation");
-  const valeurs = { prenom, nom, email };
+  const valeurs = { civilite, prenom, nom, tranche_age: trancheAge, email };
+
+  if (!civiliteValide(civilite)) return { message: "Indiquez votre civilité : Madame ou Monsieur.", valeurs };
 
   if (prenom.length === 0 || prenom.length > 100 || nom.length === 0 || nom.length > 100) {
     return { message: "Saisissez votre prénom et votre nom (100 caractères au maximum).", valeurs };
   }
+  if (!trancheAgeValide(trancheAge)) return { message: "Choisissez votre tranche d'âge.", valeurs };
   if (!EMAIL.test(email)) return { message: "Saisissez une adresse e-mail valide.", valeurs };
   const erreurMdp = messageErreurMotDePasse(mdp, confirmation);
   if (erreurMdp) return { message: erreurMdp, valeurs };
@@ -88,8 +94,8 @@ export async function inscription(_: EtatFormulaire, formData: FormData): Promis
     email,
     password: mdp,
     options: {
-      // Seuls le prénom et le nom sont transmis. Le rôle n'est jamais lu ici : tout compte est « participant ».
-      data: { prenom, nom },
+      // Seules ces informations sont transmises. Le rôle n'est jamais lu ici : tout compte est « participant ».
+      data: { prenom, nom, civilite, tranche_age: trancheAge },
       emailRedirectTo: `${site}/auth/callback?suivant=/accueil`,
     },
   });

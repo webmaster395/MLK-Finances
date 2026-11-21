@@ -160,6 +160,7 @@ export type Database = {
           photo_path: string | null
           prenom: string
           role: Database["public"]["Enums"]["role_profil"]
+          tranche_age: string | null
         }
         Insert: {
           civilite?: string | null
@@ -170,6 +171,7 @@ export type Database = {
           photo_path?: string | null
           prenom?: string
           role?: Database["public"]["Enums"]["role_profil"]
+          tranche_age?: string | null
         }
         Update: {
           civilite?: string | null
@@ -180,6 +182,7 @@ export type Database = {
           photo_path?: string | null
           prenom?: string
           role?: Database["public"]["Enums"]["role_profil"]
+          tranche_age?: string | null
         }
         Relationships: []
       }

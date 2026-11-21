@@ -158,6 +158,40 @@ describe("profil et groupes", () => {
   });
 });
 
+describe("civilité et tranche d'âge", () => {
+  test("le profil enregistre la civilité et la tranche d'âge choisies à l'inscription", async () => {
+    await db.exec(`
+      insert into auth.users (id, email, raw_user_meta_data)
+      values ('44444444-4444-4444-8444-444444444444', 'civilite@example.com',
+              '{"prenom":"Léa","nom":"Test","civilite":"Madame","tranche_age":"26_35"}')`);
+    const r = await db.query("select civilite, tranche_age from public.profils where id = '44444444-4444-4444-8444-444444444444'");
+    assert.equal(r.rows[0].civilite, "madame");
+    assert.equal(r.rows[0].tranche_age, "26_35");
+  });
+
+  test("les valeurs inattendues sont ignorées à l'inscription", async () => {
+    await db.exec(`
+      insert into auth.users (id, email, raw_user_meta_data)
+      values ('55555555-5555-4555-8555-555555555555', 'invalide@example.com',
+              '{"prenom":"Max","nom":"Test","civilite":"autre","tranche_age":"150_ans"}')`);
+    const r = await db.query("select civilite, tranche_age from public.profils where id = '55555555-5555-4555-8555-555555555555'");
+    assert.equal(r.rows[0].civilite, null);
+    assert.equal(r.rows[0].tranche_age, null);
+  });
+
+  test("la base refuse une valeur libre", async () => {
+    await assert.rejects(db.exec("update public.profils set civilite = 'autre' where id = '" + A + "'"), /check constraint/i);
+    await assert.rejects(db.exec("update public.profils set tranche_age = '150_ans' where id = '" + A + "'"), /check constraint/i);
+  });
+
+  test("A peut corriger sa tranche d'âge mais pas celle de B", async () => {
+    const moi = await en(A, `update public.profils set tranche_age = '36_45' where id = '${A}' returning id`);
+    const lui = await en(A, `update public.profils set tranche_age = '36_45' where id = '${B}' returning id`);
+    assert.equal(moi.rows.length, 1);
+    assert.equal(lui.rows.length, 0);
+  });
+});
+
 describe("contenu pédagogique", () => {
   test("A voit les 3 cours publiés de son groupe, ni le brouillon ni ceux de l'autre groupe", async () => {
     const r = await en(A, "select titre from public.cours");

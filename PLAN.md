@@ -91,7 +91,7 @@ Phase 2 (plus tard) : espace administrateur.
 - [x] Plan validé par l'utilisateur
 - [x] Lot 0 : projet Next.js, charte (couleurs, polices, logo), CLAUDE.md, branches main / preview
 - [x] Lot 1 : coquille (menu latéral repliable, barre du haut sur téléphone, en-tête, 7 pages vides avec loading.tsx)
-- [x] Lot 2 : 3 migrations (tables, droits + RLS, stockage), seed « test », test d'isolation RLS (`npm run test:rls`, 41 vérifications)
+- [x] Lot 2 : 3 migrations (tables, droits + RLS, stockage), seed « test », test d'isolation RLS (`npm run test:rls`, 45 vérifications)
 - [x] Base appliquée sur le projet Supabase en ligne `mlk-parcours-finances` (organisation MLK, région Irlande eu-west-1, id `wfsbdlyksvxjgwogamsn`) : 3 migrations, 9 tables avec RLS, 3 seaux privés. Sans données de démo.
 - [x] Lot 3 : connexion, inscription, mot de passe oublié, nouveau mot de passe, retour des e-mails, déconnexion, protection des pages (proxy), en-tête avec la vraie personne, message « inscription enregistrée » tant qu'il n'y a pas de groupe. Types de la base générés. **Reste à tester par l'utilisateur : une vraie inscription avec e-mail de confirmation, puis connexion et déconnexion.**
 - [ ] Lot 4 : accueil
@@ -124,6 +124,7 @@ Phase 2 (plus tard) : espace administrateur.
 - **Non testé** (nécessite une vraie adresse e-mail) : inscription réelle + e-mail de confirmation + lien de retour, mot de passe oublié réel, connexion réussie, déconnexion, en-tête avec la vraie personne.
 - Fichiers : `.env.local` (adresse du projet et clé publique, non enregistré dans git), `.env.example` (modèle), `src/proxy.ts`, `src/lib/auth/`, `src/lib/supabase/`, `src/components/auth/`, `src/app/(public)/`, `src/app/auth/callback/`.
 - Mot de passe : 8 caractères minimum, avec au moins une lettre et un chiffre (règle de l'application).
+- L'inscription demande aussi la **civilité (Madame / Monsieur)** et la **tranche d'âge** (moins de 18, 18-25, 26-35, 36-45, 46-55, 56 et plus), tous deux obligatoires (décision de l'utilisateur) ; stockés dans `profils.civilite` et `profils.tranche_age` (migration 20261121095152, appliquée en ligne). Les valeurs libres sont refusées par la base.
 - Les réponses d'inscription et de mot de passe oublié sont identiques que l'adresse existe ou non (on ne révèle pas quels comptes existent).
 - **À régler dans le tableau de bord Supabase avant la mise en production :** Authentication > URL Configuration (Site URL = adresse Vercel, Redirect URLs = `<adresse Vercel>/auth/callback`), modèles d'e-mails en français, et un vrai service d'envoi d'e-mails (le service par défaut est très limité). Variables à ajouter sur Vercel : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SITE_URL`.
 - Le contrôle de connexion du proxy lit la session sans appel réseau ; chaque page de l'espace connecté revérifie la personne auprès de Supabase (`obtenirPersonne`).
