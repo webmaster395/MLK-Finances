@@ -5,11 +5,14 @@ import { usePathname } from "next/navigation";
 import { Fragment, useEffect, useState, useSyncExternalStore } from "react";
 import { ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { Avatar } from "@/components/profil/avatar";
 import { GROUPES_MENU, PAGE_PROFIL } from "@/lib/navigation";
 
 export type PersonneMenu = {
   nomComplet: string;
   initiales: string;
+  /** Lien temporaire vers la photo (null si la personne n'en a pas). */
+  photoUrl: string | null;
 };
 
 type Props = {
@@ -123,14 +126,7 @@ export function MenuLateral({ personne, pastilles = {} }: Props) {
     </>
   );
 
-  const avatar = (
-    <span
-      aria-hidden
-      className="flex size-10 shrink-0 items-center justify-center rounded-full bg-noir font-titre text-lg text-white"
-    >
-      {personne.initiales}
-    </span>
-  );
+  const avatar = <Avatar photoUrl={personne.photoUrl} initiales={personne.initiales} />;
 
   return (
     <>

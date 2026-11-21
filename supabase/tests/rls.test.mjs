@@ -330,6 +330,20 @@ describe("stockage de fichiers", () => {
     assert.equal(r.rows.length, 0);
   });
 
+  test("A peut gérer sa photo dans son dossier, pas dans celui de B", async () => {
+    const ajout = await en(A, `insert into storage.objects (bucket_id, name, owner) values ('photos', '${A}/avatar', '${A}') returning name`);
+    assert.equal(ajout.rows.length, 1);
+    await assert.rejects(en(A, `insert into storage.objects (bucket_id, name) values ('photos', '${B}/avatar')`), REFUS);
+    const suppression = await en(A, `delete from storage.objects where bucket_id = 'photos' and name = '${A}/avatar' returning name`);
+    assert.equal(suppression.rows.length, 1);
+  });
+
+  test("B ne voit pas la photo de A", async () => {
+    await en(A, `insert into storage.objects (bucket_id, name, owner) values ('photos', '${A}/avatar', '${A}')`);
+    const r = await en(B, "select name from storage.objects where bucket_id = 'photos'");
+    assert.equal(r.rows.length, 0);
+  });
+
   test("les seaux sont privés", async () => {
     const r = await db.query("select id from storage.buckets where public");
     assert.deepEqual(r.rows, []);

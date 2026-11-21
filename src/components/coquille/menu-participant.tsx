@@ -1,15 +1,13 @@
+import { initiales } from "@/lib/auth/initiales";
 import { obtenirPersonne } from "@/lib/auth/personne";
 import { compterDevoirsAFaire } from "@/lib/donnees/devoirs";
+import { lireUrlPhoto } from "@/lib/donnees/profil";
 import { MenuLateral } from "./menu-lateral";
-
-function initiales(prenom: string, nom: string, email: string) {
-  const i = `${prenom[0] ?? ""}${nom[0] ?? ""}`.toUpperCase();
-  return i || (email[0] ?? "?").toUpperCase();
-}
 
 /** Menu de l'espace participant avec la vraie personne connectée. Lit la session : toujours sous <Suspense>. */
 export async function MenuParticipant() {
   const [personne, devoirsAFaire] = await Promise.all([obtenirPersonne(), compterDevoirsAFaire()]);
+  const photoUrl = await lireUrlPhoto(personne.photoPath);
   const nomComplet = `${personne.prenom} ${personne.nom}`.trim() || personne.email;
 
   return (
@@ -18,6 +16,7 @@ export async function MenuParticipant() {
       personne={{
         nomComplet,
         initiales: initiales(personne.prenom, personne.nom, personne.email),
+        photoUrl,
       }}
     />
   );

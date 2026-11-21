@@ -10,6 +10,8 @@ export type Personne = {
   prenom: string;
   nom: string;
   role: "participant" | "admin";
+  /** Chemin de la photo dans le stockage (null si aucune). */
+  photoPath: string | null;
 };
 
 /**
@@ -27,7 +29,7 @@ export const obtenirPersonne = cache(async (): Promise<Personne> => {
 
   const { data: profil } = await supabase
     .from("profils")
-    .select("prenom, nom, role")
+    .select("prenom, nom, role, photo_path")
     .eq("id", data.user.id)
     .maybeSingle();
 
@@ -37,6 +39,7 @@ export const obtenirPersonne = cache(async (): Promise<Personne> => {
     prenom: profil?.prenom ?? "",
     nom: profil?.nom ?? "",
     role: profil?.role ?? "participant",
+    photoPath: profil?.photo_path ?? null,
   };
 });
 
