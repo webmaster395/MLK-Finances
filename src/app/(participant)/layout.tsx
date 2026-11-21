@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import { MenuSquelette } from "@/components/coquille/menu-lateral";
-import { EnTeteDeconnexion } from "@/components/coquille/en-tete-deconnexion";
 import { SCRIPT_THEME } from "@/components/coquille/bascule-theme";
+import { EnTete, EnTeteSquelette } from "@/components/coquille/en-tete";
+import { MenuSquelette } from "@/components/coquille/menu-lateral";
 import { MenuParticipant } from "@/components/coquille/menu-participant";
 
-/** Coquille de l'espace participant : menu (lien du profil en bas) + bouton de déconnexion en haut à droite + contenu de la page. */
+/** Coquille de l'espace participant : menu (lien du profil en bas) + bande du haut + contenu de la page. */
 export default function Layout({ children }: LayoutProps<"/">) {
   return (
     // Le thème (clair / sombre) est posé sur ce conteneur par le script ci-dessous : React ne touche pas à cet attribut
@@ -16,12 +16,14 @@ export default function Layout({ children }: LayoutProps<"/">) {
       >
         Aller au contenu
       </a>
-      {/* Le menu lit la session et l'adresse de la page : il est sous <Suspense> (Cache Components). */}
+      {/* Le menu et la bande du haut lisent la session de la personne : sous <Suspense> (Cache Components). */}
       <Suspense fallback={<MenuSquelette />}>
         <MenuParticipant />
       </Suspense>
       <div className="flex min-w-0 flex-1 flex-col">
-        <EnTeteDeconnexion />
+        <Suspense fallback={<EnTeteSquelette />}>
+          <EnTete />
+        </Suspense>
         <main id="contenu" className="flex-1 px-4 pb-10 pt-2 sm:px-6 lg:px-8">
           {children}
         </main>

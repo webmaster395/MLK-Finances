@@ -28,6 +28,9 @@ Prompt modèle d'origine : `docs/prompt-portail-modele.md`.
 - **Accès aux données** : jamais depuis un composant client. Les lectures passent par `src/lib/donnees/` (côté serveur, après `await connection()`, sous `<Suspense>`). Le seul usage du client Supabase du navigateur est l'envoi de fichiers (devoirs, photo) vers le stockage, suivi d'une action serveur qui enregistre le chemin (calculé côté serveur).
 - **Vérifications avant chaque envoi** : `npm run lint`, `npx tsc --noEmit`, `npm run build`, `npm run test:unit`, `npm run test:rls`.
 - Les statuts des devoirs ne sont pas stockés : ils se déduisent (`src/lib/devoirs.ts`).
+- **Sessions et cours sont fusionnés** : une séance (`sessions`) porte une rubrique colorée (`rubriques`), des intervenants (noms) et un cours (`cours`). Le menu n'a pas d'entrée « Cours ». Les messages de l'équipe sont dans `annonces`.
+- **Inspiration d'un autre projet** : on peut reprendre la structure et le fonctionnement (ex. Ministry School), jamais sa charte graphique, ses icônes, ses logos ni ses textes.
+- Lint React : pas d'appel à `Date.now()` dans le rendu d'un composant ; les calculs qui dépendent de l'heure se font dans `src/lib/donnees/` après `await connection()`.
 
 ## Charte graphique (issue de la maquette Canva, slide 1)
 - Couleurs : orange `#e95609`, rose `#d634ba`, rose clair `#ecb6e5`, noir `#070707`, texte `#333333`, fond `#e9e9e8`, cartes `#ededec`.

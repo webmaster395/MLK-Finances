@@ -27,3 +27,30 @@ test("un horaire proche de minuit reste dans le bon jour à Paris", async () => 
   // 23:30 UTC le 24 = 00:30 le 25 à Paris (hiver)
   assert.equal(partiesDate("2026-11-24T23:30:00Z").jour, "25");
 });
+
+test("le jour calendaire est celui de Paris, pas celui de l'UTC", async () => {
+  const { jourParis } = await import("./format.ts");
+  assert.equal(jourParis("2026-11-24T23:30:00Z"), "2026-11-25"); // 00:30 à Paris
+  assert.equal(jourParis("2026-11-24T08:00:00Z"), "2026-11-24");
+});
+
+test("nombre de jours entre deux jours (J-14)", async () => {
+  const { joursEntre } = await import("./format.ts");
+  assert.equal(joursEntre("2026-11-21", "2026-12-05"), 14);
+  assert.equal(joursEntre("2026-12-05", "2026-12-05"), 0);
+  assert.equal(joursEntre("2026-12-05", "2026-12-01"), -4);
+  assert.equal(joursEntre("2026-10-24", "2026-10-26"), 2); // passage à l'heure d'hiver
+});
+
+test("jour écrit en lettres sans décalage horaire", async () => {
+  const { formaterJourIso } = await import("./format.ts");
+  assert.equal(formaterJourIso("2026-12-05"), "samedi 5 décembre");
+  assert.equal(formaterJourIso("2026-12-05", true), "samedi 5 décembre 2026");
+});
+
+test("libellé de promotion", async () => {
+  const { libellePromotion } = await import("./format.ts");
+  assert.equal(libellePromotion({ nom: "G", debut: "2026-10-01", fin: "2027-04-30" }), "Promotion 2026–2027");
+  assert.equal(libellePromotion({ nom: "G", debut: "2026-10-01", fin: "2026-12-30" }), "Promotion 2026");
+  assert.equal(libellePromotion({ nom: "Groupe test", debut: null, fin: null }), "Groupe test");
+});

@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      annonces: {
+        Row: {
+          cree_le: string
+          groupe_id: string | null
+          id: string
+          message: string
+          publie: boolean
+          titre: string
+        }
+        Insert: {
+          cree_le?: string
+          groupe_id?: string | null
+          id?: string
+          message: string
+          publie?: boolean
+          titre?: string
+        }
+        Update: {
+          cree_le?: string
+          groupe_id?: string | null
+          id?: string
+          message?: string
+          publie?: boolean
+          titre?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "annonces_groupe_id_fkey"
+            columns: ["groupe_id"]
+            isOneToOne: false
+            referencedRelation: "groupes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cours: {
         Row: {
           cree_le: string
@@ -272,6 +307,27 @@ export type Database = {
           },
         ]
       }
+      rubriques: {
+        Row: {
+          couleur: string
+          id: string
+          nom: string
+          ordre: number
+        }
+        Insert: {
+          couleur: string
+          id?: string
+          nom: string
+          ordre?: number
+        }
+        Update: {
+          couleur?: string
+          id?: string
+          nom?: string
+          ordre?: number
+        }
+        Relationships: []
+      }
       sessions: {
         Row: {
           cours_id: string | null
@@ -281,8 +337,10 @@ export type Database = {
           fin: string | null
           groupe_id: string
           id: string
+          intervenants: string[]
           lieu: string | null
           publie: boolean
+          rubrique_id: string | null
           titre: string
         }
         Insert: {
@@ -293,8 +351,10 @@ export type Database = {
           fin?: string | null
           groupe_id: string
           id?: string
+          intervenants?: string[]
           lieu?: string | null
           publie?: boolean
+          rubrique_id?: string | null
           titre: string
         }
         Update: {
@@ -305,8 +365,10 @@ export type Database = {
           fin?: string | null
           groupe_id?: string
           id?: string
+          intervenants?: string[]
           lieu?: string | null
           publie?: boolean
+          rubrique_id?: string | null
           titre?: string
         }
         Relationships: [
@@ -322,6 +384,13 @@ export type Database = {
             columns: ["groupe_id"]
             isOneToOne: false
             referencedRelation: "groupes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_rubrique_id_fkey"
+            columns: ["rubrique_id"]
+            isOneToOne: false
+            referencedRelation: "rubriques"
             referencedColumns: ["id"]
           },
         ]

@@ -2,15 +2,6 @@ import "server-only";
 import { connection } from "next/server";
 import { creerClientServeur } from "@/lib/supabase/serveur";
 
-export type CoursListe = {
-  id: string;
-  titre: string;
-  description: string;
-  ordre: number;
-  nbSeances: number;
-  nbSupports: number;
-};
-
 export type SeanceDuCours = {
   id: string;
   titre: string;
@@ -37,26 +28,6 @@ export type CoursDetail = {
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-/** Les modules publiés du groupe de la personne (les règles de la base filtrent), dans l'ordre. */
-export async function lireCours(): Promise<CoursListe[]> {
-  await connection();
-  const supabase = await creerClientServeur();
-  const { data } = await supabase
-    .from("cours")
-    .select("id, titre, description, ordre, sessions(count), ressources(count)")
-    .order("ordre", { ascending: true })
-    .order("titre", { ascending: true });
-
-  return (data ?? []).map((c) => ({
-    id: c.id,
-    titre: c.titre,
-    description: c.description,
-    ordre: c.ordre,
-    nbSeances: c.sessions[0]?.count ?? 0,
-    nbSupports: c.ressources[0]?.count ?? 0,
-  }));
-}
 
 /** Un module avec ses séances et ses supports (null s'il n'existe pas ou n'est pas visible). */
 export async function lireCoursDetail(id: string): Promise<CoursDetail | null> {

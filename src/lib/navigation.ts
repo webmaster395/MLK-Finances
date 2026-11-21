@@ -1,5 +1,4 @@
 import {
-  BookOpen,
   CalendarDays,
   FilePen,
   FolderOpen,
@@ -21,10 +20,8 @@ export type PageMenu = {
  */
 export const GROUPES_MENU: PageMenu[][] = [
   [{ href: "/accueil", nom: "Accueil", icone: House }],
-  [
-    { href: "/sessions", nom: "Sessions", icone: CalendarDays },
-    { href: "/cours", nom: "Cours", icone: BookOpen },
-  ],
+  // « Sessions » = calendrier + cours (les cours sont fusionnés avec les séances)
+  [{ href: "/sessions", nom: "Sessions", icone: CalendarDays }],
   [
     { href: "/devoirs", nom: "Devoirs", icone: FilePen },
     { href: "/ressources", nom: "Ressources", icone: FolderOpen },

@@ -10,8 +10,8 @@ export default function NotFound() {
         titre="Cours introuvable"
         texte="Ce cours n'existe pas, ou il ne fait pas partie de votre parcours."
       />
-      <Link href="/cours" className="btn btn-orange w-fit">
-        Voir tous les cours
+      <Link href="/sessions" className="btn btn-orange w-fit">
+        Voir le calendrier
       </Link>
     </div>
   );

@@ -1,6 +1,8 @@
 import "server-only";
+import { cache } from "react";
 import { connection } from "next/server";
 import { obtenirPersonne } from "@/lib/auth/personne";
+import { libellePromotion } from "@/lib/format";
 import { creerClientServeur } from "@/lib/supabase/serveur";
 
 /** Durée de validité du lien de la photo (affichage). Le fichier reste privé, jamais public. */
@@ -61,3 +63,15 @@ export async function lireProfil(): Promise<ProfilComplet> {
     formations,
   };
 }
+
+/** « Promotion 2026–2027 » : la formation la plus récente de la personne (null si elle n'est dans aucun groupe). */
+export const lirePromotion = cache(async (): Promise<string | null> => {
+  await connection();
+  const supabase = await creerClientServeur();
+  const { data } = await supabase.from("inscriptions").select("groupes(nom, debut, fin)");
+  const groupes = (data ?? [])
+    .map((i) => i.groupes)
+    .filter((g): g is { nom: string; debut: string | null; fin: string | null } => Boolean(g))
+    .sort((a, b) => (b.debut ?? "").localeCompare(a.debut ?? ""));
+  return groupes[0] ? libellePromotion(groupes[0]) : null;
+});

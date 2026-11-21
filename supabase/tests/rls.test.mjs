@@ -23,7 +23,7 @@ const COURS_G2 = "cccccccc-0000-4000-8000-000000000011";
 
 const TABLES = [
   "profils", "groupes", "inscriptions", "cours", "sessions",
-  "ressources", "devoirs", "rendus", "temoignages",
+  "ressources", "devoirs", "rendus", "temoignages", "rubriques", "annonces",
 ];
 
 let db;
@@ -206,7 +206,7 @@ describe("contenu pédagogique", () => {
 
   test("A ne voit que les sessions de son groupe", async () => {
     const r = await en(A, "select titre from public.sessions");
-    assert.equal(r.rows.length, 3);
+    assert.equal(r.rows.length, 6);
     assert.ok(titres(r).every((t) => !t.includes("Groupe 2")));
   });
 
@@ -228,6 +228,43 @@ describe("contenu pédagogique", () => {
     await assert.rejects(en(A, "update public.devoirs set titre = 'x'"), REFUS);
     await assert.rejects(en(A, "delete from public.sessions"), REFUS);
     await assert.rejects(en(A, "insert into public.temoignages (nom_affiche, texte, valide) values ('x', 'x', true)"), REFUS);
+  });
+});
+
+describe("rubriques, intervenants et messages de l'équipe", () => {
+  test("les rubriques sont lisibles par un participant, pas par un visiteur", async () => {
+    const r = await en(A, "select nom from public.rubriques order by ordre");
+    assert.deepEqual(r.rows.map((l) => l.nom), ["Accueil", "Formation", "Atelier pratique", "Évaluation"]);
+    await assert.rejects(anonyme("select * from public.rubriques"), REFUS);
+    await assert.rejects(en(A, "insert into public.rubriques (nom, couleur) values ('Pirate', '#000000')"), REFUS);
+  });
+
+  test("la couleur d'une rubrique doit être un code hexadécimal", async () => {
+    await assert.rejects(db.exec("insert into public.rubriques (nom, couleur) values ('Mauvaise', 'rouge')"), /check constraint/i);
+  });
+
+  test("A voit une séance avec sa rubrique et ses intervenants", async () => {
+    const r = await en(A, "select s.titre, s.intervenants, r.nom as rubrique from public.sessions s left join public.rubriques r on r.id = s.rubrique_id where s.titre like '%Session 2%'");
+    assert.equal(r.rows.length, 1);
+    assert.deepEqual(r.rows[0].intervenants, ["Claire Martin", "Karim Benali"]);
+    assert.equal(r.rows[0].rubrique, "Formation");
+  });
+
+  test("A voit les messages publiés pour tous ou pour son groupe, pas ceux de l'autre groupe ni les brouillons", async () => {
+    const r = await en(A, "select titre from public.annonces order by cree_le desc");
+    assert.deepEqual(r.rows.map((l) => l.titre), ["[test] Prochaine journée", "[test] Message pour tous"]);
+  });
+
+  test("B ne voit que le message de son groupe et le message général", async () => {
+    const r = await en(B, "select titre from public.annonces order by cree_le desc");
+    assert.deepEqual(r.rows.map((l) => l.titre), ["[test] Message du groupe 2", "[test] Message pour tous"]);
+  });
+
+  test("un visiteur ne lit aucun message et un participant ne peut pas en écrire", async () => {
+    await assert.rejects(anonyme("select * from public.annonces"), REFUS);
+    await assert.rejects(en(A, "insert into public.annonces (message) values ('piratage')"), REFUS);
+    await assert.rejects(en(A, "update public.annonces set message = 'x'"), REFUS);
+    await assert.rejects(en(A, "delete from public.annonces"), REFUS);
   });
 });
 

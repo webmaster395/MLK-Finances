@@ -73,25 +73,58 @@ insert into public.cours (id, groupe_id, titre, description, objectifs, ordre, p
    array['Objectif réservé au groupe 2'], 1, true);
 
 -- ---------------------------------------------------------------
--- Sessions (dates relatives à aujourd'hui)
+-- Sessions (dates relatives à aujourd'hui) — une journée complète (« J+5 ») pour l'accueil,
+-- plus d'autres dates pour le calendrier. Heures données en UTC (Paris = UTC+1 en hiver).
 -- ---------------------------------------------------------------
-insert into public.sessions (id, groupe_id, cours_id, titre, debut, fin, lieu, description) values
+insert into public.sessions (id, groupe_id, cours_id, rubrique_id, intervenants, titre, debut, fin, lieu, description) values
   ('55555555-0000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001',
-   'cccccccc-0000-4000-8000-000000000001', '[test] Session 1 — Atelier budget',
+   'cccccccc-0000-4000-8000-000000000001', (select id from public.rubriques where nom = 'Formation'),
+   array['Claire Martin'], '[test] Session 1 — Atelier budget',
    date_trunc('day', now()) - interval '14 days' + interval '9 hours',
    date_trunc('day', now()) - interval '14 days' + interval '12 hours', 'Salle test A', 'Séance passée.'),
+  -- Journée J+5 : accueil, formation, atelier pratique
+  ('55555555-0000-4000-8000-000000000012', 'aaaaaaaa-0000-4000-8000-000000000001',
+   null, (select id from public.rubriques where nom = 'Accueil'),
+   '{}', '[test] Accueil des participants',
+   date_trunc('day', now()) + interval '5 days' + interval '8 hours 10 minutes',
+   date_trunc('day', now()) + interval '5 days' + interval '8 hours 30 minutes', 'Salle test A', 'Café et émargement.'),
   ('55555555-0000-4000-8000-000000000002', 'aaaaaaaa-0000-4000-8000-000000000001',
-   'cccccccc-0000-4000-8000-000000000002', '[test] Session 2 — Atelier épargne',
-   date_trunc('day', now()) + interval '5 days' + interval '9 hours',
-   date_trunc('day', now()) + interval '5 days' + interval '12 hours', 'Salle test A', 'Prochaine séance.'),
+   'cccccccc-0000-4000-8000-000000000002', (select id from public.rubriques where nom = 'Formation'),
+   array['Claire Martin', 'Karim Benali'], '[test] Session 2 — Atelier épargne',
+   date_trunc('day', now()) + interval '5 days' + interval '8 hours 30 minutes',
+   date_trunc('day', now()) + interval '5 days' + interval '10 hours', 'Salle test A', 'Prochaine séance.'),
+  ('55555555-0000-4000-8000-000000000013', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'cccccccc-0000-4000-8000-000000000001', (select id from public.rubriques where nom = 'Atelier pratique'),
+   array['Karim Benali'], '[test] Atelier pratique — Mon budget',
+   date_trunc('day', now()) + interval '5 days' + interval '10 hours 30 minutes',
+   date_trunc('day', now()) + interval '5 days' + interval '12 hours', 'Salle test A', 'Mise en pratique en petits groupes.'),
+  -- Autre journée (J+19) : formation et évaluation
   ('55555555-0000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001',
-   'cccccccc-0000-4000-8000-000000000003', '[test] Session 3 — Atelier crédit',
-   date_trunc('day', now()) + interval '19 days' + interval '14 hours',
-   date_trunc('day', now()) + interval '19 days' + interval '17 hours', 'En ligne', 'Séance à distance.'),
+   'cccccccc-0000-4000-8000-000000000003', (select id from public.rubriques where nom = 'Formation'),
+   array['Sophie Laurent'], '[test] Session 3 — Atelier crédit',
+   date_trunc('day', now()) + interval '19 days' + interval '8 hours 30 minutes',
+   date_trunc('day', now()) + interval '19 days' + interval '11 hours', 'En ligne', 'Séance à distance.'),
+  ('55555555-0000-4000-8000-000000000014', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'cccccccc-0000-4000-8000-000000000003', (select id from public.rubriques where nom = 'Évaluation'),
+   array['Sophie Laurent'], '[test] Évaluation — Crédit et endettement',
+   date_trunc('day', now()) + interval '19 days' + interval '13 hours',
+   date_trunc('day', now()) + interval '19 days' + interval '14 hours', 'En ligne', 'Questionnaire de fin de module.'),
   ('55555555-0000-4000-8000-000000000011', 'aaaaaaaa-0000-4000-8000-000000000002',
-   'cccccccc-0000-4000-8000-000000000011', '[test] Session A — Groupe 2 uniquement',
+   'cccccccc-0000-4000-8000-000000000011', (select id from public.rubriques where nom = 'Formation'),
+   array['Intervenant du groupe 2'], '[test] Session A — Groupe 2 uniquement',
    date_trunc('day', now()) + interval '7 days' + interval '9 hours',
    date_trunc('day', now()) + interval '7 days' + interval '12 hours', 'Salle test B', 'Session de l''autre groupe.');
+
+-- ---------------------------------------------------------------
+-- Messages de l'équipe
+-- ---------------------------------------------------------------
+insert into public.annonces (groupe_id, titre, message, publie, cree_le) values
+  ('aaaaaaaa-0000-4000-8000-000000000001', '[test] Prochaine journée',
+   E'Bonjour à tous,\nPensez à apporter votre ordinateur et vos relevés de budget du mois. L''accueil commence 10 minutes avant la première séance.',
+   true, now() - interval '1 day'),
+  (null, '[test] Message pour tous', 'Ancien message général (plus ancien : ne doit pas passer devant celui du groupe).', true, now() - interval '9 days'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', '[test] Brouillon non publié', 'Ne doit pas être visible.', false, now()),
+  ('aaaaaaaa-0000-4000-8000-000000000002', '[test] Message du groupe 2', 'Réservé au groupe 2 : ne doit pas être visible pour le groupe 1.', true, now());
 
 -- ---------------------------------------------------------------
 -- Ressources

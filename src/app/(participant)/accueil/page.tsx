@@ -1,22 +1,30 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { CarteSession, CarteSessionChargement } from "@/components/accueil/carte-session";
-import { HeroAccueil } from "@/components/accueil/hero-accueil";
-import { TemoignagesAccueil } from "@/components/accueil/temoignages-accueil";
-import { TuilesAccueil } from "@/components/accueil/tuiles-accueil";
+import { JourneeAccueil, JourneeAccueilChargement } from "@/components/accueil/journee-accueil";
+import { MessageEquipe, MessageEquipeChargement } from "@/components/accueil/message-equipe";
+import { TravailAFaire, TravailAFaireChargement } from "@/components/accueil/travail-a-faire";
 
 export const metadata: Metadata = { title: "Accueil" };
 
+/**
+ * Accueil : à gauche le déroulé de la prochaine journée ; à droite le message de l'équipe,
+ * puis le travail à faire. Chaque bloc lit ses propres données : chacun a son <Suspense>.
+ */
 export default function Page() {
   return (
-    <div className="flex flex-col gap-2">
-      <HeroAccueil />
-      {/* Seule cette carte lit les données de la personne : le reste de la page est statique. */}
-      <Suspense fallback={<CarteSessionChargement />}>
-        <CarteSession />
+    <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,23rem)]">
+      <h1 className="sr-only">Accueil</h1>
+      <Suspense fallback={<JourneeAccueilChargement />}>
+        <JourneeAccueil />
       </Suspense>
-      <TuilesAccueil />
-      <TemoignagesAccueil />
+      <div className="flex flex-col gap-4">
+        <Suspense fallback={<MessageEquipeChargement />}>
+          <MessageEquipe />
+        </Suspense>
+        <Suspense fallback={<TravailAFaireChargement />}>
+          <TravailAFaire />
+        </Suspense>
+      </div>
     </div>
   );
 }

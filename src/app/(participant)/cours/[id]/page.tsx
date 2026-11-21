@@ -12,9 +12,9 @@ export default function Page({ params }: PageProps<"/cours/[id]">) {
   // L'identifiant et les données du cours sont lus à chaque requête : sous <Suspense>.
   return (
     <div className="flex flex-col gap-6">
-      <Link href="/cours" className="flex w-fit items-center gap-2 font-semibold text-noir underline-offset-2 hover:underline">
+      <Link href="/sessions" className="flex w-fit items-center gap-2 font-semibold text-noir underline-offset-2 hover:underline">
         <ArrowLeft aria-hidden className="size-5" />
-        Tous les cours
+        Retour au calendrier
       </Link>
       <Suspense fallback={<DetailChargement />}>
         <Detail params={params} />

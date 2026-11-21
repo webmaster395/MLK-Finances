@@ -1,11 +1,11 @@
 import { TitrePage } from "@/components/coquille/titre-page";
-import { ListeSessionsChargement } from "@/components/sessions/liste-sessions";
+import { CalendrierChargement } from "@/components/sessions/calendrier-chargement";
 
 export default function Loading() {
   return (
-    <div className="flex flex-col gap-6">
-      <TitrePage titre="Sessions" sousTitre="Le calendrier de votre parcours" />
-      <ListeSessionsChargement />
+    <div className="flex flex-col gap-4">
+      <TitrePage titre="Sessions" sousTitre="Votre calendrier et vos cours" />
+      <CalendrierChargement />
     </div>
   );
 }

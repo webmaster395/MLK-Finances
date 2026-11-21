@@ -15,8 +15,8 @@ npm run dev
 ## Les pages
 | Public | Espace participant (connexion obligatoire) |
 |---|---|
-| `/connexion`, `/inscription`, `/mot-de-passe-oublie`, `/reinitialiser-mot-de-passe` | `/accueil`, `/sessions`, `/cours`, `/devoirs`, `/ressources`, `/temoignages`, `/profil` |
-| `/charte` (référence visuelle) | détails : `/sessions/[id]`, `/cours/[id]`, `/devoirs/[id]` |
+| `/connexion`, `/inscription`, `/mot-de-passe-oublie`, `/reinitialiser-mot-de-passe` | `/accueil`, `/sessions` (calendrier + cours), `/devoirs`, `/ressources`, `/temoignages`, `/profil` |
+| `/charte` (référence visuelle) | détails : `/sessions/[id]` (séance + fiche du cours), `/devoirs/[id]` |
 
 ## Vérifier avant d'envoyer
 ```
