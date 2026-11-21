@@ -73,3 +73,8 @@ grant usage on schema storage to authenticated, anon;
 grant select, insert, update, delete on storage.objects to authenticated;
 grant select on storage.buckets to authenticated;
 grant execute on function storage.foldername(text) to authenticated, anon;
+
+-- Fonction que Supabase crée avec l'option « RLS automatique » (la migration 20261121093547 la ferme)
+create function public.rls_auto_enable() returns void
+language sql
+as $$ select 1 $$;

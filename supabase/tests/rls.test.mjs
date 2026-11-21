@@ -92,6 +92,14 @@ describe("structure", () => {
     assert.deepEqual(r.rows, []);
   });
 
+  test("la fonction rls_auto_enable n'est appelable ni par les visiteurs ni par les participants", async () => {
+    const r = await db.query(`
+      select has_function_privilege('anon', 'public.rls_auto_enable()', 'execute') as anon,
+             has_function_privilege('authenticated', 'public.rls_auto_enable()', 'execute') as auth`);
+    assert.equal(r.rows[0].anon, false);
+    assert.equal(r.rows[0].auth, false);
+  });
+
   test("le schéma privé est fermé aux visiteurs et aux participants", async () => {
     const r = await db.query(`
       select has_schema_privilege('anon', 'private', 'usage') as anon,

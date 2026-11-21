@@ -99,7 +99,7 @@ Phase 2 (plus tard) : espace administrateur.
 - **Un cours est rattaché à un seul groupe** (`cours.groupe_id`) ; ressources et devoirs héritent de la visibilité du cours. Si un même cours doit servir plusieurs groupes, il faudra une table de liaison (migration future).
 - **Docker n'est pas utilisé** (l'hébergement se fait sur Vercel, la base sur Supabase en ligne). Les migrations sont testées sur une base PostgreSQL embarquée (PGlite) avec une simulation de Supabase, puis appliquées sur le projet en ligne.
 - Les fichiers de migration ont été renommés avec les versions enregistrées par Supabase (20261121093400, ...09, ...18).
-- Alerte de sécurité Supabase à traiter (en attente d'accord) : la fonction `public.rls_auto_enable()` (créée par l'option « RLS automatique » de Supabase, pas par nous) est exécutable par `anon` et `authenticated`.
+- Alerte Supabase traitée : la fonction `public.rls_auto_enable()` (créée par l'option « RLS automatique », pas par nous) n'est plus exécutable par `anon` ni `authenticated` (migration 20261121093547). Plus aucune alerte de sécurité.
 - **Types TypeScript de la base : pas encore générés** (nécessite la CLI Supabase). À faire au lot 3, avant d'écrire les accès aux données.
 - Création des comptes de démo dans `seed.sql` : méthode habituelle mais non vérifiée contre le vrai Supabase Auth.
 - Pas encore de projet Supabase en ligne ni d'hébergement : rien n'est en production.
