@@ -1,61 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cheminPhoto, civiliteValide, trancheAgeValide } from "@/lib/auth/profil";
+import { cheminPhoto } from "@/lib/auth/profil";
 import { creerClientServeur } from "@/lib/supabase/serveur";
 
-export type EtatProfil = {
-  ok?: boolean;
-  message?: string;
-  /** Dernières valeurs envoyées : le formulaire les réaffiche (après une erreur comme après un succès). */
-  valeurs?: { civilite: string; prenom: string; nom: string; tranche_age: string };
-};
-
 export type ResultatPhoto = { ok: boolean; message?: string };
-
-function texte(formData: FormData, nom: string) {
-  const v = formData.get(nom);
-  return typeof v === "string" ? v.trim() : "";
-}
 
 /** Le menu (photo) et la page se mettent à jour. */
 function actualiser() {
   revalidatePath("/", "layout");
-}
-
-/**
- * Modifie les informations de la personne connectée.
- * Seuls prénom, nom, civilité et tranche d'âge sont modifiables : l'adresse e-mail et le rôle ne le sont pas
- * (la base refuse de toute façon de toucher à une autre colonne, ou au profil de quelqu'un d'autre).
- */
-export async function modifierProfil(_: EtatProfil, formData: FormData): Promise<EtatProfil> {
-  const civilite = texte(formData, "civilite");
-  const prenom = texte(formData, "prenom");
-  const nom = texte(formData, "nom");
-  const trancheAge = texte(formData, "tranche_age");
-  const valeurs = { civilite, prenom, nom, tranche_age: trancheAge };
-
-  if (!civiliteValide(civilite)) return { message: "Indiquez votre civilité : Madame ou Monsieur.", valeurs };
-  if (prenom.length === 0 || prenom.length > 100 || nom.length === 0 || nom.length > 100) {
-    return { message: "Saisissez votre prénom et votre nom (100 caractères au maximum).", valeurs };
-  }
-  if (!trancheAgeValide(trancheAge)) return { message: "Choisissez votre tranche d'âge.", valeurs };
-
-  const supabase = await creerClientServeur();
-  const { data: utilisateur } = await supabase.auth.getUser();
-  if (!utilisateur.user) return { message: "Votre session a expiré. Reconnectez-vous.", valeurs };
-
-  const { data, error } = await supabase
-    .from("profils")
-    .update({ civilite, prenom, nom, tranche_age: trancheAge })
-    .eq("id", utilisateur.user.id)
-    .select("id");
-  if (error || !data?.length) {
-    return { message: "Impossible d'enregistrer vos informations. Réessayez dans un instant.", valeurs };
-  }
-
-  actualiser();
-  return { ok: true, message: "Vos informations sont enregistrées.", valeurs };
 }
 
 /**

@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { GraduationCap } from "lucide-react";
 import { TitrePage } from "@/components/coquille/titre-page";
-import { FormulaireProfil } from "@/components/profil/formulaire-profil";
 import { PhotoProfil } from "@/components/profil/photo-profil";
 import { ProfilChargement } from "@/components/profil/profil-chargement";
 import { initiales } from "@/lib/auth/initiales";
+import { CIVILITES, TRANCHES_AGE } from "@/lib/auth/profil";
 import { lireProfil } from "@/lib/donnees/profil";
 import { PROMOTION } from "@/lib/promotion";
 
@@ -25,12 +25,14 @@ export default function Page() {
 
 async function Contenu() {
   const profil = await lireProfil();
+  const libelleCivilite = CIVILITES.find((c) => c.code === profil.civilite)?.libelle ?? "Non renseignée";
+  const libelleTrancheAge = TRANCHES_AGE.find((t) => t.code === profil.trancheAge)?.libelle ?? "Non renseignée";
 
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] xl:items-start">
       <div className="flex flex-col gap-4">
         <section className="accueil-carte p-5 sm:p-6" aria-labelledby="titre-photo">
-          <h2 id="titre-photo" className="titre-charte mb-4 text-2xl">
+          <h2 id="titre-photo" className="titre-charte mb-4 text-xl sm:text-2xl">
             Ma photo
           </h2>
           <PhotoProfil
@@ -41,21 +43,45 @@ async function Contenu() {
         </section>
 
         <section className="accueil-carte p-5 sm:p-6" aria-labelledby="titre-infos">
-          <h2 id="titre-infos" className="titre-charte mb-4 text-2xl">
+          <h2 id="titre-infos" className="titre-charte mb-4 text-xl sm:text-2xl">
             Mes informations
           </h2>
-          <FormulaireProfil
-            email={profil.email}
-            civilite={profil.civilite}
-            prenom={profil.prenom}
-            nom={profil.nom}
-            trancheAge={profil.trancheAge}
-          />
+          <dl className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg border border-black/15 bg-white/40 px-4 py-3">
+              <dt className="text-xs font-semibold">Civilité</dt>
+              <dd className="mt-1 text-sm font-semibold text-noir sm:text-base">{libelleCivilite}</dd>
+            </div>
+            <div className="rounded-lg border border-black/15 bg-white/40 px-4 py-3">
+              <dt className="text-xs font-semibold">Tranche d&apos;âge</dt>
+              <dd className="mt-1 text-sm font-semibold text-noir sm:text-base">{libelleTrancheAge}</dd>
+            </div>
+            <div className="rounded-lg border border-black/15 bg-white/40 px-4 py-3">
+              <dt className="text-xs font-semibold">Prénom</dt>
+              <dd className="mt-1 text-sm font-semibold text-noir sm:text-base [overflow-wrap:anywhere]">
+                {profil.prenom || "Non renseigné"}
+              </dd>
+            </div>
+            <div className="rounded-lg border border-black/15 bg-white/40 px-4 py-3">
+              <dt className="text-xs font-semibold">Nom</dt>
+              <dd className="mt-1 text-sm font-semibold text-noir sm:text-base [overflow-wrap:anywhere]">
+                {profil.nom || "Non renseigné"}
+              </dd>
+            </div>
+            <div className="rounded-lg border border-black/15 bg-white/40 px-4 py-3 sm:col-span-2">
+              <dt className="text-xs font-semibold">Adresse e-mail</dt>
+              <dd className="mt-1 text-sm font-semibold text-noir sm:text-base [overflow-wrap:anywhere]">
+                {profil.email}
+              </dd>
+            </div>
+          </dl>
+          <p className="mt-4 text-xs">
+            Vos informations personnelles sont en lecture seule. Contactez l&apos;équipe si une correction est nécessaire.
+          </p>
         </section>
       </div>
 
       <section className="accueil-carte p-5 sm:p-6" aria-labelledby="titre-formation">
-        <h2 id="titre-formation" className="titre-charte mb-4 text-2xl">
+        <h2 id="titre-formation" className="titre-charte mb-4 text-xl sm:text-2xl">
           Ma formation
         </h2>
         <p className="flex items-center gap-3 font-semibold text-noir">
