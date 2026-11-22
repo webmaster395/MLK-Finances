@@ -9,6 +9,7 @@ import {
   estCheminSupport,
   estUuid,
   validerCours,
+  validerDevoir,
   validerGroupe,
   validerLien,
   validerRubrique,
@@ -438,4 +439,77 @@ export async function supprimerSupport(_: EtatAdmin, formData: FormData): Promis
   if (chemin) await supabase.storage.from("ressources").remove([chemin]);
   actualiser();
   return { ok: true, message: "Support supprimé." };
+}
+
+// ---------------------------------------------------------------
+// Devoirs et corrections
+// ---------------------------------------------------------------
+
+function saisieDevoir(formData: FormData) {
+  const v = formData.get("consigne");
+  return {
+    coursId: texte(formData, "cours_id"),
+    titre: texte(formData, "titre"),
+    consigne: typeof v === "string" ? v : "",
+    date: texte(formData, "date"),
+    heure: texte(formData, "heure"),
+    publie: formData.get("publie") === "on",
+  };
+}
+
+export async function creerDevoir(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
+  const v = validerDevoir(saisieDevoir(formData));
+  if ("message" in v) return v;
+  const supabase = await clientAdmin();
+  if (!supabase) return SESSION_EXPIREE;
+  const { data, error } = await supabase.from("devoirs").insert(v.devoir).select("id").single();
+  if (error || !data) return ECHEC;
+  actualiser();
+  redirect(`/admin/devoirs/${data.id}?cree=1`);
+}
+
+/** Modifie un devoir. Il ne change pas de cours s'il a déjà des rendus. */
+export async function modifierDevoir(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
+  const id = texte(formData, "id");
+  if (!estUuid(id)) return ECHEC;
+  const v = validerDevoir(saisieDevoir(formData));
+  if ("message" in v) return v;
+  const supabase = await clientAdmin();
+  if (!supabase) return SESSION_EXPIREE;
+  const { data: actuel } = await supabase.from("devoirs").select("cours_id, rendus(count)").eq("id", id).maybeSingle();
+  if (!actuel) return ECHEC;
+  if (actuel.cours_id !== v.devoir.cours_id && (actuel.rendus[0]?.count ?? 0) > 0) {
+    return { message: "Des participants ont déjà rendu ce devoir : il ne peut pas changer de cours." };
+  }
+  const { data, error } = await supabase.from("devoirs").update(v.devoir).eq("id", id).select("id");
+  if (error || !data?.length) return ECHEC;
+  actualiser();
+  return { ok: true, message: "Le devoir est enregistré." };
+}
+
+/** Supprime un devoir SANS rendu (sinon les dépôts des participants seraient effacés). */
+export async function supprimerDevoir(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
+  const id = texte(formData, "id");
+  if (!estUuid(id)) return ECHEC;
+  const supabase = await clientAdmin();
+  if (!supabase) return SESSION_EXPIREE;
+  const { count } = await supabase.from("rendus").select("id", { count: "exact", head: true }).eq("devoir_id", id);
+  if ((count ?? 0) > 0) return { message: "Des participants ont rendu ce devoir : il ne peut pas être supprimé." };
+  const { data, error } = await supabase.from("devoirs").delete().eq("id", id).select("id");
+  if (error || !data?.length) return ECHEC;
+  actualiser();
+  redirect("/admin/devoirs");
+}
+
+/** Marque un rendu « corrigé » (le participant ne peut plus le remplacer), ou annule la correction. */
+export async function changerStatutRendu(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
+  const id = texte(formData, "id");
+  const statut = texte(formData, "statut");
+  if (!estUuid(id) || (statut !== "corrige" && statut !== "depose")) return ECHEC;
+  const supabase = await clientAdmin();
+  if (!supabase) return SESSION_EXPIREE;
+  const { data, error } = await supabase.from("rendus").update({ statut }).eq("id", id).select("id");
+  if (error || !data?.length) return ECHEC;
+  actualiser();
+  return { ok: true };
 }

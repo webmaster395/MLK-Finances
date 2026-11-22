@@ -10,6 +10,7 @@ import {
   nomFichierSur,
   parisVersIso,
   validerCours,
+  validerDevoir,
   validerGroupe,
   validerLien,
   validerRubrique,
@@ -136,4 +137,17 @@ test("le chemin d'un fichier de support est calculé et contrôlé", () => {
   assert.equal(estCheminSupport(`cours/${cours}/pas-un-id/x.pdf`, cours), false);
   assert.equal(estCheminSupport(`cours/${cours}/${id}/../x.pdf`, cours), false);
   assert.equal(estCheminSupport(`autre/${cours}/${id}/x.pdf`, cours), false);
+});
+
+test("un devoir a un cours, un titre et une échéance facultative (23:59 par défaut)", () => {
+  const base = { coursId: "cccccccc-0000-4000-8000-000000000001", titre: " Budget ", consigne: "", date: "2026-12-10", heure: "", publie: true };
+  const r = validerDevoir(base);
+  assert.ok("devoir" in r);
+  assert.equal(r.devoir.titre, "Budget");
+  assert.equal(r.devoir.echeance, "2026-12-10T22:59:00.000Z");
+  const sansDate = validerDevoir({ ...base, date: "" });
+  assert.ok("devoir" in sansDate && sansDate.devoir.echeance === null);
+  assert.ok("message" in validerDevoir({ ...base, coursId: "" }));
+  assert.ok("message" in validerDevoir({ ...base, date: "", heure: "10:00" }));
+  assert.ok("message" in validerDevoir({ ...base, heure: "7h" }));
 });

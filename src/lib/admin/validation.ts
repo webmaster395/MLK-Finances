@@ -243,3 +243,36 @@ export function estCheminSupport(chemin: string, coursId: string) {
     parties[3] === nomFichierSur(parties[3])
   );
 }
+
+// ---------------------------------------------------------------
+// Devoirs
+// ---------------------------------------------------------------
+
+export type Devoir = { cours_id: string; titre: string; consigne: string; echeance: string | null; publie: boolean };
+
+/** Devoir saisi : échéance facultative ; sans heure, elle tombe à 23:59 (heure de Paris). */
+export function validerDevoir(s: {
+  coursId: string;
+  titre: string;
+  consigne: string;
+  date: string;
+  heure: string;
+  publie: boolean;
+}): { devoir: Devoir } | { message: string } {
+  const titre = s.titre.trim();
+  if (!estUuid(s.coursId)) return { message: "Choisissez le cours du devoir." };
+  if (titre.length === 0 || titre.length > 200) return { message: "Donnez un titre au devoir (200 caractères au maximum)." };
+  if (s.consigne.length > 5000) return { message: "La consigne est trop longue (5 000 caractères au maximum)." };
+  if (s.date && !estDate(s.date)) return { message: "La date d'échéance n'est pas valide." };
+  if (s.heure && !estHeure(s.heure)) return { message: "L'heure d'échéance n'est pas valide." };
+  if (s.heure && !s.date) return { message: "Indiquez aussi la date d'échéance." };
+  return {
+    devoir: {
+      cours_id: s.coursId,
+      titre,
+      consigne: s.consigne.trim(),
+      echeance: s.date ? parisVersIso(s.date, s.heure || "23:59") : null,
+      publie: s.publie,
+    },
+  };
+}

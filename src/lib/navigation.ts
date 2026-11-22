@@ -53,6 +53,7 @@ export const GROUPES_MENU_ADMIN: PageMenu[][] = [
     { href: "/admin/seances", nom: "Séances", icone: CalendarDays },
     { href: "/admin/rubriques", nom: "Rubriques", icone: Palette },
     { href: "/admin/cours", nom: "Cours", icone: BookOpen },
+    { href: "/admin/devoirs", nom: "Devoirs", icone: FilePen },
   ],
   [{ href: "/accueil", nom: "Espace participant", icone: House }],
 ];

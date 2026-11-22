@@ -432,3 +432,127 @@ export async function lireCoursFiche(id: string): Promise<CoursAdmin | null> {
     })),
   };
 }
+
+// ---------------------------------------------------------------
+// Devoirs et corrections (lot 5)
+// ---------------------------------------------------------------
+
+export type DevoirListe = {
+  id: string;
+  titre: string;
+  echeance: string | null;
+  publie: boolean;
+  cours: string;
+  groupe: string;
+  rendus: number;
+  aCorriger: number;
+};
+
+export type RenduAdmin = {
+  id: string;
+  participant: string;
+  participantId: string;
+  nomFichier: string | null;
+  deposeLe: string;
+  statut: "depose" | "corrige";
+};
+
+export type DevoirAdmin = {
+  id: string;
+  coursId: string;
+  cours: string;
+  groupe: string;
+  titre: string;
+  consigne: string;
+  echeance: string | null;
+  publie: boolean;
+  rendus: RenduAdmin[];
+  /** Participants du groupe qui n'ont pas encore rendu. */
+  manquants: Membre[];
+};
+
+export type OptionsDevoir = { groupes: { id: string; nom: string; cours: { id: string; titre: string }[] }[] };
+
+/** Tous les devoirs, les échéances les plus proches d'abord. */
+export async function lireDevoirsAdmin(): Promise<DevoirListe[]> {
+  await exigerAdmin();
+  await connection();
+  const supabase = await creerClientServeur();
+  const { data } = await supabase
+    .from("devoirs")
+    .select("id, titre, echeance, publie, cours(titre, groupes(nom)), rendus(statut)")
+    .order("echeance", { ascending: true, nullsFirst: false });
+  return (data ?? []).map((d) => ({
+    id: d.id,
+    titre: d.titre,
+    echeance: d.echeance,
+    publie: d.publie,
+    cours: d.cours?.titre ?? "",
+    groupe: d.cours?.groupes?.nom ?? "",
+    rendus: d.rendus.length,
+    aCorriger: d.rendus.filter((r) => r.statut === "depose").length,
+  }));
+}
+
+/** Un devoir avec ses rendus et les participants qui n'ont pas rendu (null s'il n'existe pas). */
+export async function lireDevoirAdmin(id: string): Promise<DevoirAdmin | null> {
+  if (!UUID_ADMIN.test(id)) return null;
+  await exigerAdmin();
+  await connection();
+  const supabase = await creerClientServeur();
+  const { data: d } = await supabase
+    .from("devoirs")
+    .select(
+      "id, cours_id, titre, consigne, echeance, publie, cours(titre, groupe_id, groupes(nom, inscriptions(participant_id))), rendus(id, participant_id, nom_fichier, depose_le, statut)",
+    )
+    .eq("id", id)
+    .maybeSingle();
+  if (!d) return null;
+
+  const { data: profils } = await supabase.from("profils").select("id, prenom, nom");
+  const noms = new Map((profils ?? []).map((p) => [p.id, nomAffiche(p)]));
+  const ontRendu = new Set(d.rendus.map((r) => r.participant_id));
+  const inscrits = d.cours?.groupes?.inscriptions.map((i) => i.participant_id) ?? [];
+
+  return {
+    id: d.id,
+    coursId: d.cours_id,
+    cours: d.cours?.titre ?? "",
+    groupe: d.cours?.groupes?.nom ?? "",
+    titre: d.titre,
+    consigne: d.consigne,
+    echeance: d.echeance,
+    publie: d.publie,
+    rendus: d.rendus
+      .map((r) => ({
+        id: r.id,
+        participantId: r.participant_id,
+        participant: noms.get(r.participant_id) ?? "Inconnu",
+        nomFichier: r.nom_fichier,
+        deposeLe: r.depose_le,
+        statut: r.statut,
+      }))
+      .sort((a, b) => (a.statut === b.statut ? a.deposeLe.localeCompare(b.deposeLe) : a.statut === "depose" ? -1 : 1)),
+    manquants: inscrits
+      .filter((p) => !ontRendu.has(p))
+      .map((p) => ({ id: p, nom: noms.get(p) ?? "Inconnu" }))
+      .sort(parNom),
+  };
+}
+
+/** Cours rangés par groupe, pour le formulaire d'un devoir. */
+export async function lireOptionsDevoir(): Promise<OptionsDevoir> {
+  await exigerAdmin();
+  await connection();
+  const supabase = await creerClientServeur();
+  const { data } = await supabase.from("groupes").select("id, nom, cours(id, titre, ordre)").order("nom");
+  return {
+    groupes: (data ?? [])
+      .map((g) => ({
+        id: g.id,
+        nom: g.nom,
+        cours: [...g.cours].sort((a, b) => a.ordre - b.ordre).map((c) => ({ id: c.id, titre: c.titre })),
+      }))
+      .filter((g) => g.cours.length > 0),
+  };
+}
