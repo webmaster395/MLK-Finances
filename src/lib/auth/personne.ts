@@ -43,6 +43,16 @@ export const obtenirPersonne = cache(async (): Promise<Personne> => {
   };
 });
 
+/**
+ * Personne connectée ET administratrice ; sinon renvoi vers l'accueil participant.
+ * À appeler dans chaque page et chaque lecture de l'espace admin (le proxy n'est qu'une première barrière).
+ */
+export async function exigerAdmin(): Promise<Personne> {
+  const personne = await obtenirPersonne();
+  if (personne.role !== "admin") redirect("/accueil");
+  return personne;
+}
+
 /** Nombre de groupes auxquels la personne est rattachée (0 = en attente de rattachement). */
 export const compterGroupes = cache(async (): Promise<number> => {
   await connection();

@@ -21,6 +21,7 @@ export async function MenuParticipant() {
       pastilles={{ "/devoirs": devoirsAFaire > 0 }}
       promotion={promotion}
       messages={messages}
+      estAdmin={personne.role === "admin"}
       personne={{
         nomComplet,
         initiales: initiales(personne.prenom, personne.nom, personne.email),

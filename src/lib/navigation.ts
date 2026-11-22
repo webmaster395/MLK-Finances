@@ -3,7 +3,9 @@ import {
   FilePen,
   FolderOpen,
   House,
+  LayoutDashboard,
   MessageCircle,
+  ShieldCheck,
   User,
   type LucideIcon,
 } from "lucide-react";
@@ -30,3 +32,15 @@ export const GROUPES_MENU: PageMenu[][] = [
 ];
 
 export const PAGE_PROFIL: PageMenu = { href: "/profil", nom: "Mon profil", icone: User };
+
+/** Lien vers l'espace admin, ajouté au menu participant des administrateurs. */
+export const PAGE_ADMINISTRATION: PageMenu = { href: "/admin", nom: "Administration", icone: ShieldCheck };
+
+/**
+ * Menu de l'espace administrateur. Les pages de gestion (groupes, séances, cours, devoirs,
+ * messages, témoignages) s'ajouteront ici lot par lot.
+ */
+export const GROUPES_MENU_ADMIN: PageMenu[][] = [
+  [{ href: "/admin", nom: "Tableau de bord", icone: LayoutDashboard }],
+  [{ href: "/accueil", nom: "Espace participant", icone: House }],
+];

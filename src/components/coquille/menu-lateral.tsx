@@ -8,7 +8,7 @@ import { Logo } from "@/components/logo";
 import { Avatar } from "@/components/profil/avatar";
 import { deconnexion } from "@/lib/auth/actions";
 import type { Annonce } from "@/lib/donnees/annonces";
-import { GROUPES_MENU, PAGE_PROFIL } from "@/lib/navigation";
+import { GROUPES_MENU, GROUPES_MENU_ADMIN, PAGE_ADMINISTRATION, PAGE_PROFIL } from "@/lib/navigation";
 import { BasculeTheme } from "./bascule-theme";
 import { BoutonMessages } from "./bouton-messages";
 
@@ -27,6 +27,10 @@ type Props = {
   promotion?: string | null;
   /** Messages publiés de l'équipe (affichés via l'icône mégaphone). */
   messages?: Annonce[];
+  /** Espace affiché : le menu participant ou le menu administrateur. */
+  espace?: "participant" | "admin";
+  /** Dans l'espace participant : ajoute le lien « Administration » (personne admin). */
+  estAdmin?: boolean;
 };
 
 const CLE_MEMOIRE = "menu-replie";
@@ -70,8 +74,18 @@ function Separateur() {
  * - Téléphone : barre du haut avec un bouton qui ouvre le menu.
  * Ce composant lit l'adresse de la page : il doit toujours être sous <Suspense>.
  */
-export function MenuLateral({ personne, pastilles = {}, promotion = null, messages = [] }: Props) {
+export function MenuLateral({
+  personne,
+  pastilles = {},
+  promotion = null,
+  messages = [],
+  espace = "participant",
+  estAdmin = false,
+}: Props) {
   const chemin = usePathname();
+  const enAdmin = espace === "admin";
+  const accueil = enAdmin ? "/admin" : "/accueil";
+  const groupesMenu = enAdmin ? GROUPES_MENU_ADMIN : estAdmin ? [...GROUPES_MENU, [PAGE_ADMINISTRATION]] : GROUPES_MENU;
   // Côté serveur et au premier affichage : déplié ; ensuite on applique le choix mémorisé
   const replie = useSyncExternalStore(abonnerReplie, lireReplie, () => false);
   const [ouvert, setOuvert] = useState(false); // menu du téléphone
@@ -90,11 +104,13 @@ export function MenuLateral({ personne, pastilles = {}, promotion = null, messag
     return () => window.removeEventListener("keydown", surTouche);
   }, [ouvert]);
 
-  const sur = (href: string) => chemin === href || chemin.startsWith(`${href}/`);
+  // Le tableau de bord (/admin) n'est actif que sur sa propre page, pas sur les pages /admin/…
+  const sur = (href: string) =>
+    chemin === href || (!(enAdmin && href === "/admin") && chemin.startsWith(`${href}/`));
 
   const groupes = (afficherNoms: boolean, apresClic?: () => void) => (
     <>
-      {GROUPES_MENU.map((groupe, i) => (
+      {groupesMenu.map((groupe, i) => (
         <Fragment key={i}>
           {i > 0 ? <Separateur /> : null}
           <ul className="flex flex-col gap-1">
@@ -145,7 +161,7 @@ export function MenuLateral({ personne, pastilles = {}, promotion = null, messag
         }`}
       >
         <div className={`flex items-center px-3 py-3 ${replie ? "justify-center" : "justify-between pl-6"}`}>
-          {replie ? null : <Logo lien="/accueil" />}
+          {replie ? null : <Logo lien={accueil} />}
           <button
             type="button"
             onClick={basculer}
@@ -198,9 +214,9 @@ export function MenuLateral({ personne, pastilles = {}, promotion = null, messag
 
       {/* Téléphone : logo + messages + promotion + clair/sombre + menu sur la même ligne */}
       <div className="sticky top-0 z-30 flex items-center justify-between gap-1.5 menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-center px-2.5 py-2 shadow-md md:hidden">
-        <Logo lien="/accueil" compact />
+        <Logo lien={accueil} compact />
         <div className="flex shrink-0 items-center gap-1">
-          <BoutonMessages messages={messages} />
+          {enAdmin ? null : <BoutonMessages messages={messages} />}
           {promotion ? (
             <span className="whitespace-nowrap rounded-full border border-black/25 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.04em] text-noir sm:px-3 sm:py-1 sm:text-xs">
               {promotion}
@@ -229,7 +245,7 @@ export function MenuLateral({ personne, pastilles = {}, promotion = null, messag
           />
           <div className="relative flex h-full w-[78%] max-w-72 flex-col menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-top shadow-2xl">
             <div className="flex items-start justify-between p-3.5">
-              <Logo lien="/accueil" />
+              <Logo lien={accueil} />
               <button
                 type="button"
                 onClick={() => setOuvert(false)}

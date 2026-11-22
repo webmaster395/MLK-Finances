@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { estProtegee, PAGES_VISITEUR } from "@/lib/auth/routes";
+import { estEspaceAdmin, estProtegee, PAGES_VISITEUR } from "@/lib/auth/routes";
 import type { Database } from "./database.types";
 
 /**
@@ -42,6 +42,21 @@ export async function mettreAJourSession(request: NextRequest) {
     url.search = "";
     url.searchParams.set("suivant", chemin);
     return NextResponse.redirect(url);
+  }
+
+  // Espace administrateur : le rôle est lu dans la base (jamais dans ce que la personne envoie)
+  if (connecte && estEspaceAdmin(chemin)) {
+    const { data: profil } = await supabase
+      .from("profils")
+      .select("role")
+      .eq("id", String(data?.claims?.sub ?? ""))
+      .maybeSingle();
+    if (profil?.role !== "admin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/accueil";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
   }
 
   if (connecte && PAGES_VISITEUR.includes(chemin)) {
