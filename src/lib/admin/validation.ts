@@ -292,3 +292,33 @@ export function validerAnnonce(s: { groupeId: string; titre: string; message: st
   if (texte.length === 0 || texte.length > 2000) return { message: "Écrivez le message (2 000 caractères au maximum)." };
   return { annonce: { groupe_id: s.groupeId || null, titre, message: texte, publie: s.publie } };
 }
+
+// ---------------------------------------------------------------
+// Témoignages
+// ---------------------------------------------------------------
+
+export type Temoignage = { nom_affiche: string; texte: string; valide: boolean };
+
+export function validerTemoignage(s: { nom: string; texte: string; valide: boolean }): { temoignage: Temoignage } | { message: string } {
+  const nom = s.nom.trim();
+  const texte = s.texte.trim();
+  if (nom.length === 0 || nom.length > 100) return { message: "Indiquez le nom affiché (100 caractères au maximum)." };
+  if (texte.length === 0 || texte.length > 1000) return { message: "Écrivez le témoignage (1 000 caractères au maximum)." };
+  return { temoignage: { nom_affiche: nom, texte, valide: s.valide } };
+}
+
+/** Photo d'un témoignage : mêmes limites que le seau « photos ». */
+export const PHOTO_TEMOIGNAGE_TAILLE_MAX_OCTETS = 2 * 1024 * 1024;
+export const PHOTO_TEMOIGNAGE_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+
+export function verifierPhotoTemoignage(f: { size: number; type: string }): string | null {
+  if (f.size === 0) return "Ce fichier est vide.";
+  if (f.size > PHOTO_TEMOIGNAGE_TAILLE_MAX_OCTETS) return "Cette photo dépasse 2 Mo. Choisissez une image plus légère.";
+  if (!(PHOTO_TEMOIGNAGE_TYPES as readonly string[]).includes(f.type)) return "Format non accepté. Utilisez une image JPG, PNG ou WebP.";
+  return null;
+}
+
+/** Chemin de la photo d'un témoignage : un seul fichier, remplacé à chaque changement. */
+export function cheminPhotoTemoignage(temoignageId: string) {
+  return `temoignages/${temoignageId}/photo`;
+}

@@ -5,7 +5,9 @@ import { redirect } from "next/navigation";
 import { civiliteValide, trancheAgeValide } from "@/lib/auth/profil";
 import { creerClientServeur } from "@/lib/supabase/serveur";
 import {
+  cheminPhotoTemoignage,
   cheminSupport,
+  validerTemoignage,
   validerAnnonce,
   estCheminSupport,
   estUuid,
@@ -559,6 +561,94 @@ export async function supprimerAnnonce(_: EtatAdmin, formData: FormData): Promis
   const supabase = await clientAdmin();
   if (!supabase) return SESSION_EXPIREE;
   const { data, error } = await supabase.from("annonces").delete().eq("id", id).select("id");
+  if (error || !data?.length) return ECHEC;
+  actualiser();
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------
+// Témoignages
+// ---------------------------------------------------------------
+
+function saisieTemoignage(formData: FormData) {
+  const v = formData.get("texte");
+  return { nom: texte(formData, "nom"), texte: typeof v === "string" ? v : "", valide: formData.get("valide") === "on" };
+}
+
+export async function creerTemoignage(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
+  const v = validerTemoignage(saisieTemoignage(formData));
+  if ("message" in v) return v;
+  const supabase = await clientAdmin();
+  if (!supabase) return SESSION_EXPIREE;
+  const { error } = await supabase.from("temoignages").insert(v.temoignage);
+  if (error) return ECHEC;
+  actualiser();
+  return { ok: true, message: v.temoignage.valide ? "Témoignage publié." : "Témoignage enregistré (à valider)." };
+}
+
+export async function modifierTemoignage(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
+  const id = texte(formData, "id");
+  if (!estUuid(id)) return ECHEC;
+  const v = validerTemoignage(saisieTemoignage(formData));
+  if ("message" in v) return v;
+  const supabase = await clientAdmin();
+  if (!supabase) return SESSION_EXPIREE;
+  const { data, error } = await supabase.from("temoignages").update(v.temoignage).eq("id", id).select("id");
+  if (error || !data?.length) return ECHEC;
+  actualiser();
+  return { ok: true, message: "Témoignage enregistré." };
+}
+
+/** Valide (publie) ou retire un témoignage de la publication. */
+export async function changerValidation(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
+  const id = texte(formData, "id");
+  const valide = texte(formData, "valide");
+  if (!estUuid(id) || (valide !== "oui" && valide !== "non")) return ECHEC;
+  const supabase = await clientAdmin();
+  if (!supabase) return SESSION_EXPIREE;
+  const { data, error } = await supabase.from("temoignages").update({ valide: valide === "oui" }).eq("id", id).select("id");
+  if (error || !data?.length) return ECHEC;
+  actualiser();
+  return { ok: true };
+}
+
+/** Supprime un témoignage (refus définitif) et sa photo. */
+export async function supprimerTemoignage(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
+  const id = texte(formData, "id");
+  if (!estUuid(id)) return ECHEC;
+  const supabase = await clientAdmin();
+  if (!supabase) return SESSION_EXPIREE;
+  const { data, error } = await supabase.from("temoignages").delete().eq("id", id).select("photo_path");
+  if (error || !data?.length) return ECHEC;
+  if (data[0].photo_path) await supabase.storage.from("photos").remove([data[0].photo_path]);
+  actualiser();
+  return { ok: true };
+}
+
+/**
+ * Enregistre la photo APRÈS son envoi vers le stockage (fait depuis le navigateur).
+ * Le chemin est calculé ici ; on vérifie que le fichier est bien arrivé.
+ */
+export async function enregistrerPhotoTemoignage(temoignageId: string): Promise<EtatAdmin> {
+  if (!estUuid(temoignageId)) return ECHEC;
+  const supabase = await clientAdmin();
+  if (!supabase) return SESSION_EXPIREE;
+  const chemin = cheminPhotoTemoignage(temoignageId);
+  const { data: fichiers } = await supabase.storage.from("photos").list(`temoignages/${temoignageId}`, { search: "photo" });
+  if (!fichiers?.some((f) => f.name === "photo")) return { message: "La photo n'a pas été reçue. Réessayez." };
+  const { data, error } = await supabase.from("temoignages").update({ photo_path: chemin }).eq("id", temoignageId).select("id");
+  if (error || !data?.length) return ECHEC;
+  actualiser();
+  return { ok: true, message: "Photo enregistrée." };
+}
+
+export async function supprimerPhotoTemoignage(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
+  const id = texte(formData, "id");
+  if (!estUuid(id)) return ECHEC;
+  const supabase = await clientAdmin();
+  if (!supabase) return SESSION_EXPIREE;
+  await supabase.storage.from("photos").remove([cheminPhotoTemoignage(id)]);
+  const { data, error } = await supabase.from("temoignages").update({ photo_path: null }).eq("id", id).select("id");
   if (error || !data?.length) return ECHEC;
   actualiser();
   return { ok: true };

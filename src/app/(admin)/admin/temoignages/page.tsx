@@ -1,0 +1,18 @@
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { ChargementPage } from "@/components/admin/chargement";
+import { GestionTemoignages } from "@/components/admin/temoignages";
+import { TitrePage } from "@/components/coquille/titre-page";
+
+export const metadata: Metadata = { title: "Témoignages — Administration" };
+
+export default function Page() {
+  return (
+    <div className="flex flex-col gap-5">
+      <TitrePage titre="Témoignages" sousTitre="Valider, refuser, ajouter une photo" />
+      <Suspense fallback={<ChargementPage />}>
+        <GestionTemoignages />
+      </Suspense>
+    </div>
+  );
+}

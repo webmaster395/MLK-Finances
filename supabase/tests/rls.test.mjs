@@ -513,6 +513,23 @@ describe("administrateur", () => {
     assert.equal((await en(ADMIN, "update storage.objects set name = name where bucket_id = 'rendus' returning name")).rows.length, 0);
   });
 
+  test("stockage : un participant voit la photo d'un témoignage validé, jamais celle d'un témoignage non validé ni la photo d'un autre", async () => {
+    const valide = { id: "eeeeeeee-0000-4000-8000-000000000001" };
+    const brouillon = { id: "eeeeeeee-0000-4000-8000-000000000002" };
+    await db.exec(`
+      insert into public.temoignages (id, nom_affiche, texte, valide, photo_path) values
+        ('${valide.id}', 'Photo validée', 'x', true, 'temoignages/${valide.id}/photo'),
+        ('${brouillon.id}', 'Photo non validée', 'x', false, 'temoignages/${brouillon.id}/photo');
+      insert into storage.objects (bucket_id, name) values
+        ('photos', 'temoignages/${valide.id}/photo'),
+        ('photos', 'temoignages/${brouillon.id}/photo');`);
+    const vues = await en(A, "select name from storage.objects where bucket_id = 'photos' and name like 'temoignages/%'");
+    assert.deepEqual(vues.rows.map((l) => l.name), [`temoignages/${valide.id}/photo`]);
+    // Elle ne peut ni être remplacée ni supprimée par un participant
+    assert.equal((await en(A, `delete from storage.objects where name = 'temoignages/${valide.id}/photo' returning name`)).rows.length, 0);
+    await assert.rejects(en(A, "insert into storage.objects (bucket_id, name) values ('photos', 'temoignages/pirate/photo')"), REFUS);
+  });
+
   test("stockage : l'admin écrit dans « photos/temoignages », pas dans le dossier d'un participant", async () => {
     const r = await en(ADMIN, "insert into storage.objects (bucket_id, name) values ('photos', 'temoignages/photo.jpg') returning name");
     assert.equal(r.rows.length, 1);

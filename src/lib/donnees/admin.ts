@@ -590,3 +590,43 @@ export async function lireAnnoncesAdmin(): Promise<AnnonceAdmin[]> {
     creeLe: a.cree_le,
   }));
 }
+
+// ---------------------------------------------------------------
+// Témoignages (lot 7)
+// ---------------------------------------------------------------
+
+export type TemoignageAdmin = {
+  id: string;
+  nom: string;
+  texte: string;
+  valide: boolean;
+  photoPath: string | null;
+  /** Lien temporaire pour afficher la photo (null s'il n'y en a pas). */
+  photoUrl: string | null;
+  creeLe: string;
+};
+
+/** Tous les témoignages : ceux à valider d'abord, puis les validés. */
+export async function lireTemoignagesAdmin(): Promise<TemoignageAdmin[]> {
+  await exigerAdmin();
+  await connection();
+  const supabase = await creerClientServeur();
+  const { data } = await supabase
+    .from("temoignages")
+    .select("id, nom_affiche, texte, valide, photo_path, cree_le")
+    .order("valide", { ascending: true })
+    .order("cree_le", { ascending: false });
+  const liste = data ?? [];
+  const chemins = liste.flatMap((t) => (t.photo_path ? [t.photo_path] : []));
+  const liens = chemins.length > 0 ? ((await supabase.storage.from("photos").createSignedUrls(chemins, 300)).data ?? []) : [];
+  const parChemin = new Map(liens.map((l) => [l.path, l.signedUrl]));
+  return liste.map((t) => ({
+    id: t.id,
+    nom: t.nom_affiche,
+    texte: t.texte,
+    valide: t.valide,
+    photoPath: t.photo_path,
+    photoUrl: t.photo_path ? (parChemin.get(t.photo_path) ?? null) : null,
+    creeLe: t.cree_le,
+  }));
+}

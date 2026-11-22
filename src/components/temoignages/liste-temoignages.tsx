@@ -1,5 +1,6 @@
 import { MessageCircle, Quote } from "lucide-react";
 import { EtatVide } from "@/components/coquille/etat-vide";
+import { Avatar } from "@/components/profil/avatar";
 import { lireTemoignages } from "@/lib/donnees/temoignages";
 
 const COULEURS_BORDURE = ["#d634ba", "#e95609"];
@@ -56,12 +57,16 @@ export async function ListeTemoignages() {
             </div>
 
             <footer className="flex items-center gap-3 border-t border-black/10 pt-3.5">
-              <span
-                aria-hidden
-                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-rose-clair text-xs font-semibold text-noir"
-              >
-                {initiales(t.nom_affiche)}
-              </span>
+              {t.photoUrl ? (
+                <Avatar photoUrl={t.photoUrl} initiales={initiales(t.nom_affiche)} taille="size-9" texteTaille="text-xs" />
+              ) : (
+                <span
+                  aria-hidden
+                  className="flex size-9 shrink-0 items-center justify-center rounded-full bg-rose-clair text-xs font-semibold text-noir"
+                >
+                  {initiales(t.nom_affiche)}
+                </span>
+              )}
               <cite className="min-w-0 text-sm font-semibold not-italic leading-snug text-noir [overflow-wrap:anywhere]">
                 {t.nom_affiche}
               </cite>
