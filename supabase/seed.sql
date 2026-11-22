@@ -4,6 +4,7 @@
 -- Comptes de test (adresses en example.com : elles n'existent pas) :
 --   participant.test1@example.com   mot de passe : Test-Mlk-2026!   (groupe test 1)
 --   participant.test2@example.com   mot de passe : Test-Mlk-2026!   (groupe test 2)
+--   admin.test@example.com          mot de passe : Test-Mlk-2026!   (administrateur, sans groupe)
 -- Remarque : la création directe des comptes ci-dessous est la méthode habituelle pour les
 -- données de démo en local ; elle n'a pu être vérifiée que sur une base simulée (voir PLAN.md).
 
@@ -24,6 +25,11 @@ insert into auth.users (
    'authenticated', 'authenticated', 'participant.test2@example.com',
    extensions.crypt('Test-Mlk-2026!', extensions.gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{"prenom":"Sam","nom":"Test Deux","civilite":"madame","tranche_age":"18_25"}',
+   now(), now(), '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000000', '99999999-9999-4999-8999-999999999999',
+   'authenticated', 'authenticated', 'admin.test@example.com',
+   extensions.crypt('Test-Mlk-2026!', extensions.gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{"prenom":"Admin","nom":"Test"}',
    now(), now(), '', '', '', '');
 
 insert into auth.identities (
@@ -34,7 +40,13 @@ insert into auth.identities (
    'email', '11111111-1111-4111-8111-111111111111', now(), now(), now()),
   (gen_random_uuid(), '22222222-2222-4222-8222-222222222222',
    '{"sub":"22222222-2222-4222-8222-222222222222","email":"participant.test2@example.com"}',
-   'email', '22222222-2222-4222-8222-222222222222', now(), now(), now());
+   'email', '22222222-2222-4222-8222-222222222222', now(), now(), now()),
+  (gen_random_uuid(), '99999999-9999-4999-8999-999999999999',
+   '{"sub":"99999999-9999-4999-8999-999999999999","email":"admin.test@example.com"}',
+   'email', '99999999-9999-4999-8999-999999999999', now(), now(), now());
+
+-- Premier administrateur (nommé hors du site : maintenance directe dans la base)
+update public.profils set role = 'admin' where id = '99999999-9999-4999-8999-999999999999';
 
 -- ---------------------------------------------------------------
 -- Groupes et inscriptions
