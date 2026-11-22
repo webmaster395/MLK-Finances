@@ -50,109 +50,110 @@ update public.profils set role = 'admin' where id = '99999999-9999-4999-8999-999
 
 -- ---------------------------------------------------------------
 -- Cours
+-- Contenu de démonstration présentable (fictif) : à remplacer par le vrai contenu avant la mise en ligne.
 -- ---------------------------------------------------------------
 insert into public.cours (id, titre, description, objectifs, ordre, publie) values
   ('cccccccc-0000-4000-8000-000000000001',
-   '[test] Module 1 — Comprendre son budget',
+   'Module 1 — Comprendre son budget',
    'Revenus, dépenses, objectifs : poser les bases de sa gestion au quotidien.',
    array['Lister ses revenus et ses dépenses', 'Distinguer l''essentiel du superflu', 'Fixer un objectif mensuel'], 1, true),
   ('cccccccc-0000-4000-8000-000000000002',
-   '[test] Module 2 — Épargner efficacement',
+   'Module 2 — Épargner efficacement',
    'Fonds d''urgence et épargne régulière.',
    array['Constituer un fonds d''urgence', 'Mettre en place une épargne automatique'], 2, true),
   ('cccccccc-0000-4000-8000-000000000003',
-   '[test] Module 3 — Crédit et endettement',
+   'Module 3 — Crédit et endettement',
    'Lire un contrat de crédit et éviter les pièges.',
    array['Comprendre un taux et un coût total', 'Repérer les clauses à surveiller'], 3, true),
   ('cccccccc-0000-4000-8000-000000000004',
-   '[test] Module 4 — Brouillon non publié',
-   'Ce cours n''est pas publié : un participant ne doit pas le voir.',
+   'Module 4 — Investir et préparer l''avenir',
+   'Module en préparation : il sera publié prochainement.',
    '{}', 4, false);
 
 -- ---------------------------------------------------------------
--- Sessions (dates relatives à aujourd'hui) — une journée complète (« J+5 ») pour l'accueil,
--- plus d'autres dates pour le calendrier. Heures données en UTC (Paris = UTC+1 en hiver).
+-- Séances (dates relatives à aujourd'hui, heures de Paris) : une séance passée, une journée complète
+-- (« J+5 », pour l'accueil), une autre journée (« J+19 »).
 -- ---------------------------------------------------------------
 insert into public.sessions (id, cours_id, intervenants, titre, debut, fin, lieu, description) values
   ('55555555-0000-4000-8000-000000000001',
    'cccccccc-0000-4000-8000-000000000001',
-   array['Claire Martin'], '[test] Session 1 — Atelier budget',
-   date_trunc('day', now()) - interval '14 days' + interval '9 hours',
-   date_trunc('day', now()) - interval '14 days' + interval '12 hours', 'Salle test A', 'Séance passée.'),
+   array['Claire Martin'], 'Séance 1 — Atelier budget',
+   ((date_trunc('day', now() at time zone 'Europe/Paris') - interval '14 days' + interval '9 hours') at time zone 'Europe/Paris'),
+   ((date_trunc('day', now() at time zone 'Europe/Paris') - interval '14 days' + interval '12 hours') at time zone 'Europe/Paris'), 'Salle A', 'Première séance : on pose les bases du budget et on repère les postes de dépenses.'),
   -- Journée J+5 : accueil, formation, atelier pratique
   ('55555555-0000-4000-8000-000000000012',
    null,
-   '{}', '[test] Accueil des participants',
-   date_trunc('day', now()) + interval '5 days' + interval '8 hours 10 minutes',
-   date_trunc('day', now()) + interval '5 days' + interval '8 hours 30 minutes', 'Salle test A', 'Café et émargement.'),
+   '{}', 'Accueil des participants',
+   ((date_trunc('day', now() at time zone 'Europe/Paris') + interval '5 days' + interval '8 hours 10 minutes') at time zone 'Europe/Paris'),
+   ((date_trunc('day', now() at time zone 'Europe/Paris') + interval '5 days' + interval '8 hours 30 minutes') at time zone 'Europe/Paris'), 'Salle A', 'Café, émargement et présentation de la journée.'),
   ('55555555-0000-4000-8000-000000000002',
    'cccccccc-0000-4000-8000-000000000002',
-   array['Claire Martin', 'Karim Benali'], '[test] Session 2 — Atelier épargne',
-   date_trunc('day', now()) + interval '5 days' + interval '8 hours 30 minutes',
-   date_trunc('day', now()) + interval '5 days' + interval '10 hours', 'Salle test A', 'Prochaine séance.'),
+   array['Claire Martin', 'Karim Benali'], 'Séance 2 — Épargner efficacement',
+   ((date_trunc('day', now() at time zone 'Europe/Paris') + interval '5 days' + interval '8 hours 30 minutes') at time zone 'Europe/Paris'),
+   ((date_trunc('day', now() at time zone 'Europe/Paris') + interval '5 days' + interval '10 hours') at time zone 'Europe/Paris'), 'Salle A', 'Fonds d''urgence, épargne automatique et choix des supports d''épargne.'),
   ('55555555-0000-4000-8000-000000000013',
    'cccccccc-0000-4000-8000-000000000001',
-   array['Karim Benali'], '[test] Atelier pratique — Mon budget',
-   date_trunc('day', now()) + interval '5 days' + interval '10 hours 30 minutes',
-   date_trunc('day', now()) + interval '5 days' + interval '12 hours', 'Salle test A', 'Mise en pratique en petits groupes.'),
+   array['Karim Benali'], 'Atelier pratique — Mon budget',
+   ((date_trunc('day', now() at time zone 'Europe/Paris') + interval '5 days' + interval '10 hours 30 minutes') at time zone 'Europe/Paris'),
+   ((date_trunc('day', now() at time zone 'Europe/Paris') + interval '5 days' + interval '12 hours') at time zone 'Europe/Paris'), 'Salle A', 'Mise en pratique en petits groupes : chacun construit son budget du mois.'),
   -- Autre journée (J+19) : formation et évaluation
   ('55555555-0000-4000-8000-000000000003',
    'cccccccc-0000-4000-8000-000000000003',
-   array['Sophie Laurent'], '[test] Session 3 — Atelier crédit',
-   date_trunc('day', now()) + interval '19 days' + interval '8 hours 30 minutes',
-   date_trunc('day', now()) + interval '19 days' + interval '11 hours', 'En ligne', 'Séance à distance.'),
+   array['Sophie Laurent'], 'Séance 3 — Crédit et endettement',
+   ((date_trunc('day', now() at time zone 'Europe/Paris') + interval '19 days' + interval '9 hours') at time zone 'Europe/Paris'),
+   ((date_trunc('day', now() at time zone 'Europe/Paris') + interval '19 days' + interval '11 hours 30 minutes') at time zone 'Europe/Paris'), 'En ligne', 'Séance à distance : lire une offre de crédit et comparer les coûts.'),
   ('55555555-0000-4000-8000-000000000014',
    'cccccccc-0000-4000-8000-000000000003',
-   array['Sophie Laurent'], '[test] Évaluation — Crédit et endettement',
-   date_trunc('day', now()) + interval '19 days' + interval '13 hours',
-   date_trunc('day', now()) + interval '19 days' + interval '14 hours', 'En ligne', 'Questionnaire de fin de module.');
+   array['Sophie Laurent'], 'Évaluation — Crédit et endettement',
+   ((date_trunc('day', now() at time zone 'Europe/Paris') + interval '19 days' + interval '14 hours') at time zone 'Europe/Paris'),
+   ((date_trunc('day', now() at time zone 'Europe/Paris') + interval '19 days' + interval '15 hours') at time zone 'Europe/Paris'), 'En ligne', 'Questionnaire de fin de module.');
 
 -- ---------------------------------------------------------------
 -- Messages de l'équipe
 -- ---------------------------------------------------------------
 insert into public.annonces (titre, message, publie, cree_le) values
-  ('[test] Prochaine journée',
+  ('Prochaine journée de formation',
    E'Bonjour à tous,\nPensez à apporter votre ordinateur et vos relevés de budget du mois. L''accueil commence 10 minutes avant la première séance.',
    true, now() - interval '1 day'),
-  ('[test] Message pour tous', 'Ancien message général (plus ancien : il passe après le plus récent).', true, now() - interval '9 days'),
-  ('[test] Brouillon non publié', 'Ne doit pas être visible.', false, now());
+  ('Bienvenue dans MLK Parcours Finances', 'Bienvenue ! Retrouvez ici le calendrier des séances, vos devoirs et les ressources de chaque module. N''hésitez pas à écrire à l''équipe si vous avez une question.', true, now() - interval '9 days'),
+  ('Rappel : atelier pratique (brouillon)', 'Message en préparation : il n''est pas encore publié.', false, now());
 
 -- ---------------------------------------------------------------
 -- Ressources
 -- ---------------------------------------------------------------
 insert into public.ressources (id, cours_id, titre, type, url, storage_path) values
   ('66666666-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
-   '[test] Modèle de budget (lien)', 'lien', 'https://example.com/modele-budget', null),
+   'Modèle de budget mensuel', 'lien', 'https://www.mesquestionsdargent.fr/', null),
   ('66666666-0000-4000-8000-000000000002', 'cccccccc-0000-4000-8000-000000000002',
-   '[test] Guide de l''épargne (fichier)', 'fichier', null, 'test/guide-epargne.pdf'),
+   'Guide de l''épargne', 'fichier', null, 'test/guide-epargne.pdf'),
   ('66666666-0000-4000-8000-000000000004', 'cccccccc-0000-4000-8000-000000000004',
-   '[test] Support d''un cours non publié', 'lien', 'https://example.com/brouillon', null);
+   'Support du module 4 (cours non publié)', 'lien', 'https://www.economie.gouv.fr/', null);
 
 -- ---------------------------------------------------------------
 -- Devoirs et un rendu
 -- ---------------------------------------------------------------
 insert into public.devoirs (id, cours_id, titre, consigne, echeance) values
   ('dddddddd-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
-   '[test] Établir mon budget mensuel', 'Déposez votre budget du mois (PDF ou tableur).',
-   date_trunc('day', now()) + interval '2 days' + interval '18 hours'),
+   'Établir mon budget mensuel', 'Listez vos revenus et vos dépenses du mois, puis déposez votre budget (PDF ou tableur).',
+   ((date_trunc('day', now() at time zone 'Europe/Paris') + interval '2 days' + interval '18 hours') at time zone 'Europe/Paris')),
   ('dddddddd-0000-4000-8000-000000000002', 'cccccccc-0000-4000-8000-000000000002',
-   '[test] Fixer mon objectif d''épargne', 'Décrivez votre objectif et votre plan.',
-   date_trunc('day', now()) + interval '12 days' + interval '18 hours'),
+   'Fixer mon objectif d''épargne', 'Décrivez votre objectif d''épargne, son montant, son échéance et votre plan pour l''atteindre.',
+   ((date_trunc('day', now() at time zone 'Europe/Paris') + interval '12 days' + interval '18 hours') at time zone 'Europe/Paris')),
   ('dddddddd-0000-4000-8000-000000000003', 'cccccccc-0000-4000-8000-000000000003',
-   '[test] Analyser une offre de crédit (en retard)', 'Devoir dont la date limite est dépassée.',
-   date_trunc('day', now()) - interval '3 days' + interval '18 hours'),
+   'Analyser une offre de crédit', 'Comparez deux offres de crédit (taux, coût total, durée, clauses à surveiller) et déposez votre analyse.',
+   ((date_trunc('day', now() at time zone 'Europe/Paris') - interval '3 days' + interval '18 hours') at time zone 'Europe/Paris')),
   ('dddddddd-0000-4000-8000-000000000004', 'cccccccc-0000-4000-8000-000000000004',
-   '[test] Devoir d''un cours non publié', 'Ne doit pas être visible.', date_trunc('day', now()) + interval '9 days');
+   'Devoir du module 4 (cours non publié)', 'Devoir en préparation.', ((date_trunc('day', now() at time zone 'Europe/Paris') + interval '9 days' + interval '18 hours') at time zone 'Europe/Paris'));
 
 insert into public.rendus (devoir_id, participant_id, fichier_path, nom_fichier) values
   ('dddddddd-0000-4000-8000-000000000003', '11111111-1111-4111-8111-111111111111',
-   '11111111-1111-4111-8111-111111111111/dddddddd-0000-4000-8000-000000000003/credit-test.pdf', 'credit-test.pdf');
+   '11111111-1111-4111-8111-111111111111/dddddddd-0000-4000-8000-000000000003/analyse-credit.pdf', 'analyse-credit.pdf');
 
 -- ---------------------------------------------------------------
--- Témoignages
+-- Témoignages (fictifs)
 -- ---------------------------------------------------------------
 insert into public.temoignages (nom_affiche, texte, valide) values
-  ('[test] Participant 1', 'Ce parcours m''a aidé à y voir clair dans mon budget.', true),
-  ('[test] Participante 2', 'Des cours simples et concrets, j''ai enfin un plan d''épargne.', true),
-  ('[test] Participant 3', 'Un accompagnement motivant du début à la fin.', true),
-  ('[test] Participant 4', 'Témoignage en attente de validation : ne doit pas être visible.', false);
+  ('Léa M.', 'Ce parcours m''a aidé à y voir clair dans mon budget : je sais enfin où va mon argent chaque mois.', true),
+  ('Sandrine T.', 'Des cours simples et concrets. J''ai mis en place mon plan d''épargne dès la deuxième séance.', true),
+  ('Karim B.', 'Un accompagnement motivant du début à la fin, avec des intervenants à l''écoute.', true),
+  ('Julien R.', 'Les ateliers pratiques m''ont permis d''analyser mon premier crédit sans stress.', false);

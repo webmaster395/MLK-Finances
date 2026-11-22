@@ -200,7 +200,7 @@ describe("contenu pédagogique", () => {
   test("A voit les 3 cours publiés, pas le brouillon", async () => {
     const r = await en(A, "select titre from public.cours");
     assert.equal(r.rows.length, 3);
-    assert.ok(titres(r).every((t) => /^\[test\] Module [123] /.test(t)));
+    assert.ok(titres(r).every((t) => /^Module [123] /.test(t)));
   });
 
   test("B voit les mêmes cours publiés que A (une seule promotion)", async () => {
@@ -246,19 +246,19 @@ describe("contenu pédagogique", () => {
 
 describe("intervenants et messages de l'équipe", () => {
   test("A voit une séance avec ses intervenants", async () => {
-    const r = await en(A, "select s.titre, s.intervenants from public.sessions s where s.titre like '%Session 2%'");
+    const r = await en(A, "select s.titre, s.intervenants from public.sessions s where s.titre like '%Séance 2%'");
     assert.equal(r.rows.length, 1);
     assert.deepEqual(r.rows[0].intervenants, ["Claire Martin", "Karim Benali"]);
   });
 
   test("A voit les messages publiés, pas les brouillons", async () => {
     const r = await en(A, "select titre from public.annonces order by cree_le desc");
-    assert.deepEqual(r.rows.map((l) => l.titre), ["[test] Prochaine journée", "[test] Message pour tous"]);
+    assert.deepEqual(r.rows.map((l) => l.titre), ["Prochaine journée de formation", "Bienvenue dans MLK Parcours Finances"]);
   });
 
   test("B voit les mêmes messages que A", async () => {
     const r = await en(B, "select titre from public.annonces order by cree_le desc");
-    assert.deepEqual(r.rows.map((l) => l.titre), ["[test] Prochaine journée", "[test] Message pour tous"]);
+    assert.deepEqual(r.rows.map((l) => l.titre), ["Prochaine journée de formation", "Bienvenue dans MLK Parcours Finances"]);
   });
 
   test("un visiteur ne lit aucun message et un participant ne peut pas en écrire", async () => {
