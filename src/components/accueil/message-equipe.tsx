@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Megaphone } from "lucide-react";
 import { lireDernierMessage } from "@/lib/donnees/annonces";
 
@@ -18,6 +19,9 @@ export async function MessageEquipe() {
           {message.titre ? <p className="text-base font-semibold text-noir [overflow-wrap:anywhere]">{message.titre}</p> : null}
           <p className="whitespace-pre-line text-sm font-semibold leading-relaxed [overflow-wrap:anywhere]">{message.message}</p>
           <p className="text-xs">Publié le {formaterDate.format(new Date(message.cree_le))}</p>
+          <Link href="/messages" className="mt-1 inline-block text-sm font-semibold text-noir underline underline-offset-2">
+            Voir tous les messages →
+          </Link>
         </div>
       ) : (
         <p className="mt-3 text-sm font-semibold">Aucun message pour le moment.</p>

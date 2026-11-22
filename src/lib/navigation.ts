@@ -29,6 +29,7 @@ export const GROUPES_MENU: PageMenu[][] = [
   [
     { href: "/devoirs", nom: "Devoirs", icone: FilePen },
     { href: "/ressources", nom: "Ressources", icone: FolderOpen },
+    { href: "/messages", nom: "Messages", icone: Megaphone },
     { href: "/temoignages", nom: "Témoignages", icone: MessageCircle },
   ],
 ];

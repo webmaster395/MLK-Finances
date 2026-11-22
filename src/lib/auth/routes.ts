@@ -5,6 +5,7 @@ export const PREFIXES_PROTEGES = [
   "/cours",
   "/devoirs",
   "/ressources",
+  "/messages",
   "/temoignages",
   "/profil",
   "/admin",

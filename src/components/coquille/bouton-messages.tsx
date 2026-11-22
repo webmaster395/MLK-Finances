@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Megaphone, X } from "lucide-react";
 import type { Annonce } from "@/lib/donnees/annonces";
@@ -84,17 +85,26 @@ export function BoutonMessages({ messages = [] }: { messages?: Annonce[] }) {
           <hr className="my-3 border-black/10" />
 
           {nb > 0 ? (
-            <ul className="flex flex-col gap-3">
-              {messages.map((m) => (
-                <li key={m.id} className="rounded-lg border border-black/10 bg-white/40 p-3">
-                  {m.titre ? <p className="text-sm font-semibold text-noir [overflow-wrap:anywhere]">{m.titre}</p> : null}
-                  <p className="mt-1 whitespace-pre-line text-xs font-semibold leading-relaxed [overflow-wrap:anywhere]">
-                    {m.message}
-                  </p>
-                  <p className="mt-1.5 text-[11px]">Publié le {formaterDate.format(new Date(m.cree_le))}</p>
-                </li>
-              ))}
-            </ul>
+            <>
+              <ul className="flex flex-col gap-3">
+                {messages.map((m) => (
+                  <li key={m.id} className="rounded-lg border border-black/10 bg-white/40 p-3">
+                    {m.titre ? <p className="text-sm font-semibold text-noir [overflow-wrap:anywhere]">{m.titre}</p> : null}
+                    <p className="mt-1 whitespace-pre-line text-xs font-semibold leading-relaxed [overflow-wrap:anywhere]">
+                      {m.message}
+                    </p>
+                    <p className="mt-1.5 text-[11px]">Publié le {formaterDate.format(new Date(m.cree_le))}</p>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/messages"
+                onClick={() => setOuvert(false)}
+                className="mt-3 inline-block text-xs font-semibold text-noir underline underline-offset-2"
+              >
+                Ouvrir la page Messages →
+              </Link>
+            </>
           ) : (
             <p className="py-2 text-sm font-semibold">Aucun message de l&apos;équipe pour le moment.</p>
           )}
