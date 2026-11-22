@@ -48,7 +48,6 @@ async function Detail({ params }: { params: PageProps<"/cours/[id]">["params"] }
   const cours = await lireCoursDetail(id);
   if (!cours) notFound();
 
-  const premiereSeance = cours.seances.find((s) => !s.passee) ?? cours.seances[0] ?? null;
   const couleur = COULEUR_SEANCE;
   const aPreparer = cours.devoirs.filter((d) => !d.rendu).length;
 
