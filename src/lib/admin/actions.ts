@@ -6,6 +6,7 @@ import { civiliteValide, trancheAgeValide } from "@/lib/auth/profil";
 import { creerClientServeur } from "@/lib/supabase/serveur";
 import {
   cheminSupport,
+  validerAnnonce,
   estCheminSupport,
   estUuid,
   validerCours,
@@ -509,6 +510,55 @@ export async function changerStatutRendu(_: EtatAdmin, formData: FormData): Prom
   const supabase = await clientAdmin();
   if (!supabase) return SESSION_EXPIREE;
   const { data, error } = await supabase.from("rendus").update({ statut }).eq("id", id).select("id");
+  if (error || !data?.length) return ECHEC;
+  actualiser();
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------
+// Messages de l'équipe
+// ---------------------------------------------------------------
+
+function saisieAnnonce(formData: FormData) {
+  const v = formData.get("message");
+  return {
+    groupeId: texte(formData, "groupe_id"),
+    titre: texte(formData, "titre"),
+    message: typeof v === "string" ? v : "",
+    publie: formData.get("publie") === "on",
+  };
+}
+
+export async function creerAnnonce(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
+  const v = validerAnnonce(saisieAnnonce(formData));
+  if ("message" in v) return v;
+  const supabase = await clientAdmin();
+  if (!supabase) return SESSION_EXPIREE;
+  const { error } = await supabase.from("annonces").insert(v.annonce);
+  if (error) return ECHEC;
+  actualiser();
+  return { ok: true, message: v.annonce.publie ? "Message publié." : "Message enregistré (non publié)." };
+}
+
+export async function modifierAnnonce(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
+  const id = texte(formData, "id");
+  if (!estUuid(id)) return ECHEC;
+  const v = validerAnnonce(saisieAnnonce(formData));
+  if ("message" in v) return v;
+  const supabase = await clientAdmin();
+  if (!supabase) return SESSION_EXPIREE;
+  const { data, error } = await supabase.from("annonces").update(v.annonce).eq("id", id).select("id");
+  if (error || !data?.length) return ECHEC;
+  actualiser();
+  return { ok: true, message: "Message enregistré." };
+}
+
+export async function supprimerAnnonce(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
+  const id = texte(formData, "id");
+  if (!estUuid(id)) return ECHEC;
+  const supabase = await clientAdmin();
+  if (!supabase) return SESSION_EXPIREE;
+  const { data, error } = await supabase.from("annonces").delete().eq("id", id).select("id");
   if (error || !data?.length) return ECHEC;
   actualiser();
   return { ok: true };

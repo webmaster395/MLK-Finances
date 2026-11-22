@@ -276,3 +276,19 @@ export function validerDevoir(s: {
     },
   };
 }
+
+// ---------------------------------------------------------------
+// Messages de l'équipe
+// ---------------------------------------------------------------
+
+export type Annonce = { groupe_id: string | null; titre: string; message: string; publie: boolean };
+
+/** Message de l'équipe : pour tous les groupes (groupe vide) ou pour un groupe. */
+export function validerAnnonce(s: { groupeId: string; titre: string; message: string; publie: boolean }): { annonce: Annonce } | { message: string } {
+  const titre = s.titre.trim();
+  const texte = s.message.trim();
+  if (s.groupeId && !estUuid(s.groupeId)) return { message: "Groupe non valide." };
+  if (titre.length > 150) return { message: "Le titre est trop long (150 caractères au maximum)." };
+  if (texte.length === 0 || texte.length > 2000) return { message: "Écrivez le message (2 000 caractères au maximum)." };
+  return { annonce: { groupe_id: s.groupeId || null, titre, message: texte, publie: s.publie } };
+}

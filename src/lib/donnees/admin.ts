@@ -556,3 +556,37 @@ export async function lireOptionsDevoir(): Promise<OptionsDevoir> {
       .filter((g) => g.cours.length > 0),
   };
 }
+
+// ---------------------------------------------------------------
+// Messages de l'équipe (lot 6)
+// ---------------------------------------------------------------
+
+export type AnnonceAdmin = {
+  id: string;
+  groupeId: string | null;
+  groupe: string | null;
+  titre: string;
+  message: string;
+  publie: boolean;
+  creeLe: string;
+};
+
+/** Tous les messages de l'équipe, les plus récents d'abord. */
+export async function lireAnnoncesAdmin(): Promise<AnnonceAdmin[]> {
+  await exigerAdmin();
+  await connection();
+  const supabase = await creerClientServeur();
+  const { data } = await supabase
+    .from("annonces")
+    .select("id, groupe_id, titre, message, publie, cree_le, groupes(nom)")
+    .order("cree_le", { ascending: false });
+  return (data ?? []).map((a) => ({
+    id: a.id,
+    groupeId: a.groupe_id,
+    groupe: a.groupes?.nom ?? null,
+    titre: a.titre,
+    message: a.message,
+    publie: a.publie,
+    creeLe: a.cree_le,
+  }));
+}

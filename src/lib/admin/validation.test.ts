@@ -2,6 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  validerAnnonce,
   cheminSupport,
   estCheminSupport,
   estDate,
@@ -150,4 +151,14 @@ test("un devoir a un cours, un titre et une échéance facultative (23:59 par d�
   assert.ok("message" in validerDevoir({ ...base, coursId: "" }));
   assert.ok("message" in validerDevoir({ ...base, date: "", heure: "10:00" }));
   assert.ok("message" in validerDevoir({ ...base, heure: "7h" }));
+});
+
+test("un message de l'équipe a un texte, un titre facultatif, et vise tous les groupes ou un seul", () => {
+  const tous = validerAnnonce({ groupeId: "", titre: " Bienvenue ", message: " Bonjour à tous ", publie: true });
+  assert.deepEqual(tous, { annonce: { groupe_id: null, titre: "Bienvenue", message: "Bonjour à tous", publie: true } });
+  const un = validerAnnonce({ groupeId: "aaaaaaaa-0000-4000-8000-000000000001", titre: "", message: "Salle B", publie: false });
+  assert.ok("annonce" in un && un.annonce.groupe_id === "aaaaaaaa-0000-4000-8000-000000000001");
+  assert.ok("message" in validerAnnonce({ groupeId: "", titre: "", message: "   ", publie: true }));
+  assert.ok("message" in validerAnnonce({ groupeId: "x", titre: "", message: "ok", publie: true }));
+  assert.ok("message" in validerAnnonce({ groupeId: "", titre: "x".repeat(151), message: "ok", publie: true }));
 });

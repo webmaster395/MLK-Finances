@@ -5,6 +5,7 @@ import {
   FolderOpen,
   House,
   LayoutDashboard,
+  Megaphone,
   MessageCircle,
   Palette,
   ShieldCheck,
@@ -54,6 +55,7 @@ export const GROUPES_MENU_ADMIN: PageMenu[][] = [
     { href: "/admin/rubriques", nom: "Rubriques", icone: Palette },
     { href: "/admin/cours", nom: "Cours", icone: BookOpen },
     { href: "/admin/devoirs", nom: "Devoirs", icone: FilePen },
+    { href: "/admin/messages", nom: "Messages", icone: Megaphone },
   ],
   [{ href: "/accueil", nom: "Espace participant", icone: House }],
 ];
