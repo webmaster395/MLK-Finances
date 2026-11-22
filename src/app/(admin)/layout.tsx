@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { EnTeteAdmin, EnTeteAdminSquelette, MenuAdmin } from "@/components/admin/coquille-admin";
-import { SCRIPT_THEME } from "@/components/coquille/bascule-theme";
+import { InitialiserTheme, SCRIPT_THEME } from "@/components/coquille/bascule-theme";
 import { MenuSquelette } from "@/components/coquille/menu-lateral";
 
 /**
@@ -11,6 +11,7 @@ export default function Layout({ children }: LayoutProps<"/">) {
   return (
     <div id="espace-connecte" suppressHydrationWarning className="flex flex-1 flex-col md:flex-row">
       <script dangerouslySetInnerHTML={{ __html: SCRIPT_THEME }} />
+      <InitialiserTheme />
       <a
         href="#contenu"
         className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2"

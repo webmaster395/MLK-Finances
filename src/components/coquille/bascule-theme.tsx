@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useLayoutEffect, useSyncExternalStore } from "react";
 import { Moon, Sun } from "lucide-react";
 
 const CLE = "theme";
@@ -26,6 +26,26 @@ function abonner(rappel: () => void) {
  * pour éviter un flash de couleurs au chargement. Placé dans le conteneur #espace-connecte.
  */
 export const SCRIPT_THEME = `(function(){try{var t=localStorage.getItem("${CLE}");if(t!=="sombre"&&t!=="clair"){t=matchMedia("(prefers-color-scheme: dark)").matches?"sombre":"clair"}document.getElementById("${ID_CONTENEUR}").setAttribute("data-theme",t)}catch(e){}})()`;
+
+/**
+ * Applique le thème choisi quand on ARRIVE dans l'espace connecté par un changement de page du site
+ * (par exemple de l'espace participant à l'administration) : dans ce cas le script ci-dessus ne
+ * s'exécute pas, car la page n'est pas chargée depuis le serveur. Ne fait rien s'il a déjà été appliqué.
+ */
+export function InitialiserTheme() {
+  useLayoutEffect(() => {
+    const conteneur = document.getElementById(ID_CONTENEUR);
+    if (!conteneur || conteneur.getAttribute("data-theme")) return;
+    let choix: string | null = null;
+    try {
+      choix = localStorage.getItem(CLE);
+    } catch {}
+    const sombre = choix === "sombre" || (choix !== "clair" && matchMedia("(prefers-color-scheme: dark)").matches);
+    appliquer(sombre);
+    window.dispatchEvent(new Event(EVENEMENT));
+  }, []);
+  return null;
+}
 
 /** Bouton clair / sombre. Le choix est mémorisé sur cet appareil. */
 export function BasculeTheme() {

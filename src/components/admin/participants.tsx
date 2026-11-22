@@ -13,7 +13,7 @@ const CLASSE_SELECT = "min-h-11 w-full rounded-md border border-black/25 bg-whit
 
 function PastilleAdmin() {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-rose px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white">
+    <span className="inline-flex items-center gap-1 rounded-full bg-rose px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-noir">
       <ShieldCheck aria-hidden className="size-3.5" />
       Admin
     </span>
@@ -51,7 +51,7 @@ export async function ListeParticipants() {
                       </span>
                     ))
                   ) : p.role === "participant" ? (
-                    <span className="rounded-full bg-orange px-2 py-0.5 font-semibold text-white">Sans groupe</span>
+                    <span className="rounded-full bg-orange px-2 py-0.5 font-semibold text-noir">Sans groupe</span>
                   ) : null}
                   <span>inscrit le {formaterJourComplet(p.inscritLe)}</span>
                 </span>

@@ -6,7 +6,7 @@ import { creerClientServeur } from "@/lib/supabase/serveur";
 
 export type GroupeEffectif = { id: string; nom: string; promotion: string | null; effectif: number };
 export type ParticipantSansGroupe = { id: string; nom: string; inscritLe: string };
-export type RenduACorriger = { id: string; devoir: string; participant: string; deposeLe: string };
+export type RenduACorriger = { id: string; devoirId: string; devoir: string; participant: string; deposeLe: string };
 
 export type TableauDeBord = {
   participants: number;
@@ -37,7 +37,7 @@ export async function lireTableauDeBord(): Promise<TableauDeBord> {
     supabase.from("sessions").select("id", { count: "exact", head: true }).gte("debut", maintenant),
     supabase
       .from("rendus")
-      .select("id, depose_le, devoirs(titre), profils(prenom, nom)")
+      .select("id, devoir_id, depose_le, devoirs(titre), profils(prenom, nom)")
       .eq("statut", "depose")
       .order("depose_le", { ascending: true }),
     supabase.from("temoignages").select("id", { count: "exact", head: true }).eq("valide", false),
@@ -58,6 +58,7 @@ export async function lireTableauDeBord(): Promise<TableauDeBord> {
     seancesAVenir: seances.count ?? 0,
     aCorriger: (rendus.data ?? []).map((r) => ({
       id: r.id,
+      devoirId: r.devoir_id,
       devoir: r.devoirs?.titre ?? "Devoir",
       participant: nomAffiche(r.profils),
       deposeLe: r.depose_le,

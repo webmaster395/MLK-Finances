@@ -47,7 +47,7 @@ function CarteTemoignage({ t }: { t: TemoignageAdmin }) {
                 Validé
               </span>
             ) : (
-              <span className="rounded-full bg-orange px-2 py-0.5 text-[11px] font-semibold text-white">À valider</span>
+              <span className="rounded-full bg-orange px-2 py-0.5 text-[11px] font-semibold text-noir">À valider</span>
             )}
           </p>
           <p className="text-xs">Ajouté le {formaterJourComplet(t.creeLe)}</p>

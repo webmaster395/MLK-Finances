@@ -15,7 +15,7 @@ function Pastille({ children, couleur }: { children: React.ReactNode; couleur: "
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-        couleur === "orange" ? "bg-orange text-white" : "border border-black/25 text-noir"
+        couleur === "orange" ? "bg-orange text-noir" : "border border-black/25 text-noir"
       }`}
     >
       {children}

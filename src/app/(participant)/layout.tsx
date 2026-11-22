@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { SCRIPT_THEME } from "@/components/coquille/bascule-theme";
+import { InitialiserTheme, SCRIPT_THEME } from "@/components/coquille/bascule-theme";
 import { EnTete, EnTeteSquelette } from "@/components/coquille/en-tete";
 import { MenuSquelette } from "@/components/coquille/menu-lateral";
 import { MenuParticipant } from "@/components/coquille/menu-participant";
@@ -10,6 +10,7 @@ export default function Layout({ children }: LayoutProps<"/">) {
     // Le thème (clair / sombre) est posé sur ce conteneur par le script ci-dessous : React ne touche pas à cet attribut
     <div id="espace-connecte" suppressHydrationWarning className="flex flex-1 flex-col md:flex-row">
       <script dangerouslySetInnerHTML={{ __html: SCRIPT_THEME }} />
+      <InitialiserTheme />
       <a
         href="#contenu"
         className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2"

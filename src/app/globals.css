@@ -256,4 +256,14 @@
   #espace-connecte[data-theme="sombre"] .bg-orange\/15 {
     background-color: rgb(233 86 9 / 0.28);
   }
+  /* Boutons « danger » de l'administration (suppression) : rouge clair lisible sur fond sombre */
+  #espace-connecte[data-theme="sombre"] .text-\[\#b42318\] {
+    color: #ff9d92;
+  }
+  #espace-connecte[data-theme="sombre"] .border-\[\#b42318\]\/40 {
+    border-color: rgb(255 157 146 / 0.55);
+  }
+  #espace-connecte[data-theme="sombre"] .hover\:bg-\[\#b42318\]\/10:hover {
+    background-color: rgb(255 157 146 / 0.14);
+  }
 }

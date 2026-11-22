@@ -1,13 +1,14 @@
+import Link from "next/link";
 import { CalendarDays, FilePen, MessageCircle, UserPlus, Users, type LucideIcon } from "lucide-react";
 import { lireTableauDeBord } from "@/lib/donnees/admin";
 import { formaterCreneau, formaterJourComplet } from "@/lib/format";
 
-function Chiffre({ icone: Icone, valeur, libelle, alerte = false }: { icone: LucideIcon; valeur: number; libelle: string; alerte?: boolean }) {
+function Chiffre({ icone: Icone, valeur, libelle, href, alerte = false }: { icone: LucideIcon; valeur: number; libelle: string; href: string; alerte?: boolean }) {
   return (
-    <div className="accueil-carte flex items-center gap-4 p-4 sm:p-5">
+    <Link href={href} className="accueil-carte flex items-center gap-4 p-4 hover:brightness-95 sm:p-5">
       <span
         aria-hidden
-        className={`flex size-11 shrink-0 items-center justify-center rounded-[0.6rem] ${alerte ? "bg-orange text-white" : "bg-rose-clair text-noir"}`}
+        className={`flex size-11 shrink-0 items-center justify-center rounded-[0.6rem] ${alerte ? "bg-orange text-noir" : "bg-rose-clair text-noir"}`}
       >
         <Icone className="size-5" strokeWidth={1.85} />
       </span>
@@ -15,7 +16,7 @@ function Chiffre({ icone: Icone, valeur, libelle, alerte = false }: { icone: Luc
         <span className="block font-titre text-3xl font-semibold leading-none text-noir">{valeur}</span>
         <span className="mt-1 block text-sm font-semibold">{libelle}</span>
       </p>
-    </div>
+    </Link>
   );
 }
 
@@ -27,7 +28,7 @@ function Panneau({ id, titre, compteur, children }: { id: string; titre: string;
           {titre}
         </h2>
         {compteur ? (
-          <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-orange px-2 text-xs font-bold text-white">
+          <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-orange px-2 text-xs font-bold text-noir">
             {compteur}
           </span>
         ) : null}
@@ -44,10 +45,10 @@ export async function TableauDeBordAdmin() {
   return (
     <div className="flex flex-col gap-4">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Chiffre icone={Users} valeur={t.participants} libelle={t.participants > 1 ? "Participants" : "Participant"} />
-        <Chiffre icone={CalendarDays} valeur={t.seancesAVenir} libelle="Séances à venir" />
-        <Chiffre icone={FilePen} valeur={t.aCorriger.length} libelle="Devoirs à corriger" alerte={t.aCorriger.length > 0} />
-        <Chiffre icone={MessageCircle} valeur={t.temoignagesAValider} libelle="Témoignages à valider" alerte={t.temoignagesAValider > 0} />
+        <Chiffre icone={Users} valeur={t.participants} libelle={t.participants > 1 ? "Participants" : "Participant"} href="/admin/participants" />
+        <Chiffre icone={CalendarDays} valeur={t.seancesAVenir} libelle="Séances à venir" href="/admin/seances" />
+        <Chiffre icone={FilePen} valeur={t.aCorriger.length} libelle="Devoirs à corriger" href="/admin/devoirs" alerte={t.aCorriger.length > 0} />
+        <Chiffre icone={MessageCircle} valeur={t.temoignagesAValider} libelle="Témoignages à valider" href="/admin/temoignages" alerte={t.temoignagesAValider > 0} />
       </div>
 
       <div className="grid items-start gap-4 xl:grid-cols-2">
@@ -55,11 +56,13 @@ export async function TableauDeBordAdmin() {
           {t.aCorriger.length > 0 ? (
             <ul className="mt-3 divide-y divide-black/10">
               {t.aCorriger.slice(0, 8).map((r) => (
-                <li key={r.id} className="py-3">
-                  <p className="text-sm font-semibold text-noir [overflow-wrap:anywhere]">{r.devoir}</p>
-                  <p className="mt-0.5 text-xs">
-                    {r.participant} · déposé le {formaterCreneau(r.deposeLe)}
-                  </p>
+                <li key={r.id}>
+                  <Link href={`/admin/devoirs/${r.devoirId}`} className="group block py-3">
+                    <span className="block text-sm font-semibold text-noir group-hover:underline [overflow-wrap:anywhere]">{r.devoir}</span>
+                    <span className="mt-0.5 block text-xs">
+                      {r.participant} · déposé le {formaterCreneau(r.deposeLe)}
+                    </span>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -77,7 +80,9 @@ export async function TableauDeBordAdmin() {
                 {t.sansGroupe.map((p) => (
                   <li key={p.id} className="flex items-center gap-3 py-2.5">
                     <UserPlus aria-hidden className="size-4 shrink-0 text-rose" />
-                    <span className="min-w-0 flex-1 truncate text-sm font-semibold text-noir">{p.nom}</span>
+                    <Link href={`/admin/participants/${p.id}`} className="min-w-0 flex-1 truncate text-sm font-semibold text-noir hover:underline">
+                      {p.nom}
+                    </Link>
                     <span className="shrink-0 text-xs">inscrit le {formaterJourComplet(p.inscritLe)}</span>
                   </li>
                 ))}
@@ -92,10 +97,10 @@ export async function TableauDeBordAdmin() {
               <ul className="mt-3 divide-y divide-black/10">
                 {t.groupes.map((g) => (
                   <li key={g.id} className="flex items-center gap-3 py-2.5">
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold text-noir">{g.nom}</span>
+                    <Link href={`/admin/groupes/${g.id}`} className="group min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold text-noir group-hover:underline">{g.nom}</span>
                       {g.promotion ? <span className="block text-xs">{g.promotion}</span> : null}
-                    </span>
+                    </Link>
                     <span className="shrink-0 rounded-full border border-black/20 px-3 py-1 text-xs font-semibold text-noir">
                       {g.effectif} participant{g.effectif > 1 ? "s" : ""}
                     </span>

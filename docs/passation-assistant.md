@@ -49,7 +49,9 @@ Pour voir le site : `npm run dev` puis http://localhost:3000 (compte de test : `
    - **Seulement si l'utilisateur le confirme ensuite** : un bandeau fin avec la même photo au-dessus de la frise de l'accueil (masqué sur téléphone). Ne pas le faire sans accord.
 2. Corrections de détails signalées par l'utilisateur.
 (Les anciennes tâches Devoirs, Ressources et Témoignages sont faites : voir le journal.)
-**Hors périmètre sans accord explicite** : base de données, authentification, dépôt de fichiers, mise en ligne, espace administrateur (phase 2).
+**Hors périmètre sans accord explicite** : base de données, authentification, dépôt de fichiers, mise en ligne.
+
+**Espace administrateur (phase 2)** : construit par Claude (lots 0 à 8, voir `PLAN.md` et `docs/plan-espace-admin.md`). Il est **réservé à Claude** : ne pas modifier `src/app/(admin)/`, `src/components/admin/`, `src/lib/admin/`, `src/lib/donnees/admin.ts`, ni la sécurité (rôle admin, règles de la base). Deux points communs avec l'espace participant, à connaître si vous touchez à la coquille : le menu latéral `menu-lateral.tsx` sert aux deux espaces (propriété `espace`), et le thème clair / sombre est appliqué par `InitialiserTheme` (arrivée par changement de page) en plus du script du layout (arrivée par chargement).
 
 ## 6. Journal (à compléter par l'assistant qui travaille)
 Pour chaque lot : date, ce qui a été demandé, fichiers modifiés, commandes de vérification lancées et leur résultat, ce qui n'a pas pu être vérifié, questions en suspens.
