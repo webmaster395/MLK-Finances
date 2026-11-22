@@ -60,7 +60,20 @@ before(async () => {
   await db.exec(lire("tests/support/supabase-simule.sql"));
   const migrations = readdirSync(join(racine, "migrations")).filter((f) => f.endsWith(".sql")).sort();
   for (const fichier of migrations) await db.exec(lire(`migrations/${fichier}`));
+  // Comptes des tests : créés ici, sans mot de passe (aucun compte réel n'est dans le dépôt)
+  await db.exec(`
+    insert into auth.users (instance_id, id, aud, role, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+    values
+      ('00000000-0000-0000-0000-000000000000', '${A}', 'authenticated', 'authenticated', 'a@example.com', now(),
+       '{"provider":"email","providers":["email"]}', '{"prenom":"Alex","nom":"Test Un","civilite":"monsieur","tranche_age":"26_35"}', now(), now()),
+      ('00000000-0000-0000-0000-000000000000', '${B}', 'authenticated', 'authenticated', 'b@example.com', now(),
+       '{"provider":"email","providers":["email"]}', '{"prenom":"Sam","nom":"Test Deux","civilite":"madame","tranche_age":"18_25"}', now(), now());`);
   await db.exec(lire("seed.sql"));
+  // Dépôt d'exemple de A (devoir « Analyser une offre de crédit »)
+  await db.exec(`
+    insert into public.rendus (devoir_id, participant_id, fichier_path, nom_fichier)
+    values ('dddddddd-0000-4000-8000-000000000003', '${A}',
+            '${A}/dddddddd-0000-4000-8000-000000000003/analyse-credit.pdf', 'analyse-credit.pdf');`);
   // Objets de stockage utilisés par les tests
   await db.exec(`
     insert into public.ressources (cours_id, titre, type, storage_path)

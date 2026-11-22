@@ -29,7 +29,7 @@ npm run test:unit
 npm run test:rls
 ```
 Tout doit passer. Si quelque chose échoue : corriger, ne pas contourner (pas de `eslint-disable` ni de `@ts-ignore` pour faire taire une alerte).
-Pour voir le site : `npm run dev` puis http://localhost:3000 (compte de test : `participant.test1@example.com`, mot de passe en haut de `supabase/seed.sql`). Vérifier chaque page **à 1366 px et à 375 px, en clair et en sombre**.
+Pour voir le site : `npm run dev` puis http://localhost:3000 (comptes de test : fichier local `supabase/comptes-test.local.sql`, non versionné). Vérifier chaque page **à 1366 px et à 375 px, en clair et en sombre**.
 
 ## 4. Où en est le projet
 - Phase 1 (espace participant) terminée : connexion, accueil, sessions, devoirs, ressources, témoignages, profil.

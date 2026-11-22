@@ -1,52 +1,7 @@
--- Données de démonstration — TOUT EST MARQUÉ « test ».
--- Chargées par `supabase db reset` en local. À ne JAMAIS charger en production.
---
--- Comptes de test (adresses en example.com : elles n'existent pas) :
---   participant.test1@example.com   mot de passe : Test-Mlk-2026!
---   participant.test2@example.com   mot de passe : Test-Mlk-2026!
---   admin.test@example.com          mot de passe : Test-Mlk-2026!   (administrateur)
--- Remarque : la création directe des comptes ci-dessous est la méthode habituelle pour les
--- données de démo en local ; elle n'a pu être vérifiée que sur une base simulée (voir PLAN.md).
-
--- ---------------------------------------------------------------
--- Comptes (le profil est créé automatiquement par le déclencheur)
--- ---------------------------------------------------------------
-insert into auth.users (
-  instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
-  raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
-  confirmation_token, recovery_token, email_change, email_change_token_new
-) values
-  ('00000000-0000-0000-0000-000000000000', '11111111-1111-4111-8111-111111111111',
-   'authenticated', 'authenticated', 'participant.test1@example.com',
-   extensions.crypt('Test-Mlk-2026!', extensions.gen_salt('bf')), now(),
-   '{"provider":"email","providers":["email"]}', '{"prenom":"Alex","nom":"Test Un","civilite":"monsieur","tranche_age":"26_35"}',
-   now(), now(), '', '', '', ''),
-  ('00000000-0000-0000-0000-000000000000', '22222222-2222-4222-8222-222222222222',
-   'authenticated', 'authenticated', 'participant.test2@example.com',
-   extensions.crypt('Test-Mlk-2026!', extensions.gen_salt('bf')), now(),
-   '{"provider":"email","providers":["email"]}', '{"prenom":"Sam","nom":"Test Deux","civilite":"madame","tranche_age":"18_25"}',
-   now(), now(), '', '', '', ''),
-  ('00000000-0000-0000-0000-000000000000', '99999999-9999-4999-8999-999999999999',
-   'authenticated', 'authenticated', 'admin.test@example.com',
-   extensions.crypt('Test-Mlk-2026!', extensions.gen_salt('bf')), now(),
-   '{"provider":"email","providers":["email"]}', '{"prenom":"Admin","nom":"Test"}',
-   now(), now(), '', '', '', '');
-
-insert into auth.identities (
-  id, user_id, identity_data, provider, provider_id, last_sign_in_at, created_at, updated_at
-) values
-  (gen_random_uuid(), '11111111-1111-4111-8111-111111111111',
-   '{"sub":"11111111-1111-4111-8111-111111111111","email":"participant.test1@example.com"}',
-   'email', '11111111-1111-4111-8111-111111111111', now(), now(), now()),
-  (gen_random_uuid(), '22222222-2222-4222-8222-222222222222',
-   '{"sub":"22222222-2222-4222-8222-222222222222","email":"participant.test2@example.com"}',
-   'email', '22222222-2222-4222-8222-222222222222', now(), now(), now()),
-  (gen_random_uuid(), '99999999-9999-4999-8999-999999999999',
-   '{"sub":"99999999-9999-4999-8999-999999999999","email":"admin.test@example.com"}',
-   'email', '99999999-9999-4999-8999-999999999999', now(), now(), now());
-
--- Premier administrateur (nommé hors du site : maintenance directe dans la base)
-update public.profils set role = 'admin' where id = '99999999-9999-4999-8999-999999999999';
+-- Données de démonstration : contenu fictif mais présentable (modules, séances, devoirs,
+-- ressources, messages, témoignages). Aucun compte ni mot de passe ici : les comptes de test
+-- sont dans supabase/comptes-test.local.sql (fichier local, ignoré par Git, jamais envoyé sur GitHub).
+-- À ne JAMAIS charger en production sans l'avoir relu.
 
 -- ---------------------------------------------------------------
 -- Cours
@@ -130,7 +85,7 @@ insert into public.ressources (id, cours_id, titre, type, url, storage_path) val
    'Support du module 4 (cours non publié)', 'lien', 'https://www.economie.gouv.fr/', null);
 
 -- ---------------------------------------------------------------
--- Devoirs et un rendu
+-- Devoirs
 -- ---------------------------------------------------------------
 insert into public.devoirs (id, cours_id, titre, consigne, echeance) values
   ('dddddddd-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
@@ -144,10 +99,6 @@ insert into public.devoirs (id, cours_id, titre, consigne, echeance) values
    ((date_trunc('day', now() at time zone 'Europe/Paris') - interval '3 days' + interval '18 hours') at time zone 'Europe/Paris')),
   ('dddddddd-0000-4000-8000-000000000004', 'cccccccc-0000-4000-8000-000000000004',
    'Devoir du module 4 (cours non publié)', 'Devoir en préparation.', ((date_trunc('day', now() at time zone 'Europe/Paris') + interval '9 days' + interval '18 hours') at time zone 'Europe/Paris'));
-
-insert into public.rendus (devoir_id, participant_id, fichier_path, nom_fichier) values
-  ('dddddddd-0000-4000-8000-000000000003', '11111111-1111-4111-8111-111111111111',
-   '11111111-1111-4111-8111-111111111111/dddddddd-0000-4000-8000-000000000003/analyse-credit.pdf', 'analyse-credit.pdf');
 
 -- ---------------------------------------------------------------
 -- Témoignages (fictifs)
