@@ -5,7 +5,6 @@ import { Suspense } from "react";
 import { ArrowLeft, BookOpen, CalendarClock, CalendarDays, Download, FileText, TriangleAlert } from "lucide-react";
 import { BadgeStatut } from "@/components/devoirs/badge-statut";
 import { FormulaireDepot } from "@/components/devoirs/formulaire-depot";
-import { PastilleRubrique } from "@/components/seances/pastille-rubrique";
 import { obtenirPersonne } from "@/lib/auth/personne";
 import { lireDevoir } from "@/lib/donnees/devoirs";
 import { depotPossible } from "@/lib/devoirs";
@@ -45,7 +44,6 @@ async function Detail({
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <BadgeStatut statut={devoir.statut} />
-          {devoir.seance?.rubrique ? <PastilleRubrique rubrique={devoir.seance.rubrique} /> : null}
         </div>
         <h1 className="titre-charte text-3xl sm:text-5xl">
           <span className="pinceau">{devoir.titre}</span>

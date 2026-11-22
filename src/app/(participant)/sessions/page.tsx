@@ -40,7 +40,6 @@ async function Calendrier({ searchParams }: { searchParams: PageProps<"/sessions
         jour: s.jour,
         horaires: formaterHoraires(s.debut, s.fin),
         lieu: s.lieu,
-        rubrique: s.rubrique,
         intervenants: s.intervenants,
         coursTitre: s.cours?.titre ?? null,
         aPreparer: s.aPreparer,

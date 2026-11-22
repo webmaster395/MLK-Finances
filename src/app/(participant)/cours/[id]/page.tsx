@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { BadgeStatut, couleurStatut } from "@/components/devoirs/badge-statut";
 import { Intervenants } from "@/components/seances/intervenants";
-import { couleurSeance, PastilleRubrique } from "@/components/seances/pastille-rubrique";
+import { COULEUR_SEANCE } from "@/components/seances/couleur-seance";
 import { formaterCreneau, formaterHoraires, formaterJourIso } from "@/lib/format";
 import { lireCoursDetail } from "@/lib/donnees/cours";
 
@@ -49,7 +49,7 @@ async function Detail({ params }: { params: PageProps<"/cours/[id]">["params"] }
   if (!cours) notFound();
 
   const premiereSeance = cours.seances.find((s) => !s.passee) ?? cours.seances[0] ?? null;
-  const couleur = couleurSeance(premiereSeance?.rubrique ?? null);
+  const couleur = COULEUR_SEANCE;
   const aPreparer = cours.devoirs.filter((d) => !d.rendu).length;
 
   return (
@@ -57,7 +57,6 @@ async function Detail({ params }: { params: PageProps<"/cours/[id]">["params"] }
       <header className="accueil-carte border-l-4 p-5 sm:p-7" style={{ borderLeftColor: couleur }}>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            {premiereSeance?.rubrique ? <PastilleRubrique rubrique={premiereSeance.rubrique} /> : null}
             <span className="rounded-full bg-black/5 px-3 py-1 text-xs font-semibold text-noir">
               {cours.seances.length} séance{cours.seances.length > 1 ? "s" : ""}
             </span>
@@ -210,13 +209,12 @@ async function Detail({ params }: { params: PageProps<"/cours/[id]">["params"] }
                       className={`group flex flex-col gap-2 rounded-lg border border-l-4 border-black/15 bg-white/40 p-3.5 transition hover:shadow-md ${
                         s.passee ? "opacity-75" : ""
                       }`}
-                      style={{ borderLeftColor: couleurSeance(s.rubrique) }}
+                      style={{ borderLeftColor: COULEUR_SEANCE }}
                     >
                       <span className="flex flex-wrap items-center justify-between gap-2">
                         <span className="text-xs font-semibold text-noir">
                           <span className="first-letter:uppercase">{formaterJourIso(s.jour)}</span> · {formaterHoraires(s.debut, s.fin)}
                         </span>
-                        <PastilleRubrique rubrique={s.rubrique} />
                       </span>
                       <span className="text-sm font-semibold leading-snug text-noir group-hover:underline sm:text-base [overflow-wrap:anywhere]">
                         {s.titre}

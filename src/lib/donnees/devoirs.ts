@@ -4,14 +4,12 @@ import { connection } from "next/server";
 import { creerClientServeur } from "@/lib/supabase/serveur";
 import { estAFaire, renduEnRetard, statutDevoir, type RenduResume, type StatutDevoir } from "@/lib/devoirs";
 import { jourParis } from "@/lib/format";
-import type { Rubrique } from "./sessions";
 
 export type SeanceDevoir = {
   id: string;
   titre: string;
   /** Jour de la séance à Paris, « AAAA-MM-JJ » */
   jour: string;
-  rubrique: Rubrique | null;
 };
 
 export type DevoirListe = {
@@ -33,10 +31,10 @@ export type DevoirDetail = DevoirListe & { consigne: string };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const COLONNES_RENDU = "rendus(statut, depose_le, nom_fichier)";
-const COLONNES_COURS = "cours(id, titre, sessions(id, titre, debut, fin, rubriques(nom, couleur)))";
+const COLONNES_COURS = "cours(id, titre, sessions(id, titre, debut, fin))";
 
 type LigneRendu = { statut: "depose" | "corrige"; depose_le: string; nom_fichier: string | null };
-type LigneSeance = { id: string; titre: string; debut: string; fin: string | null; rubriques: Rubrique | null };
+type LigneSeance = { id: string; titre: string; debut: string; fin: string | null };
 
 function premierRendu(rendus: LigneRendu[]): RenduResume {
   const r = rendus[0];
@@ -51,7 +49,6 @@ function choisirSeance(seances: LigneSeance[], maintenant: number): SeanceDevoir
     id: retenue.id,
     titre: retenue.titre,
     jour: jourParis(retenue.debut),
-    rubrique: retenue.rubriques,
   };
 }
 

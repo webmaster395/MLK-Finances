@@ -17,7 +17,6 @@ import {
   validerDevoir,
   validerGroupe,
   validerLien,
-  validerRubrique,
   validerSeance,
 } from "./validation.ts";
 
@@ -39,7 +38,6 @@ const SEANCE = {
   heureFin: "12:00",
   lieu: "",
   description: "",
-  rubriqueId: "",
   coursId: "",
   intervenants: "Claire Martin\nKarim Benali, ",
   publie: true,
@@ -53,7 +51,6 @@ test("une séance valide est préparée pour la base", () => {
   assert.equal(r.seance.fin, "2026-12-05T11:00:00.000Z");
   assert.deepEqual(r.seance.intervenants, ["Claire Martin", "Karim Benali"]);
   assert.equal(r.seance.lieu, null);
-  assert.equal(r.seance.rubrique_id, null);
 });
 
 test("une séance incomplète ou incohérente est refusée", () => {
@@ -62,15 +59,6 @@ test("une séance incomplète ou incohérente est refusée", () => {
   assert.ok("message" in validerSeance({ ...SEANCE, heureDebut: "25:00" }));
   assert.ok("message" in validerSeance({ ...SEANCE, heureFin: "08:00" }));
   assert.ok("message" in validerSeance({ ...SEANCE, intervenants: Array.from({ length: 11 }, (_, i) => `Nom ${i}`).join("\n") }));
-});
-
-test("une rubrique a un nom, une couleur hexadécimale et un ordre entier", () => {
-  assert.deepEqual(validerRubrique({ nom: "Atelier", couleur: "#E95609", ordre: "3" }), {
-    rubrique: { nom: "Atelier", couleur: "#e95609", ordre: 3 },
-  });
-  assert.ok("message" in validerRubrique({ nom: "", couleur: "#e95609", ordre: "" }));
-  assert.ok("message" in validerRubrique({ nom: "X", couleur: "rouge", ordre: "" }));
-  assert.ok("message" in validerRubrique({ nom: "X", couleur: "#e95609", ordre: "1.5" }));
 });
 
 test("un identifiant doit être un UUID", () => {

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarPlus, CalendarX, ChevronRight, EyeOff, MapPin } from "lucide-react";
 import { Champ } from "@/components/auth/champ";
 import { EtatVide } from "@/components/coquille/etat-vide";
-import { couleurSeance, PastilleRubrique } from "@/components/seances/pastille-rubrique";
+import { COULEUR_SEANCE } from "@/components/seances/couleur-seance";
 import { creerSeance, modifierSeance, supprimerSeance } from "@/lib/admin/actions";
 import { isoVersParis } from "@/lib/admin/validation";
 import { lireOptionsSeance, lireSeanceAdmin, lireSeancesAdmin, type OptionsSeance, type SeanceAdmin } from "@/lib/donnees/admin";
@@ -28,7 +28,7 @@ function ChampsSeance({ options, seance, groupeParDefaut }: { options: OptionsSe
 
   return (
     <>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3">
         <div className="flex flex-col gap-1.5">
           <Libelle pour="groupe_id">Groupe</Libelle>
           <select id="groupe_id" name="groupe_id" required defaultValue={seance?.groupeId ?? groupeParDefaut ?? ""} className={CLASSE_CHAMP}>
@@ -38,17 +38,6 @@ function ChampsSeance({ options, seance, groupeParDefaut }: { options: OptionsSe
             {options.groupes.map((g) => (
               <option key={g.id} value={g.id}>
                 {g.nom}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Libelle pour="rubrique_id">Rubrique</Libelle>
-          <select id="rubrique_id" name="rubrique_id" defaultValue={seance?.rubriqueId ?? ""} className={CLASSE_CHAMP}>
-            <option value="">Sans rubrique</option>
-            {options.rubriques.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.nom}
               </option>
             ))}
           </select>
@@ -132,11 +121,10 @@ export async function ListeSeances({ groupeId }: { groupeId?: string }) {
           {liste.map((s) => (
             <li key={s.id}>
               <Link href={`/admin/seances/${s.id}`} className="group flex items-center gap-3 py-3">
-                <span aria-hidden className="w-1.5 self-stretch rounded-full" style={{ background: couleurSeance(s.rubrique) }} />
+                <span aria-hidden className="w-1.5 self-stretch rounded-full" style={{ background: COULEUR_SEANCE }} />
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-2">
                     <span className="text-base font-semibold text-noir group-hover:underline [overflow-wrap:anywhere]">{s.titre}</span>
-                    <PastilleRubrique rubrique={s.rubrique} />
                     {s.publie ? null : (
                       <span className="inline-flex items-center gap-1 rounded-full border border-black/25 px-2 py-0.5 text-[11px] font-semibold">
                         <EyeOff aria-hidden className="size-3.5" />

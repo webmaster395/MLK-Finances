@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CalendarX, MapPin } from "lucide-react";
 import { Intervenants } from "@/components/seances/intervenants";
-import { couleurSeance, PastilleRubrique } from "@/components/seances/pastille-rubrique";
+import { COULEUR_SEANCE } from "@/components/seances/couleur-seance";
 import { formaterHoraires, formaterJourIso } from "@/lib/format";
 import { lireProchaineJournee } from "@/lib/donnees/sessions";
 
@@ -57,7 +57,7 @@ export async function JourneeAccueil() {
 
       <ol className="mt-6">
         {seances.map((s, i) => {
-          const couleur = couleurSeance(s.rubrique);
+          const couleur = COULEUR_SEANCE;
           const dernierElement = i === seances.length - 1;
           return (
             <li key={s.id}>
@@ -78,7 +78,6 @@ export async function JourneeAccueil() {
                   {dernierElement ? null : <span aria-hidden className="w-px flex-1 bg-black/20" />}
                 </div>
                 <div className="col-start-2 row-start-2 pb-6 pt-1.5 md:col-start-3 md:row-start-1 md:pb-7 md:pt-0">
-                  <PastilleRubrique rubrique={s.rubrique} />
                   <p className="mt-2 text-sm font-semibold leading-snug text-noir group-hover:underline sm:text-base">
                     {s.cours?.titre ?? s.titre}
                   </p>

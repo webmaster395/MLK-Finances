@@ -74,7 +74,7 @@ export function isoVersParis(iso: string) {
 }
 
 // ---------------------------------------------------------------
-// Séances et rubriques
+// Séances
 // ---------------------------------------------------------------
 
 export type SaisieSeance = {
@@ -85,7 +85,6 @@ export type SaisieSeance = {
   heureFin: string;
   lieu: string;
   description: string;
-  rubriqueId: string;
   coursId: string;
   intervenants: string;
   publie: boolean;
@@ -98,7 +97,6 @@ export type Seance = {
   fin: string | null;
   lieu: string | null;
   description: string;
-  rubrique_id: string | null;
   cours_id: string | null;
   intervenants: string[];
   publie: boolean;
@@ -120,7 +118,6 @@ export function validerSeance(s: SaisieSeance): { seance: Seance } | { message: 
   if (!estHeure(s.heureDebut)) return { message: "Indiquez l'heure de début." };
   if (s.heureFin && !estHeure(s.heureFin)) return { message: "L'heure de fin n'est pas valide." };
   if (s.heureFin && s.heureFin < s.heureDebut) return { message: "L'heure de fin doit être après l'heure de début." };
-  if (s.rubriqueId && !estUuid(s.rubriqueId)) return { message: "Rubrique non valide." };
   if (s.coursId && !estUuid(s.coursId)) return { message: "Cours non valide." };
   if (s.description.length > 5000) return { message: "La description est trop longue (5 000 caractères au maximum)." };
   const intervenants = lireIntervenants(s.intervenants);
@@ -137,24 +134,11 @@ export function validerSeance(s: SaisieSeance): { seance: Seance } | { message: 
       fin: s.heureFin ? parisVersIso(s.date, s.heureFin) : null,
       lieu: lieu || null,
       description: s.description.trim(),
-      rubrique_id: s.rubriqueId || null,
       cours_id: s.coursId || null,
       intervenants,
       publie: s.publie,
     },
   };
-}
-
-export type Rubrique = { nom: string; couleur: string; ordre: number };
-
-export function validerRubrique(s: { nom: string; couleur: string; ordre: string }): { rubrique: Rubrique } | { message: string } {
-  const nom = s.nom.trim();
-  const couleur = s.couleur.trim().toLowerCase();
-  if (nom.length === 0 || nom.length > 60) return { message: "Donnez un nom à la rubrique (60 caractères au maximum)." };
-  if (!/^#[0-9a-f]{6}$/.test(couleur)) return { message: "Choisissez une couleur." };
-  const ordre = s.ordre.trim() === "" ? 0 : Number(s.ordre);
-  if (!Number.isInteger(ordre) || ordre < 0 || ordre > 999) return { message: "L'ordre doit être un nombre entier entre 0 et 999." };
-  return { rubrique: { nom, couleur, ordre } };
 }
 
 // ---------------------------------------------------------------

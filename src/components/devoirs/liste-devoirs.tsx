@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { BookOpen, CalendarClock, ChevronRight, CircleCheck, ClipboardList, FileText } from "lucide-react";
 import { EtatVide } from "@/components/coquille/etat-vide";
-import { PastilleRubrique } from "@/components/seances/pastille-rubrique";
 import { lireDevoirs, type DevoirListe } from "@/lib/donnees/devoirs";
 import { estAFaire, grouperParJourEcheance } from "@/lib/devoirs";
 import { formaterCreneau, formaterJourIso } from "@/lib/format";
@@ -20,7 +19,6 @@ function CarteDevoir({ devoir }: { devoir: DevoirListe }) {
         <span className="flex min-w-0 flex-1 flex-col gap-2">
           <span className="flex flex-wrap items-center justify-between gap-2">
             <span className="flex flex-wrap items-center gap-2">
-              {devoir.seance?.rubrique ? <PastilleRubrique rubrique={devoir.seance.rubrique} /> : null}
               {libelleCours ? (
                 <span className="flex items-center gap-1.5 text-xs font-semibold">
                   <BookOpen aria-hidden className="size-3.5 shrink-0" />

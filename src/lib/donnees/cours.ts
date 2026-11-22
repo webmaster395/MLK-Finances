@@ -3,7 +3,6 @@ import { connection } from "next/server";
 import { statutDevoir, type StatutDevoir } from "@/lib/devoirs";
 import { jourParis } from "@/lib/format";
 import { creerClientServeur } from "@/lib/supabase/serveur";
-import type { Rubrique } from "./sessions";
 
 export type SeanceDuCours = {
   id: string;
@@ -12,7 +11,6 @@ export type SeanceDuCours = {
   fin: string | null;
   jour: string;
   lieu: string | null;
-  rubrique: Rubrique | null;
   intervenants: string[];
   passee: boolean;
 };
@@ -52,7 +50,7 @@ export async function lireCoursDetail(id: string): Promise<CoursDetail | null> {
   const { data } = await supabase
     .from("cours")
     .select(
-      "id, titre, description, objectifs, sessions(id, titre, debut, fin, lieu, intervenants, rubriques(nom, couleur)), ressources(id, titre, type, url), devoirs(id, titre, echeance, rendus(id))",
+      "id, titre, description, objectifs, sessions(id, titre, debut, fin, lieu, intervenants), ressources(id, titre, type, url), devoirs(id, titre, echeance, rendus(id))",
     )
     .eq("id", id)
     .order("debut", { referencedTable: "sessions", ascending: true })
@@ -74,7 +72,6 @@ export async function lireCoursDetail(id: string): Promise<CoursDetail | null> {
       fin: s.fin,
       jour: jourParis(s.debut),
       lieu: s.lieu,
-      rubrique: s.rubriques,
       intervenants: s.intervenants,
       passee: new Date(s.fin ?? s.debut).getTime() < maintenant,
     })),

@@ -5,8 +5,6 @@ import { creerClientServeur } from "@/lib/supabase/serveur";
 import { statutDevoir, type StatutDevoir } from "@/lib/devoirs";
 import { joursEntre, jourParis } from "@/lib/format";
 
-export type Rubrique = { nom: string; couleur: string };
-
 /** Une séance telle qu'elle apparaît dans la frise de la journée et dans le calendrier. */
 export type Seance = {
   id: string;
@@ -16,7 +14,6 @@ export type Seance = {
   /** Jour à Paris, « AAAA-MM-JJ » */
   jour: string;
   lieu: string | null;
-  rubrique: Rubrique | null;
   intervenants: string[];
   /** Cours lié (absent si la séance n'a pas de cours ou si le cours n'est pas publié). */
   cours: { id: string; titre: string } | null;
@@ -47,7 +44,7 @@ export const lireSeances = cache(async (): Promise<Seance[]> => {
   const { data } = await supabase
     .from("sessions")
     .select(
-      "id, titre, debut, fin, lieu, intervenants, rubriques(nom, couleur), cours(id, titre, devoirs(id, rendus(id)))",
+      "id, titre, debut, fin, lieu, intervenants, cours(id, titre, devoirs(id, rendus(id)))",
     )
     .order("debut", { ascending: true });
 
@@ -59,7 +56,6 @@ export const lireSeances = cache(async (): Promise<Seance[]> => {
     fin: s.fin,
     jour: jourParis(s.debut),
     lieu: s.lieu,
-    rubrique: s.rubriques,
     intervenants: s.intervenants,
     cours: s.cours ? { id: s.cours.id, titre: s.cours.titre } : null,
     aPreparer: (s.cours?.devoirs ?? []).filter((d) => d.rendus.length === 0).length,
@@ -87,7 +83,7 @@ export async function lireSeance(id: string): Promise<SeanceDetail | null> {
   const { data } = await supabase
     .from("sessions")
     .select(
-      "id, titre, description, debut, fin, lieu, intervenants, rubriques(nom, couleur), cours(id, titre, description, objectifs, ressources(id, titre, type, url), devoirs(id, titre, echeance, rendus(id)))",
+      "id, titre, description, debut, fin, lieu, intervenants, cours(id, titre, description, objectifs, ressources(id, titre, type, url), devoirs(id, titre, echeance, rendus(id)))",
     )
     .eq("id", id)
     .order("cree_le", { referencedTable: "cours.ressources", ascending: true })
@@ -116,7 +112,6 @@ export async function lireSeance(id: string): Promise<SeanceDetail | null> {
     fin: data.fin,
     jour: jourParis(data.debut),
     lieu: data.lieu,
-    rubrique: data.rubriques,
     intervenants: data.intervenants,
     cours: data.cours ? { id: data.cours.id, titre: data.cours.titre } : null,
     aPreparer: devoirs.filter((d) => !d.rendu).length,

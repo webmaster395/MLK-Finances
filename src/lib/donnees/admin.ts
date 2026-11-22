@@ -226,10 +226,8 @@ export async function lireParticipant(id: string): Promise<ParticipantDetail | n
 }
 
 // ---------------------------------------------------------------
-// Séances et rubriques (lot 3)
+// Séances (lot 3)
 // ---------------------------------------------------------------
-
-export type RubriqueAdmin = { id: string; nom: string; couleur: string; ordre: number; seances: number };
 
 export type SeanceListe = {
   id: string;
@@ -240,7 +238,6 @@ export type SeanceListe = {
   publie: boolean;
   passee: boolean;
   groupe: string;
-  rubrique: { nom: string; couleur: string } | null;
   cours: string | null;
   intervenants: string[];
 };
@@ -253,27 +250,16 @@ export type SeanceAdmin = {
   fin: string | null;
   lieu: string | null;
   description: string;
-  rubriqueId: string | null;
   coursId: string | null;
   intervenants: string[];
   publie: boolean;
 };
 
-/** Listes de choix des formulaires de séance : groupes, rubriques, cours (avec leur groupe). */
+/** Listes de choix des formulaires de séance : groupes, cours (avec leur groupe). */
 export type OptionsSeance = {
   groupes: { id: string; nom: string }[];
-  rubriques: { id: string; nom: string }[];
   cours: { id: string; titre: string; groupeId: string }[];
 };
-
-/** Toutes les rubriques, avec le nombre de séances qui les utilisent. */
-export async function lireRubriquesAdmin(): Promise<RubriqueAdmin[]> {
-  await exigerAdmin();
-  await connection();
-  const supabase = await creerClientServeur();
-  const { data } = await supabase.from("rubriques").select("id, nom, couleur, ordre, sessions(count)").order("ordre").order("nom");
-  return (data ?? []).map((r) => ({ id: r.id, nom: r.nom, couleur: r.couleur, ordre: r.ordre, seances: r.sessions[0]?.count ?? 0 }));
-}
 
 /** Les séances (toutes, ou celles d'un groupe), de la plus proche à la plus lointaine. */
 export async function lireSeancesAdmin(groupeId?: string): Promise<SeanceListe[]> {
@@ -282,7 +268,7 @@ export async function lireSeancesAdmin(groupeId?: string): Promise<SeanceListe[]
   const supabase = await creerClientServeur();
   let requete = supabase
     .from("sessions")
-    .select("id, titre, debut, fin, lieu, publie, intervenants, groupes(nom), rubriques(nom, couleur), cours(titre)")
+    .select("id, titre, debut, fin, lieu, publie, intervenants, groupes(nom), cours(titre)")
     .order("debut");
   if (groupeId && UUID_ADMIN.test(groupeId)) requete = requete.eq("groupe_id", groupeId);
   const { data } = await requete;
@@ -296,7 +282,6 @@ export async function lireSeancesAdmin(groupeId?: string): Promise<SeanceListe[]
     publie: s.publie,
     passee: new Date(s.fin ?? s.debut).getTime() < maintenant,
     groupe: s.groupes?.nom ?? "",
-    rubrique: s.rubriques,
     cours: s.cours?.titre ?? null,
     intervenants: s.intervenants,
   }));
@@ -310,7 +295,7 @@ export async function lireSeanceAdmin(id: string): Promise<SeanceAdmin | null> {
   const supabase = await creerClientServeur();
   const { data: s } = await supabase
     .from("sessions")
-    .select("id, groupe_id, titre, debut, fin, lieu, description, rubrique_id, cours_id, intervenants, publie")
+    .select("id, groupe_id, titre, debut, fin, lieu, description, cours_id, intervenants, publie")
     .eq("id", id)
     .maybeSingle();
   if (!s) return null;
@@ -322,7 +307,6 @@ export async function lireSeanceAdmin(id: string): Promise<SeanceAdmin | null> {
     fin: s.fin,
     lieu: s.lieu,
     description: s.description,
-    rubriqueId: s.rubrique_id,
     coursId: s.cours_id,
     intervenants: s.intervenants,
     publie: s.publie,
@@ -333,14 +317,12 @@ export async function lireOptionsSeance(): Promise<OptionsSeance> {
   await exigerAdmin();
   await connection();
   const supabase = await creerClientServeur();
-  const [groupes, rubriques, cours] = await Promise.all([
+  const [groupes, cours] = await Promise.all([
     supabase.from("groupes").select("id, nom").order("nom"),
-    supabase.from("rubriques").select("id, nom").order("ordre").order("nom"),
     supabase.from("cours").select("id, titre, groupe_id").order("ordre").order("titre"),
   ]);
   return {
     groupes: groupes.data ?? [],
-    rubriques: rubriques.data ?? [],
     cours: (cours.data ?? []).map((c) => ({ id: c.id, titre: c.titre, groupeId: c.groupe_id })),
   };
 }

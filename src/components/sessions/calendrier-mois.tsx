@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { BookOpen, CalendarX, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import { Intervenants } from "@/components/seances/intervenants";
-import { couleurSeance, PastilleRubrique } from "@/components/seances/pastille-rubrique";
+import { COULEUR_SEANCE } from "@/components/seances/couleur-seance";
 import { formaterJourIso } from "@/lib/format";
 
 /** Une séance, prête à afficher (les heures sont déjà écrites à l'heure de Paris par le serveur). */
@@ -15,7 +15,6 @@ export type SeanceCalendrier = {
   jour: string;
   horaires: string;
   lieu: string | null;
-  rubrique: { nom: string; couleur: string } | null;
   intervenants: string[];
   coursTitre: string | null;
   aPreparer: number;
@@ -124,7 +123,7 @@ export function CalendrierMois({
                     if (jour === null) return <td key={k} className="h-14 border-t border-black/10 sm:h-[4.75rem]" />;
                     const date = iso(affiche.annee, affiche.mois, jour);
                     const duJour = parJour.get(date) ?? [];
-                    const couleurs = [...new Set(duJour.map((s) => couleurSeance(s.rubrique)))].slice(0, 3);
+                    const couleurs = duJour.length > 0 ? [COULEUR_SEANCE] : [];
                     const estChoisi = date === choisi;
                     const estAujourdhui = date === aujourdhui;
                     return (
@@ -182,11 +181,10 @@ export function CalendrierMois({
                     className={`group flex flex-col gap-2 rounded-lg border border-l-4 border-black/15 bg-white/40 p-4 transition hover:shadow-md ${
                       s.passee ? "opacity-75" : ""
                     }`}
-                    style={{ borderLeftColor: couleurSeance(s.rubrique) }}
+                    style={{ borderLeftColor: COULEUR_SEANCE }}
                   >
                     <span className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-sm font-semibold text-noir">{s.horaires}</span>
-                      <PastilleRubrique rubrique={s.rubrique} />
                     </span>
                     <span className="text-base font-semibold leading-snug text-noir group-hover:underline [overflow-wrap:anywhere]">
                       {s.coursTitre ?? s.titre}

@@ -1,19 +1,18 @@
 import Link from "next/link";
 import { CalendarDays, Download, ExternalLink, FileText, FolderOpen, Link2, TriangleAlert } from "lucide-react";
 import { EtatVide } from "@/components/coquille/etat-vide";
-import { couleurSeance, PastilleRubrique } from "@/components/seances/pastille-rubrique";
+import { COULEUR_SEANCE } from "@/components/seances/couleur-seance";
 import { lireRessourcesParCours, type Ressource } from "@/lib/donnees/ressources";
-import type { Rubrique } from "@/lib/donnees/sessions";
 import { formaterJourIso } from "@/lib/format";
 
-function LigneRessource({ ressource, rubrique }: { ressource: Ressource; rubrique: Rubrique | null }) {
+function LigneRessource({ ressource }: { ressource: Ressource }) {
   const estLien = ressource.type === "lien" && ressource.url;
   const Icone = estLien ? Link2 : FileText;
 
   return (
     <li
       className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-l-4 border-black/15 bg-white/40 p-4 sm:gap-4"
-      style={{ borderLeftColor: couleurSeance(rubrique) }}
+      style={{ borderLeftColor: COULEUR_SEANCE }}
     >
       <span className="flex min-w-0 flex-1 items-start gap-3">
         <span aria-hidden className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-black/5 text-noir">
@@ -69,7 +68,6 @@ export async function ListeRessources({ erreurFichier }: { erreurFichier?: boole
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                   <div className="flex flex-wrap items-center gap-2">
-                    {seance?.rubrique ? <PastilleRubrique rubrique={seance.rubrique} /> : null}
                     {seance ? (
                       <span className="flex items-center gap-1.5 text-xs font-semibold">
                         <CalendarDays aria-hidden className="size-3.5 shrink-0" />
@@ -96,7 +94,7 @@ export async function ListeRessources({ erreurFichier }: { erreurFichier?: boole
 
               <ul className="flex flex-col gap-3">
                 {ressources.map((r) => (
-                  <LigneRessource key={r.id} ressource={r} rubrique={seance?.rubrique ?? null} />
+                  <LigneRessource key={r.id} ressource={r} />
                 ))}
               </ul>
             </section>

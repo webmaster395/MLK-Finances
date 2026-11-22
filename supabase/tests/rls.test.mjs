@@ -23,7 +23,7 @@ const COURS_G2 = "cccccccc-0000-4000-8000-000000000011";
 
 const TABLES = [
   "profils", "groupes", "inscriptions", "cours", "sessions",
-  "ressources", "devoirs", "rendus", "temoignages", "rubriques", "annonces",
+  "ressources", "devoirs", "rendus", "temoignages", "annonces",
 ];
 
 let db;
@@ -249,23 +249,11 @@ describe("contenu pédagogique", () => {
   });
 });
 
-describe("rubriques, intervenants et messages de l'équipe", () => {
-  test("les rubriques sont lisibles par un participant, pas par un visiteur", async () => {
-    const r = await en(A, "select nom from public.rubriques order by ordre");
-    assert.deepEqual(r.rows.map((l) => l.nom), ["Accueil", "Formation", "Atelier pratique", "Évaluation"]);
-    await assert.rejects(anonyme("select * from public.rubriques"), REFUS);
-    await assert.rejects(en(A, "insert into public.rubriques (nom, couleur) values ('Pirate', '#000000')"), REFUS);
-  });
-
-  test("la couleur d'une rubrique doit être un code hexadécimal", async () => {
-    await assert.rejects(db.exec("insert into public.rubriques (nom, couleur) values ('Mauvaise', 'rouge')"), /check constraint/i);
-  });
-
-  test("A voit une séance avec sa rubrique et ses intervenants", async () => {
-    const r = await en(A, "select s.titre, s.intervenants, r.nom as rubrique from public.sessions s left join public.rubriques r on r.id = s.rubrique_id where s.titre like '%Session 2%'");
+describe("intervenants et messages de l'équipe", () => {
+  test("A voit une séance avec ses intervenants", async () => {
+    const r = await en(A, "select s.titre, s.intervenants from public.sessions s where s.titre like '%Session 2%'");
     assert.equal(r.rows.length, 1);
     assert.deepEqual(r.rows[0].intervenants, ["Claire Martin", "Karim Benali"]);
-    assert.equal(r.rows[0].rubrique, "Formation");
   });
 
   test("A voit les messages publiés pour tous ou pour son groupe, pas ceux de l'autre groupe ni les brouillons", async () => {
@@ -442,13 +430,12 @@ describe("administrateur", () => {
     assert.equal((await en(B, "select id from public.groupes")).rows.length, 1);
   });
 
-  test("l'admin crée, modifie et supprime une séance, un cours, un devoir, une rubrique et un message", async () => {
+  test("l'admin crée, modifie et supprime une séance, un cours, un devoir et un message", async () => {
     const c = await en(ADMIN, `insert into public.cours (groupe_id, titre, publie) values ('${GROUPE_1}', '[test] Cours admin', true) returning id`);
     const cours = c.rows[0].id;
     await en(ADMIN, `insert into public.sessions (groupe_id, cours_id, titre, debut) values ('${GROUPE_1}', '${cours}', '[test] Séance admin', now()) returning id`);
     await en(ADMIN, `insert into public.devoirs (cours_id, titre) values ('${cours}', '[test] Devoir admin')`);
     await en(ADMIN, `insert into public.ressources (cours_id, titre, type, url) values ('${cours}', '[test] Lien admin', 'lien', 'https://example.com')`);
-    await en(ADMIN, "insert into public.rubriques (nom, couleur) values ('Rubrique admin', '#123456')");
     await en(ADMIN, "insert into public.annonces (titre, message) values ('[test] Message admin', 'Bonjour')");
     // Le participant du groupe 1 voit le nouveau contenu publié
     assert.equal((await en(A, "select id from public.sessions where titre = '[test] Séance admin'")).rows.length, 1);
@@ -457,7 +444,6 @@ describe("administrateur", () => {
     const m = await en(ADMIN, `update public.cours set titre = '[test] Cours admin modifié' where id = '${cours}' returning id`);
     assert.equal(m.rows.length, 1);
     await en(ADMIN, "delete from public.annonces where titre = '[test] Message admin'");
-    await en(ADMIN, "delete from public.rubriques where nom = 'Rubrique admin'");
     const s = await en(ADMIN, `delete from public.cours where id = '${cours}' returning id`);
     assert.equal(s.rows.length, 1);
   });

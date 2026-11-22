@@ -15,7 +15,6 @@ import {
   validerDevoir,
   validerGroupe,
   validerLien,
-  validerRubrique,
   validerSeance,
 } from "./validation";
 
@@ -194,7 +193,6 @@ function saisieSeance(formData: FormData) {
     heureFin: texte(formData, "heure_fin"),
     lieu: texte(formData, "lieu"),
     description: typeof brut === "string" ? brut : "",
-    rubriqueId: texte(formData, "rubrique_id"),
     coursId: texte(formData, "cours_id"),
     intervenants: (() => {
       const v = formData.get("intervenants");
@@ -253,54 +251,6 @@ export async function supprimerSeance(_: EtatAdmin, formData: FormData): Promise
   if (error || !data?.length) return ECHEC;
   actualiser();
   redirect("/admin/seances");
-}
-
-// ---------------------------------------------------------------
-// Rubriques
-// ---------------------------------------------------------------
-
-function saisieRubrique(formData: FormData) {
-  return { nom: texte(formData, "nom"), couleur: texte(formData, "couleur"), ordre: texte(formData, "ordre") };
-}
-
-const NOM_PRIS: EtatAdmin = { message: "Une rubrique porte déjà ce nom." };
-
-export async function creerRubrique(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
-  const v = validerRubrique(saisieRubrique(formData));
-  if ("message" in v) return v;
-  const supabase = await clientAdmin();
-  if (!supabase) return SESSION_EXPIREE;
-  const { error } = await supabase.from("rubriques").insert(v.rubrique);
-  if (error?.code === "23505") return NOM_PRIS;
-  if (error) return ECHEC;
-  actualiser();
-  return { ok: true, message: `Rubrique « ${v.rubrique.nom} » créée.` };
-}
-
-export async function modifierRubrique(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
-  const id = texte(formData, "id");
-  if (!estUuid(id)) return ECHEC;
-  const v = validerRubrique(saisieRubrique(formData));
-  if ("message" in v) return v;
-  const supabase = await clientAdmin();
-  if (!supabase) return SESSION_EXPIREE;
-  const { data, error } = await supabase.from("rubriques").update(v.rubrique).eq("id", id).select("id");
-  if (error?.code === "23505") return NOM_PRIS;
-  if (error || !data?.length) return ECHEC;
-  actualiser();
-  return { ok: true, message: "Rubrique enregistrée." };
-}
-
-/** Supprime une rubrique : les séances qui l'utilisaient restent, sans rubrique. */
-export async function supprimerRubrique(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
-  const id = texte(formData, "id");
-  if (!estUuid(id)) return ECHEC;
-  const supabase = await clientAdmin();
-  if (!supabase) return SESSION_EXPIREE;
-  const { data, error } = await supabase.from("rubriques").delete().eq("id", id).select("id");
-  if (error || !data?.length) return ECHEC;
-  actualiser();
-  return { ok: true, message: "Rubrique supprimée." };
 }
 
 // ---------------------------------------------------------------

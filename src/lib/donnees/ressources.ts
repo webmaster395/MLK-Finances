@@ -2,7 +2,6 @@ import "server-only";
 import { connection } from "next/server";
 import { creerClientServeur } from "@/lib/supabase/serveur";
 import { jourParis } from "@/lib/format";
-import type { Rubrique } from "./sessions";
 
 export type Ressource = {
   id: string;
@@ -16,7 +15,6 @@ export type SeanceRessource = {
   titre: string;
   /** Jour de la séance à Paris, « AAAA-MM-JJ » */
   jour: string;
-  rubrique: Rubrique | null;
 };
 
 export type GroupeRessources = {
@@ -25,7 +23,7 @@ export type GroupeRessources = {
   ressources: Ressource[];
 };
 
-type LigneSeance = { id: string; titre: string; debut: string; fin: string | null; rubriques: Rubrique | null };
+type LigneSeance = { id: string; titre: string; debut: string; fin: string | null };
 
 function choisirSeance(seances: LigneSeance[], maintenant: number): SeanceRessource | null {
   if (seances.length === 0) return null;
@@ -35,7 +33,6 @@ function choisirSeance(seances: LigneSeance[], maintenant: number): SeanceRessou
     id: retenue.id,
     titre: retenue.titre,
     jour: jourParis(retenue.debut),
-    rubrique: retenue.rubriques,
   };
 }
 
@@ -45,7 +42,7 @@ export async function lireRessourcesParCours(): Promise<GroupeRessources[]> {
   const supabase = await creerClientServeur();
   const { data } = await supabase
     .from("ressources")
-    .select("id, titre, type, url, cours(id, titre, ordre, sessions(id, titre, debut, fin, rubriques(nom, couleur)))")
+    .select("id, titre, type, url, cours(id, titre, ordre, sessions(id, titre, debut, fin))")
     .order("cree_le", { ascending: true });
 
   const maintenant = Date.now();
