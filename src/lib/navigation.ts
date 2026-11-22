@@ -5,6 +5,7 @@ import {
   House,
   LayoutDashboard,
   MessageCircle,
+  Palette,
   ShieldCheck,
   UsersRound,
   User,
@@ -46,6 +47,10 @@ export const GROUPES_MENU_ADMIN: PageMenu[][] = [
   [
     { href: "/admin/groupes", nom: "Groupes", icone: UsersRound },
     { href: "/admin/participants", nom: "Participants", icone: User },
+  ],
+  [
+    { href: "/admin/seances", nom: "Séances", icone: CalendarDays },
+    { href: "/admin/rubriques", nom: "Rubriques", icone: Palette },
   ],
   [{ href: "/accueil", nom: "Espace participant", icone: House }],
 ];

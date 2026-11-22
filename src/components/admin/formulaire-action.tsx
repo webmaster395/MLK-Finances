@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, type ReactNode } from "react";
+import { startTransition, useActionState, useEffect, useRef, type ReactNode } from "react";
 import { MessageFormulaire } from "@/components/auth/champ";
 import type { EtatAdmin } from "@/lib/admin/actions";
 
@@ -18,6 +18,8 @@ type Props = {
   className?: string;
   /** Affiche le message de réussite (false pour un petit bouton de ligne : seules les erreurs s'affichent). */
   afficherSucces?: boolean;
+  /** Vide les champs après une réussite (formulaire de création qui reste sur la page). */
+  viderApresSucces?: boolean;
 };
 
 const STYLES = {
@@ -28,7 +30,11 @@ const STYLES = {
     "inline-flex min-h-10 w-fit items-center rounded-[0.6rem] border border-[#b42318]/40 px-4 text-sm font-semibold text-[#b42318] hover:bg-[#b42318]/10 disabled:opacity-60",
 };
 
-/** Formulaire de l'espace admin : envoie une action serveur et affiche son message. */
+/**
+ * Formulaire de l'espace admin : envoie une action serveur et affiche son message.
+ * L'envoi passe par onSubmit (et non par l'attribut action) : ainsi React ne vide pas les champs,
+ * et une saisie refusée reste à l'écran pour être corrigée.
+ */
 export function FormulaireAction({
   action,
   children,
@@ -38,14 +44,23 @@ export function FormulaireAction({
   confirmation,
   className = "",
   afficherSucces = true,
+  viderApresSucces = false,
 }: Props) {
   const [etat, envoyer, enCours] = useActionState(action, {});
+  const formulaire = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (etat.ok && viderApresSucces) formulaire.current?.reset();
+  }, [etat, viderApresSucces]);
 
   return (
     <form
-      action={envoyer}
+      ref={formulaire}
       onSubmit={(e) => {
-        if (confirmation && !window.confirm(confirmation)) e.preventDefault();
+        e.preventDefault();
+        if (confirmation && !window.confirm(confirmation)) return;
+        const donnees = new FormData(e.currentTarget);
+        startTransition(() => envoyer(donnees));
       }}
       className={`flex flex-col gap-3 ${className}`}
     >
