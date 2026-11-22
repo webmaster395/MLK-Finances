@@ -105,6 +105,10 @@ Phase 2 (plus tard) : espace administrateur.
 - [x] Lot 11 : finitions. Mode sombre réservé à l'espace connecté (bouton, thème du système par défaut puis choix mémorisé, pas de flash au chargement ; photos adoucies, les pages publiques restent claires). États vides, squelettes de chargement et « introuvable » présents sur toutes les pages. Contrôle de toutes les pages à 375 px : aucun débordement. Contrôles finaux : lint, types, build, `test:unit` (20), `test:rls` (49), `npm audit` (0 vulnérabilité), conseils de sécurité Supabase (1 réglage restant, voir ci-dessous).
 - **Phase 1 terminée.** Reste : la mise en ligne (liste ci-dessous) et la phase 2 (espace administrateur).
 
+### Phase 2 — Espace administrateur (plan détaillé : `docs/plan-espace-admin.md`)
+**Décisions de l'utilisateur (22/11/2026) :** pas de compte formateur ; un admin peut nommer un autre admin (le premier est nommé à la main dans Supabase) ; pas d'étape « en attente » : le rattachement à un groupe vaut validation ; pas de journal des actions pour l'instant.
+- [x] Admin lot 0 : fondations de sécurité (migration `20261122185832_espace_admin_fondations`, appliquée en ligne). Fonction `private.est_admin()` ; règles RLS admin sur toutes les tables (rendus : lecture et statut seulement, pas de suppression) ; le rôle ne change que par un autre admin, jamais le sien ; stockage : ressources (tout), rendus (lecture), photos (lecture, écriture dans `temoignages/`). Tests : `test:rls` (71). **Reste : nommer le premier admin.**
+
 ## Décisions et limites du lot 2
 - **Un cours est rattaché à un seul groupe** (`cours.groupe_id`) ; ressources et devoirs héritent de la visibilité du cours. Si un même cours doit servir plusieurs groupes, il faudra une table de liaison (migration future).
 - **Docker n'est pas utilisé** (l'hébergement se fait sur Vercel, la base sur Supabase en ligne). Les migrations sont testées sur une base PostgreSQL embarquée (PGlite) avec une simulation de Supabase, puis appliquées sur le projet en ligne.

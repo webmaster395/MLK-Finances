@@ -100,12 +100,23 @@ describe("structure", () => {
     assert.equal(r.rows[0].auth, false);
   });
 
-  test("le schéma privé est fermé aux visiteurs et aux participants", async () => {
-    const r = await db.query(`
-      select has_schema_privilege('anon', 'private', 'usage') as anon,
-             has_schema_privilege('authenticated', 'private', 'usage') as auth`);
+  test("le schéma privé est fermé aux visiteurs", async () => {
+    const r = await db.query("select has_schema_privilege('anon', 'private', 'usage') as anon");
     assert.equal(r.rows[0].anon, false);
-    assert.equal(r.rows[0].auth, false);
+  });
+
+  test("dans le schéma privé, une personne connectée ne peut appeler que « est_admin »", async () => {
+    const r = await db.query(`
+      select p.proname,
+             has_function_privilege('authenticated', p.oid, 'execute') as auth,
+             has_function_privilege('anon', p.oid, 'execute') as anon
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'private' order by p.proname`);
+    assert.ok(r.rows.length >= 5);
+    for (const f of r.rows) {
+      assert.equal(f.anon, false, `anon ne doit pas appeler ${f.proname}`);
+      assert.equal(f.auth, f.proname === "est_admin", `droit inattendu sur ${f.proname}`);
+    }
   });
 });
 
@@ -225,9 +236,16 @@ describe("contenu pédagogique", () => {
 
   test("A ne peut rien écrire dans le contenu pédagogique", async () => {
     await assert.rejects(en(A, "insert into public.cours (groupe_id, titre) select id, 'x' from public.groupes"), REFUS);
-    await assert.rejects(en(A, "update public.devoirs set titre = 'x'"), REFUS);
-    await assert.rejects(en(A, "delete from public.sessions"), REFUS);
     await assert.rejects(en(A, "insert into public.temoignages (nom_affiche, texte, valide) values ('x', 'x', true)"), REFUS);
+    await assert.rejects(en(A, "insert into public.groupes (nom) values ('Pirate')"), REFUS);
+    await assert.rejects(en(A, `insert into public.inscriptions (participant_id, groupe_id) select '${A}', id from public.groupes`), REFUS);
+    // Modifier ou supprimer : la RLS ne lui laisse aucune ligne (rien ne change)
+    assert.equal((await en(A, "update public.devoirs set titre = 'x' returning id")).rows.length, 0);
+    assert.equal((await en(A, "delete from public.sessions returning id")).rows.length, 0);
+    assert.equal((await en(A, "update public.temoignages set valide = true returning id")).rows.length, 0);
+    assert.equal((await en(A, "delete from public.inscriptions returning participant_id")).rows.length, 0);
+    const reste = await db.query("select count(*)::int as n from public.devoirs where titre = 'x'");
+    assert.equal(reste.rows[0].n, 0);
   });
 });
 
@@ -263,8 +281,8 @@ describe("rubriques, intervenants et messages de l'équipe", () => {
   test("un visiteur ne lit aucun message et un participant ne peut pas en écrire", async () => {
     await assert.rejects(anonyme("select * from public.annonces"), REFUS);
     await assert.rejects(en(A, "insert into public.annonces (message) values ('piratage')"), REFUS);
-    await assert.rejects(en(A, "update public.annonces set message = 'x'"), REFUS);
-    await assert.rejects(en(A, "delete from public.annonces"), REFUS);
+    assert.equal((await en(A, "update public.annonces set message = 'x' returning id")).rows.length, 0);
+    assert.equal((await en(A, "delete from public.annonces returning id")).rows.length, 0);
   });
 });
 
@@ -384,5 +402,121 @@ describe("stockage de fichiers", () => {
   test("les seaux sont privés", async () => {
     const r = await db.query("select id from storage.buckets where public");
     assert.deepEqual(r.rows, []);
+  });
+});
+
+describe("administrateur", () => {
+  const ADMIN = "77777777-7777-4777-8777-777777777777";
+  const GROUPE_1 = "aaaaaaaa-0000-4000-8000-000000000001";
+  const compter = async (uid, table) => (await en(uid, `select count(*)::int as n from public.${table}`)).rows[0].n;
+  const total = async (table) => (await db.query(`select count(*)::int as n from public.${table}`)).rows[0].n;
+
+  before(async () => {
+    // Nomination du premier admin « à la main », comme dans Supabase (hors du site)
+    await db.exec(`
+      insert into auth.users (id, email, raw_user_meta_data)
+      values ('${ADMIN}', 'admin@example.com', '{"prenom":"Adèle","nom":"Admin"}');
+      update public.profils set role = 'admin' where id = '${ADMIN}';
+      insert into public.rendus (devoir_id, participant_id, fichier_path)
+      values ('${DEVOIR_G2}', '${B}', '${B}/${DEVOIR_G2}/rendu-de-b.pdf');`);
+  });
+
+  test("« est_admin » répond vrai pour l'admin, faux pour un participant", async () => {
+    assert.equal((await en(ADMIN, "select private.est_admin() as v")).rows[0].v, true);
+    assert.equal((await en(A, "select private.est_admin() as v")).rows[0].v, false);
+  });
+
+  test("l'admin voit tout : profils, groupes, inscriptions, brouillons et contenus des deux groupes", async () => {
+    for (const table of ["profils", "groupes", "inscriptions", "cours", "sessions", "ressources", "devoirs", "rendus", "temoignages", "annonces"]) {
+      assert.equal(await compter(ADMIN, table), await total(table), `l'admin doit tout voir dans « ${table} »`);
+    }
+  });
+
+  test("l'admin crée un groupe, y rattache un participant, puis le détache", async () => {
+    const g = await en(ADMIN, "insert into public.groupes (nom) values ('[test] Groupe admin') returning id");
+    const id = g.rows[0].id;
+    await en(ADMIN, `insert into public.inscriptions (participant_id, groupe_id) values ('${B}', '${id}')`);
+    assert.equal((await en(B, "select id from public.groupes")).rows.length, 2);
+    const d = await en(ADMIN, `delete from public.inscriptions where participant_id = '${B}' and groupe_id = '${id}' returning groupe_id`);
+    assert.equal(d.rows.length, 1);
+    assert.equal((await en(B, "select id from public.groupes")).rows.length, 1);
+  });
+
+  test("l'admin crée, modifie et supprime une séance, un cours, un devoir, une rubrique et un message", async () => {
+    const c = await en(ADMIN, `insert into public.cours (groupe_id, titre, publie) values ('${GROUPE_1}', '[test] Cours admin', true) returning id`);
+    const cours = c.rows[0].id;
+    await en(ADMIN, `insert into public.sessions (groupe_id, cours_id, titre, debut) values ('${GROUPE_1}', '${cours}', '[test] Séance admin', now()) returning id`);
+    await en(ADMIN, `insert into public.devoirs (cours_id, titre) values ('${cours}', '[test] Devoir admin')`);
+    await en(ADMIN, `insert into public.ressources (cours_id, titre, type, url) values ('${cours}', '[test] Lien admin', 'lien', 'https://example.com')`);
+    await en(ADMIN, "insert into public.rubriques (nom, couleur) values ('Rubrique admin', '#123456')");
+    await en(ADMIN, "insert into public.annonces (titre, message) values ('[test] Message admin', 'Bonjour')");
+    // Le participant du groupe 1 voit le nouveau contenu publié
+    assert.equal((await en(A, "select id from public.sessions where titre = '[test] Séance admin'")).rows.length, 1);
+    assert.equal((await en(A, "select id from public.annonces where titre = '[test] Message admin'")).rows.length, 1);
+    // Modification puis suppression
+    const m = await en(ADMIN, `update public.cours set titre = '[test] Cours admin modifié' where id = '${cours}' returning id`);
+    assert.equal(m.rows.length, 1);
+    await en(ADMIN, "delete from public.annonces where titre = '[test] Message admin'");
+    await en(ADMIN, "delete from public.rubriques where nom = 'Rubrique admin'");
+    const s = await en(ADMIN, `delete from public.cours where id = '${cours}' returning id`);
+    assert.equal(s.rows.length, 1);
+  });
+
+  test("l'admin valide un témoignage", async () => {
+    const r = await en(ADMIN, "update public.temoignages set valide = true where not valide returning id");
+    assert.ok(r.rows.length >= 1);
+  });
+
+  test("l'admin marque un rendu « corrigé », mais ne peut pas le supprimer", async () => {
+    const r = await en(ADMIN, `update public.rendus set statut = 'corrige' where participant_id = '${B}' returning statut`);
+    assert.deepEqual(r.rows.map((l) => l.statut), ["corrige"]);
+    await assert.rejects(en(ADMIN, "delete from public.rendus"), REFUS);
+  });
+
+  test("l'admin nomme un autre admin, puis lui retire le rôle", async () => {
+    await en(ADMIN, `update public.profils set role = 'admin' where id = '${B}'`);
+    assert.equal((await en(B, "select private.est_admin() as v")).rows[0].v, true);
+    await en(ADMIN, `update public.profils set role = 'participant' where id = '${B}'`);
+    assert.equal((await en(B, "select private.est_admin() as v")).rows[0].v, false);
+  });
+
+  test("l'admin ne peut pas changer son propre rôle", async () => {
+    await assert.rejects(en(ADMIN, `update public.profils set role = 'participant' where id = '${ADMIN}'`), REFUS);
+  });
+
+  test("un participant ne peut nommer personne admin", async () => {
+    await assert.rejects(en(A, `update public.profils set role = 'admin' where id = '${A}'`), REFUS);
+    const r = await en(A, `update public.profils set role = 'admin' where id = '${B}' returning id`);
+    assert.equal(r.rows.length, 0);
+    const b = await db.query(`select role from public.profils where id = '${B}'`);
+    assert.equal(b.rows[0].role, "participant");
+  });
+
+  test("un participant ne voit toujours que ses propres données", async () => {
+    assert.deepEqual((await en(A, "select id from public.profils")).rows.map((l) => l.id), [A]);
+    assert.ok((await en(A, "select participant_id from public.rendus")).rows.every((l) => l.participant_id === A));
+    assert.equal(await compter(A, "groupes"), 1);
+  });
+
+  test("stockage : l'admin gère les fichiers de ressources, un participant non", async () => {
+    const r = await en(ADMIN, "insert into storage.objects (bucket_id, name) values ('ressources', 'admin/support.pdf') returning name");
+    assert.equal(r.rows.length, 1);
+    await assert.rejects(en(A, "insert into storage.objects (bucket_id, name) values ('ressources', 'pirate.pdf')"), REFUS);
+    const s = await en(ADMIN, "delete from storage.objects where bucket_id = 'ressources' and name = 'admin/support.pdf' returning name");
+    assert.equal(s.rows.length, 1);
+  });
+
+  test("stockage : l'admin lit les fichiers rendus sans pouvoir les supprimer ni les remplacer", async () => {
+    const r = await en(ADMIN, `select name from storage.objects where bucket_id = 'rendus' and name like '${B}/%'`);
+    assert.ok(r.rows.length >= 1);
+    assert.equal((await en(ADMIN, "delete from storage.objects where bucket_id = 'rendus' returning name")).rows.length, 0);
+    assert.equal((await en(ADMIN, "update storage.objects set name = name where bucket_id = 'rendus' returning name")).rows.length, 0);
+  });
+
+  test("stockage : l'admin écrit dans « photos/temoignages », pas dans le dossier d'un participant", async () => {
+    const r = await en(ADMIN, "insert into storage.objects (bucket_id, name) values ('photos', 'temoignages/photo.jpg') returning name");
+    assert.equal(r.rows.length, 1);
+    await assert.rejects(en(ADMIN, `insert into storage.objects (bucket_id, name) values ('photos', '${A}/avatar')`), REFUS);
+    await assert.rejects(en(A, "insert into storage.objects (bucket_id, name) values ('photos', 'temoignages/pirate.jpg')"), REFUS);
   });
 });
