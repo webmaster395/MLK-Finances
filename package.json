@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test:rls": "node --test supabase/tests/rls.test.mjs",
     "test:redirection": "node --test src/lib/auth/redirection.test.ts",
-    "test:unit": "node --test src/lib/auth/redirection.test.ts src/lib/format.test.ts src/lib/devoirs.test.ts src/lib/profil.test.ts"
+    "test:unit": "node --test src/lib/auth/redirection.test.ts src/lib/format.test.ts src/lib/devoirs.test.ts src/lib/profil.test.ts src/lib/admin/validation.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

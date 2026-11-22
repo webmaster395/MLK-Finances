@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   MessageCircle,
   ShieldCheck,
+  UsersRound,
   User,
   type LucideIcon,
 } from "lucide-react";
@@ -42,5 +43,9 @@ export const PAGE_ADMINISTRATION: PageMenu = { href: "/admin", nom: "Administrat
  */
 export const GROUPES_MENU_ADMIN: PageMenu[][] = [
   [{ href: "/admin", nom: "Tableau de bord", icone: LayoutDashboard }],
+  [
+    { href: "/admin/groupes", nom: "Groupes", icone: UsersRound },
+    { href: "/admin/participants", nom: "Participants", icone: User },
+  ],
   [{ href: "/accueil", nom: "Espace participant", icone: House }],
 ];
