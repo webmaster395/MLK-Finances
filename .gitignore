@@ -7,3 +7,6 @@ next-env.d.ts
 .claude/settings.local.json
 # Comptes de test et mots de passe : fichiers locaux, jamais sur GitHub
 supabase/*.local.sql
+
+# Plan de développement : reste en local, pas sur GitHub
+PLAN.md
