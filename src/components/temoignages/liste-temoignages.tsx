@@ -1,9 +1,7 @@
-import { MessageCircle, Quote } from "lucide-react";
+import { MessageCircle, PenLine, Quote } from "lucide-react";
 import { EtatVide } from "@/components/coquille/etat-vide";
 import { Avatar } from "@/components/profil/avatar";
 import { lireTemoignages } from "@/lib/donnees/temoignages";
-
-const COULEURS_BORDURE = ["#d634ba", "#e95609"];
 
 /** Initiales pour l'avatar (le nom affiché peut commencer par un marqueur comme « [test] »). */
 function initiales(nom: string) {
@@ -12,85 +10,97 @@ function initiales(nom: string) {
   return lettres.join("") || "?";
 }
 
-/** Témoignages des participants (lecture seule). Lit la base : à placer sous <Suspense>. */
-export async function ListeTemoignages() {
-  const temoignages = await lireTemoignages();
-
-  if (temoignages.length === 0) {
-    return (
-      <EtatVide
-        icone={MessageCircle}
-        titre="Aucun témoignage pour le moment"
-        texte="Les expériences des participants apparaîtront ici dès qu'elles seront publiées."
-      />
-    );
-  }
-
+/** Bandeau d'introduction (même style que la page Ressources). */
+function Bandeau({ nombre }: { nombre: number }) {
   return (
-    <section className="accueil-carte p-5 sm:p-7" aria-labelledby="titre-temoignages">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <section className="overflow-hidden rounded-[0.65rem] bg-noir text-white shadow-md" aria-labelledby="titre-temoignages">
+      <div className="grid gap-6 p-5 sm:p-8 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-end">
         <div>
-          <p className="text-xs sm:text-sm">Paroles de participants</p>
-          <h2 id="titre-temoignages" className="titre-charte mt-1 text-2xl !leading-tight sm:text-3xl lg:text-4xl">
-            Retours d&apos;expérience
-          </h2>
+          <p className="text-[11px] font-semibold tracking-[0.18em] text-white/70">PAROLES DE PARTICIPANTS</p>
+          <h1 id="titre-temoignages" className="titre-charte mt-2 max-w-2xl text-3xl !leading-[1.05] text-white sm:text-5xl">
+            Les expériences de ceux qui ont suivi le parcours
+          </h1>
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-white/80 sm:text-base">
+            Des retours sincères, publiés après relecture par l&apos;équipe. Vous aussi, partagez ce que le parcours vous apporte.
+          </p>
+          <a href="#mon-temoignage" className="btn btn-orange mt-5 w-fit gap-2">
+            <PenLine aria-hidden className="size-4" />
+            Partager mon témoignage
+          </a>
         </div>
-        <span className="rounded-full bg-black/5 px-3.5 py-1.5 text-xs font-semibold tracking-[0.06em] text-noir">
-          {temoignages.length} témoignage{temoignages.length > 1 ? "s" : ""}
-        </span>
+        <dl className="grid grid-cols-1 gap-3">
+          <div className="rounded-lg bg-white/10 p-4">
+            <dd className="titre-charte text-4xl !leading-none text-white">{nombre}</dd>
+            <dt className="mt-1 text-xs font-semibold text-white/70">témoignage{nombre > 1 ? "s" : ""} publié{nombre > 1 ? "s" : ""}</dt>
+          </div>
+        </dl>
       </div>
-
-      <hr className="my-4 border-black/10" />
-
-      <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {temoignages.map((t, index) => (
-          <li
-            key={t.id}
-            className="flex flex-col justify-between gap-4 rounded-lg border border-l-4 border-black/15 bg-white/40 p-5"
-            style={{ borderLeftColor: COULEURS_BORDURE[index % COULEURS_BORDURE.length] }}
-          >
-            <div className="flex flex-col gap-3">
-              <Quote aria-hidden className="size-5 text-rose" />
-              <blockquote className="text-sm font-semibold leading-relaxed text-noir sm:text-base [overflow-wrap:anywhere]">
-                « {t.texte} »
-              </blockquote>
-            </div>
-
-            <footer className="flex items-center gap-3 border-t border-black/10 pt-3.5">
-              {t.photoUrl ? (
-                <Avatar photoUrl={t.photoUrl} initiales={initiales(t.nom_affiche)} taille="size-9" texteTaille="text-xs" />
-              ) : (
-                <span
-                  aria-hidden
-                  className="flex size-9 shrink-0 items-center justify-center rounded-full bg-rose-clair text-xs font-semibold text-noir"
-                >
-                  {initiales(t.nom_affiche)}
-                </span>
-              )}
-              <cite className="min-w-0 text-sm font-semibold not-italic leading-snug text-noir [overflow-wrap:anywhere]">
-                {t.nom_affiche}
-              </cite>
-            </footer>
-          </li>
-        ))}
-      </ul>
     </section>
   );
 }
 
-/** Squelette pendant le chargement de la liste. */
+/** Témoignages publiés : bandeau puis grille de cartes. Lit la base : à placer sous <Suspense>. */
+export async function ListeTemoignages() {
+  const temoignages = await lireTemoignages();
+
+  return (
+    <div className="flex flex-col gap-5">
+      <Bandeau nombre={temoignages.length} />
+
+      {temoignages.length === 0 ? (
+        <EtatVide
+          icone={MessageCircle}
+          titre="Aucun témoignage pour le moment"
+          texte="Les expériences des participants apparaîtront ici dès qu'elles seront publiées."
+        />
+      ) : (
+        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {temoignages.map((t, i) => (
+            <li key={t.id} className="entree-cascade" style={{ "--i": Math.min(i, 12) } as React.CSSProperties}>
+              <article className="carte-survol accueil-carte flex h-full flex-col justify-between gap-5 p-5 sm:p-6">
+                <div className="flex flex-col gap-4">
+                  <span aria-hidden className="flex size-12 items-center justify-center rounded-[0.6rem] bg-rose-clair text-noir">
+                    <Quote className="size-6" strokeWidth={1.75} />
+                  </span>
+                  <blockquote className="whitespace-pre-line text-sm font-semibold leading-relaxed text-noir sm:text-base [overflow-wrap:anywhere]">
+                    « {t.texte} »
+                  </blockquote>
+                </div>
+                <footer className="flex items-center gap-3 border-t border-black/10 pt-4">
+                  {t.photoUrl ? (
+                    <Avatar photoUrl={t.photoUrl} initiales={initiales(t.nom_affiche)} taille="size-10" texteTaille="text-xs" />
+                  ) : (
+                    <span
+                      aria-hidden
+                      className="flex size-10 shrink-0 items-center justify-center rounded-full bg-rose-clair text-xs font-semibold text-noir"
+                    >
+                      {initiales(t.nom_affiche)}
+                    </span>
+                  )}
+                  <cite className="min-w-0 text-sm font-semibold not-italic leading-snug text-noir [overflow-wrap:anywhere]">
+                    {t.nom_affiche}
+                  </cite>
+                </footer>
+              </article>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/** Squelette pendant le chargement : le bandeau et trois cartes en gris. */
 export function ListeTemoignagesChargement() {
   return (
-    <section className="accueil-carte p-5 sm:p-7" role="status" aria-live="polite">
+    <div className="flex flex-col gap-5" role="status" aria-live="polite">
       <span className="sr-only">Chargement des témoignages…</span>
-      <p className="text-sm">Paroles de participants</p>
-      <h2 className="titre-charte mt-1 text-3xl !leading-tight sm:text-4xl">Retours d&apos;expérience</h2>
-      <hr className="my-4 border-black/10" />
-      <div className="grid gap-4 motion-safe:animate-pulse md:grid-cols-2 xl:grid-cols-3">
+      <div className="h-60 rounded-[0.65rem] bg-black/10 motion-safe:animate-pulse sm:h-64" />
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-44 rounded-lg bg-black/10" />
+          <div key={i} className="h-52 rounded-[0.65rem] bg-black/10 motion-safe:animate-pulse" />
         ))}
       </div>
-    </section>
+    </div>
   );
 }

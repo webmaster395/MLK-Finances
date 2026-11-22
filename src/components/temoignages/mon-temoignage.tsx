@@ -14,7 +14,7 @@ export async function MonTemoignage() {
   const [personne, mien] = await Promise.all([obtenirPersonne(), lireMonTemoignage()]);
 
   return (
-    <section className="accueil-carte p-5 sm:p-7" aria-labelledby="titre-mon-temoignage">
+    <section id="mon-temoignage" className="accueil-carte scroll-mt-4 p-5 sm:p-7" aria-labelledby="titre-mon-temoignage">
       <h2 id="titre-mon-temoignage" className="titre-charte flex items-center gap-2.5 text-2xl sm:text-3xl">
         <PenLine aria-hidden className="size-6 text-rose" />
         {mien ? "Mon témoignage" : "Partager mon témoignage"}
