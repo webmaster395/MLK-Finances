@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { BadgeStatut, couleurStatut } from "@/components/devoirs/badge-statut";
 import { Intervenants } from "@/components/seances/intervenants";
-import { COULEUR_SEANCE } from "@/components/seances/couleur-seance";
+import { COULEUR_SEANCE, couleursSeancesJour } from "@/components/seances/couleur-seance";
 import { formaterCreneau, formaterHoraires, formaterJourIso } from "@/lib/format";
 import { lireCoursDetail } from "@/lib/donnees/cours";
 
@@ -48,7 +48,8 @@ async function Detail({ params }: { params: PageProps<"/cours/[id]">["params"] }
   const cours = await lireCoursDetail(id);
   if (!cours) notFound();
 
-  const couleur = COULEUR_SEANCE;
+  const couleursSeances = couleursSeancesJour(cours.seances.map((s) => ({ debut: s.debut, avecCours: true })));
+  const couleur = couleursSeances[0] ?? COULEUR_SEANCE;
   const aPreparer = cours.devoirs.filter((d) => !d.rendu).length;
 
   return (
@@ -201,14 +202,14 @@ async function Detail({ params }: { params: PageProps<"/cours/[id]">["params"] }
 
             {cours.seances.length > 0 ? (
               <ul className="flex flex-col gap-3">
-                {cours.seances.map((s) => (
+                {cours.seances.map((s, idx) => (
                   <li key={s.id}>
                     <Link
                       href={`/sessions/${s.id}`}
                       className={`group flex flex-col gap-2 rounded-lg border border-l-4 border-black/15 bg-white/40 p-3.5 transition hover:shadow-md ${
                         s.passee ? "opacity-75" : ""
                       }`}
-                      style={{ borderLeftColor: COULEUR_SEANCE }}
+                      style={{ borderLeftColor: couleursSeances[idx] ?? couleur }}
                     >
                       <span className="flex flex-wrap items-center justify-between gap-2">
                         <span className="text-xs font-semibold text-noir">

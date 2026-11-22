@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CalendarX, MapPin } from "lucide-react";
 import { Intervenants } from "@/components/seances/intervenants";
-import { COULEUR_SEANCE } from "@/components/seances/couleur-seance";
+import { couleursSeancesJour } from "@/components/seances/couleur-seance";
 import { formaterHoraires, formaterJourIso } from "@/lib/format";
 import { lireProchaineJournee } from "@/lib/donnees/sessions";
 
@@ -28,6 +28,7 @@ export async function JourneeAccueil() {
   const { jour, joursRestants: reste, seances } = journee;
   const premiere = seances[0];
   const derniere = seances[seances.length - 1];
+  const couleurs = couleursSeancesJour(seances.map((s) => ({ debut: s.debut, avecCours: Boolean(s.cours) })));
 
   return (
     <section className="accueil-carte p-5 sm:p-7" aria-labelledby="titre-journee">
@@ -57,7 +58,7 @@ export async function JourneeAccueil() {
 
       <ol className="mt-6">
         {seances.map((s, i) => {
-          const couleur = COULEUR_SEANCE;
+          const couleur = couleurs[i];
           const dernierElement = i === seances.length - 1;
           return (
             <li key={s.id}>

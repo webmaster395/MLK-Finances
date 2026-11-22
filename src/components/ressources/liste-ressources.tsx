@@ -1,18 +1,18 @@
 import Link from "next/link";
 import { CalendarDays, Download, ExternalLink, FileText, FolderOpen, Link2, TriangleAlert } from "lucide-react";
 import { EtatVide } from "@/components/coquille/etat-vide";
-import { COULEUR_SEANCE } from "@/components/seances/couleur-seance";
+import { PALETTE_SEANCES } from "@/components/seances/couleur-seance";
 import { lireRessourcesParCours, type Ressource } from "@/lib/donnees/ressources";
 import { formaterJourIso } from "@/lib/format";
 
-function LigneRessource({ ressource }: { ressource: Ressource }) {
+function LigneRessource({ ressource, couleur }: { ressource: Ressource; couleur: string }) {
   const estLien = ressource.type === "lien" && ressource.url;
   const Icone = estLien ? Link2 : FileText;
 
   return (
     <li
       className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-l-4 border-black/15 bg-white/40 p-4 sm:gap-4"
-      style={{ borderLeftColor: COULEUR_SEANCE }}
+      style={{ borderLeftColor: couleur }}
     >
       <span className="flex min-w-0 flex-1 items-start gap-3">
         <span aria-hidden className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-black/5 text-noir">
@@ -61,8 +61,9 @@ export async function ListeRessources({ erreurFichier }: { erreurFichier?: boole
           texte="Les supports de vos séances (documents et liens utiles) apparaîtront ici dès qu'ils seront publiés."
         />
       ) : (
-        groupes.map(({ cours, seance, ressources }) => {
+        groupes.map(({ cours, seance, ressources }, index) => {
           const cible = seance ? `/sessions/${seance.id}` : `/cours/${cours.id}`;
+          const couleur = PALETTE_SEANCES[index % PALETTE_SEANCES.length];
           return (
             <section key={cours.id} aria-labelledby={`cours-${cours.id}`} className="accueil-carte p-5 sm:p-7">
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -94,7 +95,7 @@ export async function ListeRessources({ erreurFichier }: { erreurFichier?: boole
 
               <ul className="flex flex-col gap-3">
                 {ressources.map((r) => (
-                  <LigneRessource key={r.id} ressource={r} />
+                  <LigneRessource key={r.id} ressource={r} couleur={couleur} />
                 ))}
               </ul>
             </section>

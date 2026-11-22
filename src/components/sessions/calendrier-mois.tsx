@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { BookOpen, CalendarX, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import { Intervenants } from "@/components/seances/intervenants";
-import { COULEUR_SEANCE } from "@/components/seances/couleur-seance";
+import { couleursSeancesJour } from "@/components/seances/couleur-seance";
 import { formaterJourIso } from "@/lib/format";
 
 /** Une séance, prête à afficher (les heures sont déjà écrites à l'heure de Paris par le serveur). */
@@ -57,6 +57,9 @@ export function CalendrierMois({
   for (const s of seances) parJour.set(s.jour, [...(parJour.get(s.jour) ?? []), s]);
 
   const seancesDuJour = parJour.get(choisi) ?? [];
+  const couleursDuJour = couleursSeancesJour(
+    seancesDuJour.map((s) => ({ debut: s.horaires, avecCours: Boolean(s.coursTitre) })),
+  );
 
   function allerAuJour(jour: string) {
     setChoisi(jour);
@@ -123,7 +126,13 @@ export function CalendrierMois({
                     if (jour === null) return <td key={k} className="h-14 border-t border-black/10 sm:h-[4.75rem]" />;
                     const date = iso(affiche.annee, affiche.mois, jour);
                     const duJour = parJour.get(date) ?? [];
-                    const couleurs = duJour.length > 0 ? [COULEUR_SEANCE] : [];
+                    const couleurs = [
+                      ...new Set(
+                        couleursSeancesJour(
+                          duJour.map((s) => ({ debut: s.horaires, avecCours: Boolean(s.coursTitre) })),
+                        ),
+                      ),
+                    ].slice(0, 3);
                     const estChoisi = date === choisi;
                     const estAujourdhui = date === aujourdhui;
                     return (
@@ -174,14 +183,14 @@ export function CalendrierMois({
 
           {seancesDuJour.length > 0 ? (
             <ul className="flex flex-col gap-3">
-              {seancesDuJour.map((s) => (
+              {seancesDuJour.map((s, idx) => (
                 <li key={s.id}>
                   <Link
                     href={`/sessions/${s.id}`}
                     className={`group flex flex-col gap-2 rounded-lg border border-l-4 border-black/15 bg-white/40 p-4 transition hover:shadow-md ${
                       s.passee ? "opacity-75" : ""
                     }`}
-                    style={{ borderLeftColor: COULEUR_SEANCE }}
+                    style={{ borderLeftColor: couleursDuJour[idx] }}
                   >
                     <span className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-sm font-semibold text-noir">{s.horaires}</span>

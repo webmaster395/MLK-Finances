@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { BadgeStatut, couleurStatut } from "@/components/devoirs/badge-statut";
 import { Intervenants } from "@/components/seances/intervenants";
-import { COULEUR_SEANCE } from "@/components/seances/couleur-seance";
+import { couleurSeance } from "@/components/seances/couleur-seance";
 import { formaterCreneau, formaterHoraires, formaterJourIso } from "@/lib/format";
 import { lireSeance } from "@/lib/donnees/sessions";
 
@@ -43,7 +43,7 @@ async function Detail({ params }: { params: PageProps<"/sessions/[id]">["params"
   if (!seance) notFound();
 
   const cours = seance.coursDetail;
-  const couleur = COULEUR_SEANCE;
+  const couleur = couleurSeance({ debut: seance.debut, avecCours: Boolean(seance.cours) });
   const titrePrincipal = seance.cours?.titre ?? seance.titre;
   const sousTitreSeance = seance.cours && seance.titre !== seance.cours.titre ? seance.titre : null;
   const devoirs = cours?.devoirs ?? [];
