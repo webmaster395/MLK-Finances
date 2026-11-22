@@ -235,7 +235,6 @@ describe("contenu pédagogique", () => {
 
   test("A ne peut rien écrire dans le contenu pédagogique", async () => {
     await assert.rejects(en(A, "insert into public.cours (titre) values ('x')"), REFUS);
-    await assert.rejects(en(A, "insert into public.temoignages (nom_affiche, texte, valide) values ('x', 'x', true)"), REFUS);
     // Modifier ou supprimer : la RLS ne lui laisse aucune ligne (rien ne change)
     assert.equal((await en(A, "update public.devoirs set titre = 'x' returning id")).rows.length, 0);
     assert.equal((await en(A, "delete from public.sessions returning id")).rows.length, 0);
@@ -505,5 +504,55 @@ describe("administrateur", () => {
     assert.equal(r.rows.length, 1);
     await assert.rejects(en(ADMIN, `insert into storage.objects (bucket_id, name) values ('photos', '${A}/avatar')`), REFUS);
     await assert.rejects(en(A, "insert into storage.objects (bucket_id, name) values ('photos', 'temoignages/pirate.jpg')"), REFUS);
+  });
+});
+
+describe("témoignage proposé par un participant", () => {
+  const ADMIN = "77777777-7777-4777-8777-777777777777"; // créé dans le bloc « administrateur »
+  const leSien = async (uid) => (await en(uid, `select id, texte, valide, nom_affiche, photo_path from public.temoignages where auteur_id = '${uid}'`)).rows;
+
+  test("A propose un témoignage : il est « à valider », signé de son nom, même s'il tente de tricher", async () => {
+    const r = await en(A, `insert into public.temoignages (texte, nom_affiche, valide, photo_path)
+      values ('Un parcours très utile.', 'Quelqu''un d''autre', true, 'temoignages/pirate/photo')
+      returning nom_affiche, valide, photo_path, auteur_id`);
+    assert.equal(r.rows[0].valide, false);
+    assert.equal(r.rows[0].nom_affiche, "Alex T.");
+    assert.equal(r.rows[0].photo_path, null);
+    assert.equal(r.rows[0].auteur_id, A);
+  });
+
+  test("A voit son témoignage en attente ; B ne le voit pas", async () => {
+    assert.equal((await leSien(A)).length, 1);
+    assert.equal((await en(B, "select id from public.temoignages where texte = 'Un parcours très utile.'")).rows.length, 0);
+  });
+
+  test("A ne peut pas en proposer un second, même en se faisant passer pour B", async () => {
+    await assert.rejects(en(A, "insert into public.temoignages (texte, nom_affiche) values ('Encore', 'x')"), /unique|duplicate/i);
+    // L'auteur est imposé par la base : la tentative « au nom de B » reste un second témoignage de A
+    await assert.rejects(en(A, `insert into public.temoignages (texte, nom_affiche, auteur_id) values ('Encore', 'x', '${B}')`), /unique|duplicate/i);
+    assert.equal((await en(B, `select id from public.temoignages where auteur_id = '${B}'`)).rows.length, 0);
+  });
+
+  test("A peut le modifier tant qu'il n'est pas validé, sans pouvoir le valider lui-même", async () => {
+    const r = await en(A, `update public.temoignages set texte = 'Texte corrigé.', valide = true where auteur_id = '${A}' returning texte, valide`);
+    assert.deepEqual(r.rows[0], { texte: "Texte corrigé.", valide: false });
+  });
+
+  test("une fois validé par l'admin, A ne peut plus le modifier ni le retirer, et il est publié", async () => {
+    const id = (await leSien(A))[0].id;
+    await en(ADMIN, `update public.temoignages set valide = true where id = '${id}'`);
+    assert.equal((await en(A, `update public.temoignages set texte = 'Après coup' where id = '${id}' returning id`)).rows.length, 0);
+    assert.equal((await en(A, `delete from public.temoignages where id = '${id}' returning id`)).rows.length, 0);
+    assert.equal((await en(B, `select id from public.temoignages where id = '${id}'`)).rows.length, 1);
+  });
+
+  test("B peut retirer son témoignage tant qu'il n'est pas validé", async () => {
+    await en(B, "insert into public.temoignages (texte, nom_affiche) values ('À retirer', 'x')");
+    const r = await en(B, `delete from public.temoignages where auteur_id = '${B}' returning id`);
+    assert.equal(r.rows.length, 1);
+  });
+
+  test("un visiteur ne peut pas proposer de témoignage", async () => {
+    await assert.rejects(anonyme("insert into public.temoignages (texte, nom_affiche) values ('x', 'x')"), REFUS);
   });
 });

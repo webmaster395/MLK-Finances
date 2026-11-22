@@ -279,6 +279,7 @@ export type Database = {
       }
       temoignages: {
         Row: {
+          auteur_id: string | null
           cree_le: string
           id: string
           nom_affiche: string
@@ -287,6 +288,7 @@ export type Database = {
           valide: boolean
         }
         Insert: {
+          auteur_id?: string | null
           cree_le?: string
           id?: string
           nom_affiche: string
@@ -295,6 +297,7 @@ export type Database = {
           valide?: boolean
         }
         Update: {
+          auteur_id?: string | null
           cree_le?: string
           id?: string
           nom_affiche?: string
@@ -302,7 +305,15 @@ export type Database = {
           texte?: string
           valide?: boolean
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "temoignages_auteur_id_fkey"
+            columns: ["auteur_id"]
+            isOneToOne: false
+            referencedRelation: "profils"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

@@ -11,9 +11,8 @@ export type Temoignage = {
 };
 
 /**
- * Les témoignages validés (lecture seule). Les règles de la base (RLS) ne renvoient
- * que ceux dont « valide » est vrai : un témoignage en attente n'est jamais visible,
- * ni sa photo (le stockage applique la même règle).
+ * Les témoignages validés (publiés). Les règles de la base ne montrent aux autres que les validés ;
+ * le filtre « valide » écarte aussi le témoignage en attente de la personne elle-même.
  */
 export async function lireTemoignages(): Promise<Temoignage[]> {
   await connection();
@@ -21,6 +20,7 @@ export async function lireTemoignages(): Promise<Temoignage[]> {
   const { data } = await supabase
     .from("temoignages")
     .select("id, nom_affiche, texte, photo_path")
+    .eq("valide", true)
     .order("cree_le", { ascending: false });
   const liste = data ?? [];
 
@@ -34,4 +34,20 @@ export async function lireTemoignages(): Promise<Temoignage[]> {
     texte: t.texte,
     photoUrl: t.photo_path ? (parChemin.get(t.photo_path) ?? null) : null,
   }));
+}
+
+export type MonTemoignage = { id: string; texte: string; valide: boolean; nomAffiche: string };
+
+/** Le témoignage proposé par la personne connectée (null si elle n'en a pas proposé). */
+export async function lireMonTemoignage(): Promise<MonTemoignage | null> {
+  await connection();
+  const supabase = await creerClientServeur();
+  const { data: utilisateur } = await supabase.auth.getUser();
+  if (!utilisateur.user) return null;
+  const { data } = await supabase
+    .from("temoignages")
+    .select("id, texte, valide, nom_affiche")
+    .eq("auteur_id", utilisateur.user.id)
+    .maybeSingle();
+  return data ? { id: data.id, texte: data.texte, valide: data.valide, nomAffiche: data.nom_affiche } : null;
 }
