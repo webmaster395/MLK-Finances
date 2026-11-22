@@ -31,4 +31,3 @@ npm run test:rls        # sécurité de la base : chaque participant ne voit que
 - `src/app/` : pages (`(public)` et `(participant)`), `src/components/`, `src/lib/` (accès aux données, règles, Supabase)
 - `supabase/` : migrations de la base, données de démo `[test]`, tests de sécurité (voir `supabase/README.md`)
 - `archive/maquette-html/` : première version HTML du site (référence visuelle, intacte)
-- `docs/` : prompt modèle d'origine

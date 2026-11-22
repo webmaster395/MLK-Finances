@@ -4,7 +4,6 @@
 
 Portail de formation pour les **participants** (phase 1), puis les **administrateurs** (phase 2).
 Feuille de route, schéma de base prévu et avancement : voir `PLAN.md` (le tenir à jour à chaque lot).
-Prompt modèle d'origine : `docs/prompt-portail-modele.md`.
 
 ## Façon de travailler avec l'utilisateur
 - L'utilisateur n'est **pas développeur** : répondre **en français**, expliquer simplement, dire clairement ce qui vient de sa demande et ce qui est une décision de l'assistant.
