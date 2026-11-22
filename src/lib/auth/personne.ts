@@ -52,11 +52,3 @@ export async function exigerAdmin(): Promise<Personne> {
   if (personne.role !== "admin") redirect("/accueil");
   return personne;
 }
-
-/** Nombre de groupes auxquels la personne est rattachée (0 = en attente de rattachement). */
-export const compterGroupes = cache(async (): Promise<number> => {
-  await connection();
-  const supabase = await creerClientServeur();
-  const { count } = await supabase.from("inscriptions").select("groupe_id", { count: "exact", head: true });
-  return count ?? 0;
-});

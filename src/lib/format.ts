@@ -66,13 +66,3 @@ export function formaterJourIso(jour: string, avecAnnee = false): string {
     timeZone: "UTC",
   }).format(d);
 }
-
-/** « Promotion 2026–2027 » à partir des dates du groupe (ou le nom du groupe à défaut). */
-export function libellePromotion(groupe: { nom: string; debut: string | null; fin: string | null }): string {
-  const an = (d: string | null) => (d ? d.slice(0, 4) : null);
-  const debut = an(groupe.debut);
-  const fin = an(groupe.fin);
-  if (debut && fin && debut !== fin) return `Promotion ${debut}–${fin}`;
-  if (debut ?? fin) return `Promotion ${debut ?? fin}`;
-  return groupe.nom;
-}

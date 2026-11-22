@@ -15,7 +15,6 @@ import {
   parisVersIso,
   validerCours,
   validerDevoir,
-  validerGroupe,
   validerLien,
   validerSeance,
 } from "./validation.ts";
@@ -31,7 +30,6 @@ test("l'heure de Paris est convertie en tenant compte de l'heure d'été et d'hi
 });
 
 const SEANCE = {
-  groupeId: "aaaaaaaa-0000-4000-8000-000000000001",
   titre: " Atelier budget ",
   date: "2026-12-05",
   heureDebut: "09:00",
@@ -54,7 +52,6 @@ test("une séance valide est préparée pour la base", () => {
 });
 
 test("une séance incomplète ou incohérente est refusée", () => {
-  assert.ok("message" in validerSeance({ ...SEANCE, groupeId: "" }));
   assert.ok("message" in validerSeance({ ...SEANCE, titre: "  " }));
   assert.ok("message" in validerSeance({ ...SEANCE, heureDebut: "25:00" }));
   assert.ok("message" in validerSeance({ ...SEANCE, heureFin: "08:00" }));
@@ -63,7 +60,7 @@ test("une séance incomplète ou incohérente est refusée", () => {
 
 test("un identifiant doit être un UUID", () => {
   assert.equal(estUuid("aaaaaaaa-0000-4000-8000-000000000001"), true);
-  assert.equal(estUuid("1; drop table groupes"), false);
+  assert.equal(estUuid("1; drop table cours"), false);
   assert.equal(estUuid(""), false);
 });
 
@@ -73,21 +70,7 @@ test("une date doit exister dans le calendrier", () => {
   assert.equal(estDate("01/09/2026"), false);
 });
 
-test("un groupe a un nom, et des dates facultatives dans le bon ordre", () => {
-  assert.deepEqual(validerGroupe({ nom: "  Promo A  ", debut: "", fin: "" }), {
-    groupe: { nom: "Promo A", debut: null, fin: null },
-  });
-  assert.deepEqual(validerGroupe({ nom: "Promo B", debut: "2026-09-01", fin: "2027-06-30" }), {
-    groupe: { nom: "Promo B", debut: "2026-09-01", fin: "2027-06-30" },
-  });
-  assert.ok("message" in validerGroupe({ nom: "   ", debut: "", fin: "" }));
-  assert.ok("message" in validerGroupe({ nom: "x".repeat(151), debut: "", fin: "" }));
-  assert.ok("message" in validerGroupe({ nom: "Promo C", debut: "2027-01-01", fin: "2026-01-01" }));
-  assert.ok("message" in validerGroupe({ nom: "Promo D", debut: "2026-13-01", fin: "" }));
-});
-
 const COURS = {
-  groupeId: "aaaaaaaa-0000-4000-8000-000000000001",
   titre: " Module 5 ",
   description: "Les bases.",
   objectifs: "Comprendre le taux\n\n  Comparer deux offres ",
@@ -102,7 +85,6 @@ test("un cours valide est préparé pour la base (objectifs un par ligne)", () =
   assert.deepEqual(r.cours.objectifs, ["Comprendre le taux", "Comparer deux offres"]);
   assert.equal(r.cours.ordre, 5);
   assert.ok("message" in validerCours({ ...COURS, titre: "" }));
-  assert.ok("message" in validerCours({ ...COURS, groupeId: "x" }));
   assert.ok("message" in validerCours({ ...COURS, ordre: "-1" }));
 });
 
@@ -144,14 +126,12 @@ test("un devoir a un cours, un titre et une échéance facultative (23:59 par d�
   assert.ok("message" in validerDevoir({ ...base, heure: "7h" }));
 });
 
-test("un message de l'équipe a un texte, un titre facultatif, et vise tous les groupes ou un seul", () => {
-  const tous = validerAnnonce({ groupeId: "", titre: " Bienvenue ", message: " Bonjour à tous ", publie: true });
-  assert.deepEqual(tous, { annonce: { groupe_id: null, titre: "Bienvenue", message: "Bonjour à tous", publie: true } });
-  const un = validerAnnonce({ groupeId: "aaaaaaaa-0000-4000-8000-000000000001", titre: "", message: "Salle B", publie: false });
-  assert.ok("annonce" in un && un.annonce.groupe_id === "aaaaaaaa-0000-4000-8000-000000000001");
-  assert.ok("message" in validerAnnonce({ groupeId: "", titre: "", message: "   ", publie: true }));
-  assert.ok("message" in validerAnnonce({ groupeId: "x", titre: "", message: "ok", publie: true }));
-  assert.ok("message" in validerAnnonce({ groupeId: "", titre: "x".repeat(151), message: "ok", publie: true }));
+test("un message de l'équipe a un texte et un titre facultatif", () => {
+  assert.deepEqual(validerAnnonce({ titre: " Bienvenue ", message: " Bonjour à tous ", publie: true }), {
+    annonce: { titre: "Bienvenue", message: "Bonjour à tous", publie: true },
+  });
+  assert.ok("message" in validerAnnonce({ titre: "", message: "   ", publie: true }));
+  assert.ok("message" in validerAnnonce({ titre: "x".repeat(151), message: "ok", publie: true }));
 });
 
 test("un témoignage a un nom affiché et un texte ; la photo est une image légère", () => {

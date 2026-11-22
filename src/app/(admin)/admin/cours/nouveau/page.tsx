@@ -5,15 +5,10 @@ import { NouveauCours } from "@/components/admin/cours";
 
 export const metadata: Metadata = { title: "Nouveau cours — Administration" };
 
-export default function Page({ searchParams }: PageProps<"/admin/cours/nouveau">) {
+export default function Page() {
   return (
     <Suspense fallback={<ChargementPage />}>
-      <Formulaire searchParams={searchParams} />
+      <NouveauCours />
     </Suspense>
   );
-}
-
-async function Formulaire({ searchParams }: { searchParams: PageProps<"/admin/cours/nouveau">["searchParams"] }) {
-  const { groupe } = await searchParams;
-  return <NouveauCours groupeId={typeof groupe === "string" ? groupe : undefined} />;
 }

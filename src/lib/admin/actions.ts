@@ -13,7 +13,6 @@ import {
   estUuid,
   validerCours,
   validerDevoir,
-  validerGroupe,
   validerLien,
   validerSeance,
 } from "./validation";
@@ -42,94 +41,8 @@ async function clientAdmin() {
 }
 
 function actualiser() {
-  // Les pages admin et l'espace participant (groupes, promotion) se mettent à jour
+  // Les pages admin et l'espace participant se mettent à jour
   revalidatePath("/", "layout");
-}
-
-// ---------------------------------------------------------------
-// Groupes
-// ---------------------------------------------------------------
-
-export async function creerGroupe(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
-  const v = validerGroupe({ nom: texte(formData, "nom"), debut: texte(formData, "debut"), fin: texte(formData, "fin") });
-  if ("message" in v) return v;
-  const supabase = await clientAdmin();
-  if (!supabase) return SESSION_EXPIREE;
-
-  const { data, error } = await supabase.from("groupes").insert(v.groupe).select("id").single();
-  if (error || !data) return ECHEC;
-  actualiser();
-  redirect(`/admin/groupes/${data.id}`);
-}
-
-export async function modifierGroupe(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
-  const id = texte(formData, "id");
-  if (!estUuid(id)) return ECHEC;
-  const v = validerGroupe({ nom: texte(formData, "nom"), debut: texte(formData, "debut"), fin: texte(formData, "fin") });
-  if ("message" in v) return v;
-  const supabase = await clientAdmin();
-  if (!supabase) return SESSION_EXPIREE;
-
-  const { data, error } = await supabase.from("groupes").update(v.groupe).eq("id", id).select("id");
-  if (error || !data?.length) return ECHEC;
-  actualiser();
-  return { ok: true, message: "Le groupe est enregistré." };
-}
-
-/** Supprime un groupe VIDE de contenu (sans cours ni séance) : sinon tout son contenu serait effacé. */
-export async function supprimerGroupe(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
-  const id = texte(formData, "id");
-  if (!estUuid(id)) return ECHEC;
-  const supabase = await clientAdmin();
-  if (!supabase) return SESSION_EXPIREE;
-
-  const [cours, seances] = await Promise.all([
-    supabase.from("cours").select("id", { count: "exact", head: true }).eq("groupe_id", id),
-    supabase.from("sessions").select("id", { count: "exact", head: true }).eq("groupe_id", id),
-  ]);
-  if ((cours.count ?? 0) > 0 || (seances.count ?? 0) > 0) {
-    return { message: "Ce groupe a des cours ou des séances : il ne peut pas être supprimé." };
-  }
-  const { data, error } = await supabase.from("groupes").delete().eq("id", id).select("id");
-  if (error || !data?.length) return ECHEC;
-  actualiser();
-  redirect("/admin/groupes");
-}
-
-// ---------------------------------------------------------------
-// Rattachement d'un participant à un groupe
-// ---------------------------------------------------------------
-
-export async function rattacher(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
-  const participantId = texte(formData, "participant_id");
-  const groupeId = texte(formData, "groupe_id");
-  if (!estUuid(participantId) || !estUuid(groupeId)) return { message: "Choisissez un participant et un groupe." };
-  const supabase = await clientAdmin();
-  if (!supabase) return SESSION_EXPIREE;
-
-  const { error } = await supabase
-    .from("inscriptions")
-    .upsert({ participant_id: participantId, groupe_id: groupeId }, { ignoreDuplicates: true });
-  if (error) return ECHEC;
-  actualiser();
-  return { ok: true, message: "Rattachement enregistré." };
-}
-
-export async function detacher(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
-  const participantId = texte(formData, "participant_id");
-  const groupeId = texte(formData, "groupe_id");
-  if (!estUuid(participantId) || !estUuid(groupeId)) return ECHEC;
-  const supabase = await clientAdmin();
-  if (!supabase) return SESSION_EXPIREE;
-
-  const { error } = await supabase
-    .from("inscriptions")
-    .delete()
-    .eq("participant_id", participantId)
-    .eq("groupe_id", groupeId);
-  if (error) return ECHEC;
-  actualiser();
-  return { ok: true, message: "Participant retiré du groupe." };
 }
 
 // ---------------------------------------------------------------
@@ -186,7 +99,6 @@ export async function changerRole(_: EtatAdmin, formData: FormData): Promise<Eta
 function saisieSeance(formData: FormData) {
   const brut = formData.get("description");
   return {
-    groupeId: texte(formData, "groupe_id"),
     titre: texte(formData, "titre"),
     date: texte(formData, "date"),
     heureDebut: texte(formData, "heure_debut"),
@@ -202,23 +114,11 @@ function saisieSeance(formData: FormData) {
   };
 }
 
-type ClientAdmin = NonNullable<Awaited<ReturnType<typeof clientAdmin>>>;
-
-/** Le cours choisi doit appartenir au groupe de la séance. */
-async function coursDuGroupe(supabase: ClientAdmin, coursId: string | null, groupeId: string) {
-  if (!coursId) return true;
-  const { data } = await supabase.from("cours").select("groupe_id").eq("id", coursId).maybeSingle();
-  return data?.groupe_id === groupeId;
-}
-
-const COURS_AUTRE_GROUPE: EtatAdmin = { message: "Ce cours appartient à un autre groupe : choisissez un cours du groupe de la séance." };
-
 export async function creerSeance(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
   const v = validerSeance(saisieSeance(formData));
   if ("message" in v) return v;
   const supabase = await clientAdmin();
   if (!supabase) return SESSION_EXPIREE;
-  if (!(await coursDuGroupe(supabase, v.seance.cours_id, v.seance.groupe_id))) return COURS_AUTRE_GROUPE;
 
   const { data, error } = await supabase.from("sessions").insert(v.seance).select("id").single();
   if (error || !data) return ECHEC;
@@ -233,7 +133,6 @@ export async function modifierSeance(_: EtatAdmin, formData: FormData): Promise<
   if ("message" in v) return v;
   const supabase = await clientAdmin();
   if (!supabase) return SESSION_EXPIREE;
-  if (!(await coursDuGroupe(supabase, v.seance.cours_id, v.seance.groupe_id))) return COURS_AUTRE_GROUPE;
 
   const { data, error } = await supabase.from("sessions").update(v.seance).eq("id", id).select("id");
   if (error || !data?.length) return ECHEC;
@@ -263,7 +162,6 @@ function saisieCours(formData: FormData) {
     return typeof v === "string" ? v : "";
   };
   return {
-    groupeId: texte(formData, "groupe_id"),
     titre: texte(formData, "titre"),
     description: brut("description"),
     objectifs: brut("objectifs"),
@@ -283,7 +181,7 @@ export async function creerCours(_: EtatAdmin, formData: FormData): Promise<Etat
   redirect(`/admin/cours/${data.id}?cree=1`);
 }
 
-/** Modifie un cours. Changer de groupe n'est possible que si aucune séance ne l'utilise. */
+/** Modifie un cours. */
 export async function modifierCours(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
   const id = texte(formData, "id");
   if (!estUuid(id)) return ECHEC;
@@ -291,13 +189,6 @@ export async function modifierCours(_: EtatAdmin, formData: FormData): Promise<E
   if ("message" in v) return v;
   const supabase = await clientAdmin();
   if (!supabase) return SESSION_EXPIREE;
-
-  const { data: actuel } = await supabase.from("cours").select("groupe_id").eq("id", id).maybeSingle();
-  if (!actuel) return ECHEC;
-  if (actuel.groupe_id !== v.cours.groupe_id) {
-    const { count } = await supabase.from("sessions").select("id", { count: "exact", head: true }).eq("cours_id", id);
-    if ((count ?? 0) > 0) return { message: "Des séances utilisent ce cours : il ne peut pas changer de groupe." };
-  }
 
   const { data, error } = await supabase.from("cours").update(v.cours).eq("id", id).select("id");
   if (error || !data?.length) return ECHEC;
@@ -474,7 +365,6 @@ export async function changerStatutRendu(_: EtatAdmin, formData: FormData): Prom
 function saisieAnnonce(formData: FormData) {
   const v = formData.get("message");
   return {
-    groupeId: texte(formData, "groupe_id"),
     titre: texte(formData, "titre"),
     message: typeof v === "string" ? v : "",
     publie: formData.get("publie") === "on",

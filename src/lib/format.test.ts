@@ -47,10 +47,3 @@ test("jour écrit en lettres sans décalage horaire", async () => {
   assert.equal(formaterJourIso("2026-12-05"), "samedi 5 décembre");
   assert.equal(formaterJourIso("2026-12-05", true), "samedi 5 décembre 2026");
 });
-
-test("libellé de promotion", async () => {
-  const { libellePromotion } = await import("./format.ts");
-  assert.equal(libellePromotion({ nom: "G", debut: "2026-10-01", fin: "2027-04-30" }), "Promotion 2026–2027");
-  assert.equal(libellePromotion({ nom: "G", debut: "2026-10-01", fin: "2026-12-30" }), "Promotion 2026");
-  assert.equal(libellePromotion({ nom: "Groupe test", debut: null, fin: null }), "Groupe test");
-});

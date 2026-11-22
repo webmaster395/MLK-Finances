@@ -14,20 +14,6 @@ export function estDate(valeur: string) {
   return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === valeur;
 }
 
-export type Groupe = { nom: string; debut: string | null; fin: string | null };
-
-/** Vérifie un groupe saisi : nom obligatoire (150 caractères au plus), dates facultatives, fin après début. */
-export function validerGroupe(saisie: { nom: string; debut: string; fin: string }): { groupe: Groupe } | { message: string } {
-  const nom = saisie.nom.trim();
-  const debut = saisie.debut.trim();
-  const fin = saisie.fin.trim();
-  if (nom.length === 0 || nom.length > 150) return { message: "Donnez un nom au groupe (150 caractères au maximum)." };
-  if (debut && !estDate(debut)) return { message: "La date de début n'est pas valide." };
-  if (fin && !estDate(fin)) return { message: "La date de fin n'est pas valide." };
-  if (debut && fin && fin < debut) return { message: "La date de fin doit être après la date de début." };
-  return { groupe: { nom, debut: debut || null, fin: fin || null } };
-}
-
 // ---------------------------------------------------------------
 // Heure de Paris <-> instant enregistré (timestamptz)
 // ---------------------------------------------------------------
@@ -78,7 +64,6 @@ export function isoVersParis(iso: string) {
 // ---------------------------------------------------------------
 
 export type SaisieSeance = {
-  groupeId: string;
   titre: string;
   date: string;
   heureDebut: string;
@@ -91,7 +76,6 @@ export type SaisieSeance = {
 };
 
 export type Seance = {
-  groupe_id: string;
   titre: string;
   debut: string;
   fin: string | null;
@@ -112,7 +96,6 @@ export function lireIntervenants(texte: string): string[] {
 
 export function validerSeance(s: SaisieSeance): { seance: Seance } | { message: string } {
   const titre = s.titre.trim();
-  if (!estUuid(s.groupeId)) return { message: "Choisissez le groupe de la séance." };
   if (titre.length === 0 || titre.length > 200) return { message: "Donnez un titre à la séance (200 caractères au maximum)." };
   if (!estDate(s.date)) return { message: "Indiquez la date de la séance." };
   if (!estHeure(s.heureDebut)) return { message: "Indiquez l'heure de début." };
@@ -128,7 +111,6 @@ export function validerSeance(s: SaisieSeance): { seance: Seance } | { message: 
 
   return {
     seance: {
-      groupe_id: s.groupeId,
       titre,
       debut: parisVersIso(s.date, s.heureDebut),
       fin: s.heureFin ? parisVersIso(s.date, s.heureFin) : null,
@@ -146,7 +128,6 @@ export function validerSeance(s: SaisieSeance): { seance: Seance } | { message: 
 // ---------------------------------------------------------------
 
 export type Cours = {
-  groupe_id: string;
   titre: string;
   description: string;
   objectifs: string[];
@@ -163,7 +144,6 @@ export function lireObjectifs(texte: string): string[] {
 }
 
 export function validerCours(s: {
-  groupeId: string;
   titre: string;
   description: string;
   objectifs: string;
@@ -171,7 +151,6 @@ export function validerCours(s: {
   publie: boolean;
 }): { cours: Cours } | { message: string } {
   const titre = s.titre.trim();
-  if (!estUuid(s.groupeId)) return { message: "Choisissez le groupe du cours." };
   if (titre.length === 0 || titre.length > 200) return { message: "Donnez un titre au cours (200 caractères au maximum)." };
   if (s.description.length > 5000) return { message: "La description est trop longue (5 000 caractères au maximum)." };
   const objectifs = lireObjectifs(s.objectifs);
@@ -179,7 +158,7 @@ export function validerCours(s: {
   if (objectifs.some((o) => o.length > 300)) return { message: "Un objectif est trop long (300 caractères au maximum)." };
   const ordre = s.ordre.trim() === "" ? 0 : Number(s.ordre);
   if (!Number.isInteger(ordre) || ordre < 0 || ordre > 999) return { message: "L'ordre doit être un nombre entier entre 0 et 999." };
-  return { cours: { groupe_id: s.groupeId, titre, description: s.description.trim(), objectifs, ordre, publie: s.publie } };
+  return { cours: { titre, description: s.description.trim(), objectifs, ordre, publie: s.publie } };
 }
 
 /** Lien d'un support : titre et adresse web complète (http ou https). */
@@ -265,16 +244,15 @@ export function validerDevoir(s: {
 // Messages de l'équipe
 // ---------------------------------------------------------------
 
-export type Annonce = { groupe_id: string | null; titre: string; message: string; publie: boolean };
+export type Annonce = { titre: string; message: string; publie: boolean };
 
-/** Message de l'équipe : pour tous les groupes (groupe vide) ou pour un groupe. */
-export function validerAnnonce(s: { groupeId: string; titre: string; message: string; publie: boolean }): { annonce: Annonce } | { message: string } {
+/** Message de l'équipe, pour tous les participants. */
+export function validerAnnonce(s: { titre: string; message: string; publie: boolean }): { annonce: Annonce } | { message: string } {
   const titre = s.titre.trim();
   const texte = s.message.trim();
-  if (s.groupeId && !estUuid(s.groupeId)) return { message: "Groupe non valide." };
   if (titre.length > 150) return { message: "Le titre est trop long (150 caractères au maximum)." };
   if (texte.length === 0 || texte.length > 2000) return { message: "Écrivez le message (2 000 caractères au maximum)." };
-  return { annonce: { groupe_id: s.groupeId || null, titre, message: texte, publie: s.publie } };
+  return { annonce: { titre, message: texte, publie: s.publie } };
 }
 
 // ---------------------------------------------------------------

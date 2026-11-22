@@ -54,7 +54,7 @@ function choisirSeance(seances: LigneSeance[], maintenant: number): SeanceDevoir
 
 /**
  * Tous les devoirs visibles de la personne avec son rendu éventuel.
- * Les règles de la base ne renvoient que les devoirs publiés de son groupe et SES rendus.
+ * Les règles de la base ne renvoient que les devoirs publiés et SES rendus.
  * Partagé pendant une même requête (le menu et la page l'utilisent tous les deux).
  */
 export const lireDevoirs = cache(async (): Promise<DevoirListe[]> => {

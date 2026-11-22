@@ -7,6 +7,7 @@ import { PhotoProfil } from "@/components/profil/photo-profil";
 import { ProfilChargement } from "@/components/profil/profil-chargement";
 import { initiales } from "@/lib/auth/initiales";
 import { lireProfil } from "@/lib/donnees/profil";
+import { PROMOTION } from "@/lib/promotion";
 
 export const metadata: Metadata = { title: "Mon profil" };
 
@@ -21,8 +22,6 @@ export default function Page() {
     </div>
   );
 }
-
-const formaterMois = new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric", timeZone: "Europe/Paris" });
 
 async function Contenu() {
   const profil = await lireProfil();
@@ -59,30 +58,12 @@ async function Contenu() {
         <h2 id="titre-formation" className="titre-charte mb-4 text-2xl">
           Ma formation
         </h2>
-        {profil.formations.length > 0 ? (
-          <ul className="flex flex-col gap-3">
-            {profil.formations.map((f) => (
-              <li key={f.id} className="flex items-start gap-3">
-                <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-full bg-rose-clair text-noir">
-                  <GraduationCap className="size-5" />
-                </span>
-                <span className="flex min-w-0 flex-col font-semibold text-noir">
-                  <span className="[overflow-wrap:anywhere]">{f.nom}</span>
-                  {f.debut || f.fin ? (
-                    <span className="text-sm font-normal">
-                      {f.debut ? `Du ${formaterMois.format(new Date(f.debut))}` : ""}
-                      {f.fin ? ` au ${formaterMois.format(new Date(f.fin))}` : ""}
-                    </span>
-                  ) : null}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="font-semibold">
-            Vous n&apos;êtes pas encore rattaché(e) à un groupe. L&apos;équipe le fera prochainement.
-          </p>
-        )}
+        <p className="flex items-center gap-3 font-semibold text-noir">
+          <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-full bg-rose-clair text-noir">
+            <GraduationCap className="size-5" />
+          </span>
+          MLK Parcours Finances — {PROMOTION}
+        </p>
       </section>
     </div>
   );

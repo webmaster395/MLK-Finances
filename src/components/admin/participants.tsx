@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ChevronRight, ShieldCheck, UserRound } from "lucide-react";
 import { Champ } from "@/components/auth/champ";
 import { EtatVide } from "@/components/coquille/etat-vide";
-import { changerRole, detacher, modifierParticipant, rattacher } from "@/lib/admin/actions";
+import { changerRole, modifierParticipant } from "@/lib/admin/actions";
 import { CIVILITES, TRANCHES_AGE } from "@/lib/auth/profil";
 import { lireParticipant, lireParticipants } from "@/lib/donnees/admin";
 import { formaterJourComplet } from "@/lib/format";
@@ -26,13 +26,11 @@ export async function ListeParticipants() {
   if (personnes.length === 0) {
     return <EtatVide icone={UserRound} titre="Aucun inscrit" texte="Les personnes qui s'inscrivent sur le site apparaîtront ici." />;
   }
-  const sansGroupe = personnes.filter((p) => p.role === "participant" && p.groupes.length === 0).length;
 
   return (
     <section className="accueil-carte p-5 sm:p-6" aria-label="Personnes inscrites">
       <p className="text-sm font-semibold">
         {personnes.length} personne{personnes.length > 1 ? "s" : ""} inscrite{personnes.length > 1 ? "s" : ""}
-        {sansGroupe > 0 ? ` · ${sansGroupe} sans groupe` : ""}
       </p>
       <ul className="mt-2 divide-y divide-black/10">
         {personnes.map((p) => (
@@ -43,16 +41,7 @@ export async function ListeParticipants() {
                   <span className="text-base font-semibold text-noir group-hover:underline [overflow-wrap:anywhere]">{p.nom}</span>
                   {p.role === "admin" ? <PastilleAdmin /> : null}
                 </span>
-                <span className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
-                  {p.groupes.length > 0 ? (
-                    p.groupes.map((g) => (
-                      <span key={g.id} className="rounded-full border border-black/20 px-2 py-0.5 font-semibold text-noir">
-                        {g.nom}
-                      </span>
-                    ))
-                  ) : p.role === "participant" ? (
-                    <span className="rounded-full bg-orange px-2 py-0.5 font-semibold text-noir">Sans groupe</span>
-                  ) : null}
+                <span className="mt-1 block text-xs">
                   <span>inscrit le {formaterJourComplet(p.inscritLe)}</span>
                 </span>
               </span>
@@ -65,7 +54,7 @@ export async function ListeParticipants() {
   );
 }
 
-/** Fiche d'une personne : informations, groupes, rôle. Sous <Suspense>. */
+/** Fiche d'une personne : informations et rôle. Sous <Suspense>. */
 export async function FicheParticipant({ id }: { id: string }) {
   const p = await lireParticipant(id);
   if (!p) notFound();
@@ -127,47 +116,6 @@ export async function FicheParticipant({ id }: { id: string }) {
         </section>
 
         <div className="flex flex-col gap-4">
-          <section className="accueil-carte p-5 sm:p-6" aria-labelledby="titre-groupes">
-            <h2 id="titre-groupes" className="titre-charte text-xl sm:text-2xl">
-              Groupes
-            </h2>
-            {p.groupes.length > 0 ? (
-              <ul className="mt-3 divide-y divide-black/10">
-                {p.groupes.map((g) => (
-                  <li key={g.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 py-2.5">
-                    <Link href={`/admin/groupes/${g.id}`} className="min-w-0 flex-1 text-sm font-semibold text-noir hover:underline [overflow-wrap:anywhere]">
-                      {g.nom}
-                    </Link>
-                    {g.membre ? (
-                      <FormulaireAction
-                        key="retirer"
-                        action={detacher}
-                        bouton="Retirer"
-                        enCoursTexte="Retrait…"
-                        style="danger"
-                        confirmation={`Retirer ${nomComplet} du groupe « ${g.nom} » ?`}
-                        className="items-end"
-                        afficherSucces={false}
-                      >
-                        <input type="hidden" name="participant_id" value={p.id} />
-                        <input type="hidden" name="groupe_id" value={g.id} />
-                      </FormulaireAction>
-                    ) : (
-                      <FormulaireAction key="rattacher" action={rattacher} bouton="Rattacher" enCoursTexte="Rattachement…" style="secondaire" className="items-end" afficherSucces={false}>
-                        <input type="hidden" name="participant_id" value={p.id} />
-                        <input type="hidden" name="groupe_id" value={g.id} />
-                      </FormulaireAction>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-3 text-sm">
-                Aucun groupe n&apos;existe encore. <Link href="/admin/groupes" className="font-semibold underline">Créer un groupe</Link>
-              </p>
-            )}
-          </section>
-
           <section className="accueil-carte p-5 sm:p-6" aria-labelledby="titre-role">
             <h2 id="titre-role" className="titre-charte mb-2 text-xl sm:text-2xl">
               Rôle
@@ -190,7 +138,7 @@ export async function FicheParticipant({ id }: { id: string }) {
                 action={changerRole}
                 bouton="Nommer administrateur"
                 style="secondaire"
-                confirmation={`Nommer ${nomComplet} administrateur ? Cette personne pourra tout gérer : groupes, contenus, participants.`}
+                confirmation={`Nommer ${nomComplet} administrateur ? Cette personne pourra tout gérer : contenus et participants.`}
               >
                 <input type="hidden" name="id" value={p.id} />
                 <input type="hidden" name="role" value="admin" />

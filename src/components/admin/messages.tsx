@@ -2,29 +2,16 @@ import { EyeOff, Megaphone } from "lucide-react";
 import { Champ } from "@/components/auth/champ";
 import { EtatVide } from "@/components/coquille/etat-vide";
 import { creerAnnonce, modifierAnnonce, supprimerAnnonce } from "@/lib/admin/actions";
-import { lireAnnoncesAdmin, lireOptionsSeance, type AnnonceAdmin } from "@/lib/donnees/admin";
+import { lireAnnoncesAdmin, type AnnonceAdmin } from "@/lib/donnees/admin";
 import { formaterCreneau } from "@/lib/format";
 import { FormulaireAction } from "./formulaire-action";
 
 const CLASSE_CHAMP = "min-h-11 w-full rounded-md border border-black/25 bg-white px-3 text-base font-semibold text-noir";
 
 /** Champs d'un message. Les identifiants sont préfixés pour rester uniques sur la page. */
-function ChampsMessage({ prefixe, groupes, annonce }: { prefixe: string; groupes: { id: string; nom: string }[]; annonce?: AnnonceAdmin }) {
+function ChampsMessage({ prefixe, annonce }: { prefixe: string; annonce?: AnnonceAdmin }) {
   return (
     <>
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor={`${prefixe}-groupe`} className="text-sm font-semibold text-noir">
-          Destinataires
-        </label>
-        <select id={`${prefixe}-groupe`} name="groupe_id" defaultValue={annonce?.groupeId ?? ""} className={CLASSE_CHAMP}>
-          <option value="">Tous les groupes</option>
-          {groupes.map((g) => (
-            <option key={g.id} value={g.id}>
-              {g.nom}
-            </option>
-          ))}
-        </select>
-      </div>
       <Champ id={`${prefixe}-titre`} name="titre" libelle="Titre (facultatif)" maxLength={150} defaultValue={annonce?.titre} />
       <div className="flex flex-col gap-1.5">
         <label htmlFor={`${prefixe}-message`} className="text-sm font-semibold text-noir">
@@ -50,7 +37,7 @@ function ChampsMessage({ prefixe, groupes, annonce }: { prefixe: string; groupes
 
 /** Messages de l'équipe : écrire, modifier, publier / dépublier, supprimer. Sous <Suspense>. */
 export async function GestionMessages() {
-  const [annonces, { groupes }] = await Promise.all([lireAnnoncesAdmin(), lireOptionsSeance()]);
+  const annonces = await lireAnnoncesAdmin();
 
   return (
     <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
@@ -63,9 +50,6 @@ export async function GestionMessages() {
               <summary className="cursor-pointer list-none">
                 <span className="flex flex-wrap items-center gap-2">
                   <span className="text-base font-semibold text-noir [overflow-wrap:anywhere]">{a.titre || "Sans titre"}</span>
-                  <span className="rounded-full border border-black/20 px-2 py-0.5 text-[11px] font-semibold text-noir">
-                    {a.groupe ?? "Tous les groupes"}
-                  </span>
                   {a.publie ? null : (
                     <span className="inline-flex items-center gap-1 rounded-full border border-black/25 px-2 py-0.5 text-[11px] font-semibold">
                       <EyeOff aria-hidden className="size-3.5" />
@@ -80,7 +64,7 @@ export async function GestionMessages() {
               <div className="mt-4 border-t border-black/10 pt-4">
                 <FormulaireAction action={modifierAnnonce} bouton="Enregistrer">
                   <input type="hidden" name="id" value={a.id} />
-                  <ChampsMessage prefixe={a.id} groupes={groupes} annonce={a} />
+                  <ChampsMessage prefixe={a.id} annonce={a} />
                 </FormulaireAction>
                 <div className="mt-3 border-t border-black/10 pt-3">
                   <FormulaireAction
@@ -105,7 +89,7 @@ export async function GestionMessages() {
           Nouveau message
         </h2>
         <FormulaireAction action={creerAnnonce} bouton="Envoyer le message" enCoursTexte="Envoi…" viderApresSucces>
-          <ChampsMessage prefixe="nouveau" groupes={groupes} />
+          <ChampsMessage prefixe="nouveau" />
         </FormulaireAction>
         <p className="mt-3 text-xs">Le message apparaît sur l&apos;accueil et dans le mégaphone des participants concernés.</p>
       </section>

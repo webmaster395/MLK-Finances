@@ -1,19 +1,10 @@
 import "server-only";
-import { cache } from "react";
 import { connection } from "next/server";
 import { obtenirPersonne } from "@/lib/auth/personne";
-import { libellePromotion } from "@/lib/format";
 import { creerClientServeur } from "@/lib/supabase/serveur";
 
 /** Durée de validité du lien de la photo (affichage). Le fichier reste privé, jamais public. */
 const DUREE_LIEN_PHOTO_SECONDES = 300;
-
-export type FormationProfil = {
-  id: string;
-  nom: string;
-  debut: string | null;
-  fin: string | null;
-};
 
 export type ProfilComplet = {
   id: string;
@@ -23,7 +14,6 @@ export type ProfilComplet = {
   civilite: string | null;
   trancheAge: string | null;
   photoUrl: string | null;
-  formations: FormationProfil[];
 };
 
 /** Lien temporaire vers la photo d'une personne (null s'il n'y en a pas ou si le fichier est introuvable). */
@@ -35,22 +25,16 @@ export async function lireUrlPhoto(photoPath: string | null): Promise<string | n
   return data?.signedUrl ?? null;
 }
 
-/** Le profil de la personne connectée avec sa formation (groupes où elle est inscrite). */
+/** Le profil de la personne connectée. */
 export async function lireProfil(): Promise<ProfilComplet> {
   const personne = await obtenirPersonne();
   await connection();
   const supabase = await creerClientServeur();
 
-  const [{ data: profil }, { data: inscriptions }, photoUrl] = await Promise.all([
+  const [{ data: profil }, photoUrl] = await Promise.all([
     supabase.from("profils").select("civilite, tranche_age").eq("id", personne.id).maybeSingle(),
-    supabase.from("inscriptions").select("groupes(id, nom, debut, fin)"),
     lireUrlPhoto(personne.photoPath),
   ]);
-
-  const formations = (inscriptions ?? [])
-    .map((i) => i.groupes)
-    .filter((g): g is FormationProfil => Boolean(g))
-    .sort((a, b) => (b.debut ?? "").localeCompare(a.debut ?? ""));
 
   return {
     id: personne.id,
@@ -60,18 +44,5 @@ export async function lireProfil(): Promise<ProfilComplet> {
     civilite: profil?.civilite ?? null,
     trancheAge: profil?.tranche_age ?? null,
     photoUrl,
-    formations,
   };
 }
-
-/** « Promotion 2026–2027 » : la formation la plus récente de la personne (null si elle n'est dans aucun groupe). */
-export const lirePromotion = cache(async (): Promise<string | null> => {
-  await connection();
-  const supabase = await creerClientServeur();
-  const { data } = await supabase.from("inscriptions").select("groupes(nom, debut, fin)");
-  const groupes = (data ?? [])
-    .map((i) => i.groupes)
-    .filter((g): g is { nom: string; debut: string | null; fin: string | null } => Boolean(g))
-    .sort((a, b) => (b.debut ?? "").localeCompare(a.debut ?? ""));
-  return groupes[0] ? libellePromotion(groupes[0]) : null;
-});

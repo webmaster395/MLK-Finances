@@ -35,7 +35,7 @@ export type SeanceDetail = Seance & {
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * Toutes les séances visibles de la personne (publiées et de son groupe : les règles de la base filtrent),
+ * Toutes les séances visibles de la personne (publiées : les règles de la base filtrent),
  * de la plus ancienne à la plus récente. Partagé pendant une même requête.
  */
 export const lireSeances = cache(async (): Promise<Seance[]> => {

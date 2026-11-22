@@ -6,7 +6,7 @@ import { EtatVide } from "@/components/coquille/etat-vide";
 import { COULEUR_SEANCE } from "@/components/seances/couleur-seance";
 import { creerSeance, modifierSeance, supprimerSeance } from "@/lib/admin/actions";
 import { isoVersParis } from "@/lib/admin/validation";
-import { lireOptionsSeance, lireSeanceAdmin, lireSeancesAdmin, type OptionsSeance, type SeanceAdmin } from "@/lib/donnees/admin";
+import { lireOptionsCours, lireSeanceAdmin, lireSeancesAdmin, type OptionsCours, type SeanceAdmin } from "@/lib/donnees/admin";
 import { formaterCreneau } from "@/lib/format";
 import { FormulaireAction } from "./formulaire-action";
 
@@ -21,29 +21,12 @@ function Libelle({ pour, children }: { pour: string; children: React.ReactNode }
 }
 
 /** Champs d'une séance (création et modification). Les heures sont celles de Paris. */
-function ChampsSeance({ options, seance, groupeParDefaut }: { options: OptionsSeance; seance?: SeanceAdmin; groupeParDefaut?: string }) {
+function ChampsSeance({ options, seance }: { options: OptionsCours; seance?: SeanceAdmin }) {
   const debut = seance ? isoVersParis(seance.debut) : null;
   const fin = seance?.fin ? isoVersParis(seance.fin) : null;
-  const groupesDesCours = options.groupes.filter((g) => options.cours.some((c) => c.groupeId === g.id));
 
   return (
     <>
-      <div className="grid gap-3">
-        <div className="flex flex-col gap-1.5">
-          <Libelle pour="groupe_id">Groupe</Libelle>
-          <select id="groupe_id" name="groupe_id" required defaultValue={seance?.groupeId ?? groupeParDefaut ?? ""} className={CLASSE_CHAMP}>
-            <option value="" disabled>
-              Choisissez…
-            </option>
-            {options.groupes.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.nom}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
       <Champ id="titre" libelle="Titre de la séance" required maxLength={200} defaultValue={seance?.titre} placeholder="Ex. : Session 3 — Atelier crédit" />
 
       <div className="grid gap-3 sm:grid-cols-3">
@@ -58,20 +41,14 @@ function ChampsSeance({ options, seance, groupeParDefaut }: { options: OptionsSe
         <Libelle pour="cours_id">Cours lié</Libelle>
         <select id="cours_id" name="cours_id" defaultValue={seance?.coursId ?? ""} aria-describedby="cours-aide" className={CLASSE_CHAMP}>
           <option value="">Aucun cours</option>
-          {groupesDesCours.map((g) => (
-            <optgroup key={g.id} label={g.nom}>
-              {options.cours
-                .filter((c) => c.groupeId === g.id)
-                .map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.titre}
-                  </option>
-                ))}
-            </optgroup>
+          {options.cours.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.titre}
+            </option>
           ))}
         </select>
         <p id="cours-aide" className="text-xs">
-          Le cours apporte le contenu, les supports et les devoirs de la séance. Il doit être du même groupe.
+          Le cours apporte le contenu, les supports et les devoirs de la séance.
         </p>
       </div>
 
@@ -97,19 +74,17 @@ function ChampsSeance({ options, seance, groupeParDefaut }: { options: OptionsSe
 
       <label className="flex min-h-11 cursor-pointer items-center gap-2.5 font-semibold text-noir">
         <input type="checkbox" name="publie" defaultChecked={seance?.publie ?? true} className="size-5 accent-rose" />
-        Publiée (visible par les participants du groupe)
+        Publiée (visible par les participants)
       </label>
     </>
   );
 }
 
-/** Liste des séances, avec filtre par groupe. Sous <Suspense>. */
-export async function ListeSeances({ groupeId }: { groupeId?: string }) {
-  const [seances, options] = await Promise.all([lireSeancesAdmin(groupeId), lireOptionsSeance()]);
+/** Liste des séances. Sous <Suspense>. */
+export async function ListeSeances() {
+  const seances = await lireSeancesAdmin();
   const aVenir = seances.filter((s) => !s.passee);
   const passees = seances.filter((s) => s.passee).reverse();
-  const filtre = (actif: boolean) =>
-    `rounded-full border px-3 py-1.5 text-xs font-semibold ${actif ? "border-noir bg-noir text-white" : "border-black/25 text-noir hover:bg-black/5"}`;
 
   const bloc = (titre: string, liste: typeof seances) =>
     liste.length > 0 ? (
@@ -133,7 +108,7 @@ export async function ListeSeances({ groupeId }: { groupeId?: string }) {
                     )}
                   </span>
                   <span className="mt-1 block text-xs">
-                    {formaterCreneau(s.debut, s.fin)} · {s.groupe}
+                    {formaterCreneau(s.debut, s.fin)}
                     {s.cours ? ` · ${s.cours}` : ""}
                   </span>
                   {s.lieu ? (
@@ -153,22 +128,10 @@ export async function ListeSeances({ groupeId }: { groupeId?: string }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <Link href="/admin/seances/nouvelle" className="btn btn-orange w-fit">
-          <CalendarPlus aria-hidden className="size-5" />
-          Nouvelle séance
-        </Link>
-        <nav aria-label="Filtrer par groupe" className="flex flex-wrap gap-1.5 sm:ml-auto">
-          <Link href="/admin/seances" className={filtre(!groupeId)} aria-current={!groupeId ? "page" : undefined}>
-            Tous les groupes
-          </Link>
-          {options.groupes.map((g) => (
-            <Link key={g.id} href={`/admin/seances?groupe=${g.id}`} className={filtre(groupeId === g.id)} aria-current={groupeId === g.id ? "page" : undefined}>
-              {g.nom}
-            </Link>
-          ))}
-        </nav>
-      </div>
+      <Link href="/admin/seances/nouvelle" className="btn btn-orange w-fit">
+        <CalendarPlus aria-hidden className="size-5" />
+        Nouvelle séance
+      </Link>
       {seances.length === 0 ? (
         <EtatVide icone={CalendarX} titre="Aucune séance" texte="Créez une première séance avec le bouton « Nouvelle séance »." />
       ) : (
@@ -191,35 +154,26 @@ function Retour() {
 }
 
 /** Création d'une séance. Sous <Suspense>. */
-export async function NouvelleSeance({ groupeId }: { groupeId?: string }) {
-  const options = await lireOptionsSeance();
+export async function NouvelleSeance() {
+  const options = await lireOptionsCours();
   return (
     <div className="flex flex-col gap-5">
       <Retour />
       <h1 className="titre-charte text-3xl sm:text-5xl">
         <span className="pinceau">Nouvelle séance</span>
       </h1>
-      {options.groupes.length === 0 ? (
-        <p className="text-sm font-semibold">
-          Créez d&apos;abord un groupe : chaque séance appartient à un groupe.{" "}
-          <Link href="/admin/groupes" className="underline">
-            Créer un groupe
-          </Link>
-        </p>
-      ) : (
-        <section className="accueil-carte max-w-3xl p-5 sm:p-6">
-          <FormulaireAction action={creerSeance} bouton="Créer la séance" enCoursTexte="Création…">
-            <ChampsSeance options={options} groupeParDefaut={groupeId} />
-          </FormulaireAction>
-        </section>
-      )}
+      <section className="accueil-carte max-w-3xl p-5 sm:p-6">
+        <FormulaireAction action={creerSeance} bouton="Créer la séance" enCoursTexte="Création…">
+          <ChampsSeance options={options} />
+        </FormulaireAction>
+      </section>
     </div>
   );
 }
 
 /** Modification d'une séance. Sous <Suspense>. */
 export async function FicheSeance({ id, creee }: { id: string; creee: boolean }) {
-  const [seance, options] = await Promise.all([lireSeanceAdmin(id), lireOptionsSeance()]);
+  const [seance, options] = await Promise.all([lireSeanceAdmin(id), lireOptionsCours()]);
   if (!seance) notFound();
 
   return (
@@ -254,7 +208,7 @@ export async function FicheSeance({ id, creee }: { id: string; creee: boolean })
               Côté participant
             </h2>
             {seance.publie ? (
-              <p className="text-sm">Publiée : visible dans le calendrier des participants du groupe.</p>
+              <p className="text-sm">Publiée : visible dans le calendrier des participants.</p>
             ) : (
               <p className="text-sm">Non publiée : les participants ne la voient pas encore.</p>
             )}

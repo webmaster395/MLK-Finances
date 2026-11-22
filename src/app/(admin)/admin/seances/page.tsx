@@ -6,18 +6,13 @@ import { TitrePage } from "@/components/coquille/titre-page";
 
 export const metadata: Metadata = { title: "Séances — Administration" };
 
-export default function Page({ searchParams }: PageProps<"/admin/seances">) {
+export default function Page() {
   return (
     <div className="flex flex-col gap-5">
-      <TitrePage titre="Séances" sousTitre="Calendrier des groupes" />
+      <TitrePage titre="Séances" sousTitre="Calendrier de la promotion" />
       <Suspense fallback={<ChargementListe />}>
-        <Liste searchParams={searchParams} />
+        <ListeSeances />
       </Suspense>
     </div>
   );
-}
-
-async function Liste({ searchParams }: { searchParams: PageProps<"/admin/seances">["searchParams"] }) {
-  const { groupe } = await searchParams;
-  return <ListeSeances groupeId={typeof groupe === "string" ? groupe : undefined} />;
 }

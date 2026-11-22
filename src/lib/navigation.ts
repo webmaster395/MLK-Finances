@@ -8,7 +8,6 @@ import {
   Megaphone,
   MessageCircle,
   ShieldCheck,
-  UsersRound,
   User,
   type LucideIcon,
 } from "lucide-react";
@@ -40,15 +39,11 @@ export const PAGE_PROFIL: PageMenu = { href: "/profil", nom: "Mon profil", icone
 export const PAGE_ADMINISTRATION: PageMenu = { href: "/admin", nom: "Administration", icone: ShieldCheck };
 
 /**
- * Menu de l'espace administrateur. Les pages de gestion (groupes, séances, cours, devoirs,
- * messages, témoignages) s'ajouteront ici lot par lot.
+ * Menu de l'espace administrateur.
  */
 export const GROUPES_MENU_ADMIN: PageMenu[][] = [
   [{ href: "/admin", nom: "Tableau de bord", icone: LayoutDashboard }],
-  [
-    { href: "/admin/groupes", nom: "Groupes", icone: UsersRound },
-    { href: "/admin/participants", nom: "Participants", icone: User },
-  ],
+  [{ href: "/admin/participants", nom: "Participants", icone: User }],
   [
     { href: "/admin/seances", nom: "Séances", icone: CalendarDays },
     { href: "/admin/cours", nom: "Cours", icone: BookOpen },

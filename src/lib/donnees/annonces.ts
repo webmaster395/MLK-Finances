@@ -11,7 +11,7 @@ export type Annonce = {
 };
 
 /**
- * Tous les messages publiés de l'équipe visibles par la personne (pour tous ou pour son groupe),
+ * Tous les messages publiés de l'équipe visibles par la personne,
  * du plus récent au plus ancien. Partagé pendant une même requête.
  */
 export const lireMessages = cache(async (): Promise<Annonce[]> => {
@@ -25,7 +25,7 @@ export const lireMessages = cache(async (): Promise<Annonce[]> => {
 });
 
 /**
- * Le message le plus récent de l'équipe, pour tous ou pour le groupe de la personne.
+ * Le message le plus récent de l'équipe.
  * Les règles de la base ne renvoient que les messages publiés qui la concernent.
  */
 export async function lireDernierMessage(): Promise<Annonce | null> {

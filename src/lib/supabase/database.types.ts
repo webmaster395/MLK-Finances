@@ -17,7 +17,6 @@ export type Database = {
       annonces: {
         Row: {
           cree_le: string
-          groupe_id: string | null
           id: string
           message: string
           publie: boolean
@@ -25,7 +24,6 @@ export type Database = {
         }
         Insert: {
           cree_le?: string
-          groupe_id?: string | null
           id?: string
           message: string
           publie?: boolean
@@ -33,27 +31,18 @@ export type Database = {
         }
         Update: {
           cree_le?: string
-          groupe_id?: string | null
           id?: string
           message?: string
           publie?: boolean
           titre?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "annonces_groupe_id_fkey"
-            columns: ["groupe_id"]
-            isOneToOne: false
-            referencedRelation: "groupes"
-            referencedColumns: ["id"]
-          },
         ]
       }
       cours: {
         Row: {
           cree_le: string
           description: string
-          groupe_id: string
           id: string
           objectifs: string[]
           ordre: number
@@ -63,7 +52,6 @@ export type Database = {
         Insert: {
           cree_le?: string
           description?: string
-          groupe_id: string
           id?: string
           objectifs?: string[]
           ordre?: number
@@ -73,7 +61,6 @@ export type Database = {
         Update: {
           cree_le?: string
           description?: string
-          groupe_id?: string
           id?: string
           objectifs?: string[]
           ordre?: number
@@ -81,13 +68,6 @@ export type Database = {
           titre?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "cours_groupe_id_fkey"
-            columns: ["groupe_id"]
-            isOneToOne: false
-            referencedRelation: "groupes"
-            referencedColumns: ["id"]
-          },
         ]
       }
       devoirs: {
@@ -124,63 +104,6 @@ export type Database = {
             columns: ["cours_id"]
             isOneToOne: false
             referencedRelation: "cours"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      groupes: {
-        Row: {
-          cree_le: string
-          debut: string | null
-          fin: string | null
-          id: string
-          nom: string
-        }
-        Insert: {
-          cree_le?: string
-          debut?: string | null
-          fin?: string | null
-          id?: string
-          nom: string
-        }
-        Update: {
-          cree_le?: string
-          debut?: string | null
-          fin?: string | null
-          id?: string
-          nom?: string
-        }
-        Relationships: []
-      }
-      inscriptions: {
-        Row: {
-          cree_le: string
-          groupe_id: string
-          participant_id: string
-        }
-        Insert: {
-          cree_le?: string
-          groupe_id: string
-          participant_id: string
-        }
-        Update: {
-          cree_le?: string
-          groupe_id?: string
-          participant_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "inscriptions_groupe_id_fkey"
-            columns: ["groupe_id"]
-            isOneToOne: false
-            referencedRelation: "groupes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "inscriptions_participant_id_fkey"
-            columns: ["participant_id"]
-            isOneToOne: false
-            referencedRelation: "profils"
             referencedColumns: ["id"]
           },
         ]
@@ -307,27 +230,6 @@ export type Database = {
           },
         ]
       }
-      rubriques: {
-        Row: {
-          couleur: string
-          id: string
-          nom: string
-          ordre: number
-        }
-        Insert: {
-          couleur: string
-          id?: string
-          nom: string
-          ordre?: number
-        }
-        Update: {
-          couleur?: string
-          id?: string
-          nom?: string
-          ordre?: number
-        }
-        Relationships: []
-      }
       sessions: {
         Row: {
           cours_id: string | null
@@ -335,12 +237,10 @@ export type Database = {
           debut: string
           description: string
           fin: string | null
-          groupe_id: string
           id: string
           intervenants: string[]
           lieu: string | null
           publie: boolean
-          rubrique_id: string | null
           titre: string
         }
         Insert: {
@@ -349,12 +249,10 @@ export type Database = {
           debut: string
           description?: string
           fin?: string | null
-          groupe_id: string
           id?: string
           intervenants?: string[]
           lieu?: string | null
           publie?: boolean
-          rubrique_id?: string | null
           titre: string
         }
         Update: {
@@ -363,12 +261,10 @@ export type Database = {
           debut?: string
           description?: string
           fin?: string | null
-          groupe_id?: string
           id?: string
           intervenants?: string[]
           lieu?: string | null
           publie?: boolean
-          rubrique_id?: string | null
           titre?: string
         }
         Relationships: [
@@ -377,20 +273,6 @@ export type Database = {
             columns: ["cours_id"]
             isOneToOne: false
             referencedRelation: "cours"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sessions_groupe_id_fkey"
-            columns: ["groupe_id"]
-            isOneToOne: false
-            referencedRelation: "groupes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sessions_rubrique_id_fkey"
-            columns: ["rubrique_id"]
-            isOneToOne: false
-            referencedRelation: "rubriques"
             referencedColumns: ["id"]
           },
         ]

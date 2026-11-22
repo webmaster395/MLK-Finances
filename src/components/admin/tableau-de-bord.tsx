@@ -38,7 +38,7 @@ function Panneau({ id, titre, compteur, children }: { id: string; titre: string;
   );
 }
 
-/** Tableau de bord de l'administrateur. Lit les données de tous les groupes : sous <Suspense>. */
+/** Tableau de bord de l'administrateur. Lit les données de tous les participants : sous <Suspense>. */
 export async function TableauDeBordAdmin() {
   const t = await lireTableauDeBord();
 
@@ -72,46 +72,23 @@ export async function TableauDeBordAdmin() {
           {t.aCorriger.length > 8 ? <p className="mt-2 text-xs">… et {t.aCorriger.length - 8} autres.</p> : null}
         </Panneau>
 
-        <div className="flex flex-col gap-4">
-          <Panneau id="titre-sans-groupe" titre="Nouveaux inscrits sans groupe" compteur={t.sansGroupe.length}>
-            <p className="mt-1 text-xs">Ils ne voient aucun contenu tant qu&apos;ils ne sont pas rattachés à une promotion.</p>
-            {t.sansGroupe.length > 0 ? (
-              <ul className="mt-2 divide-y divide-black/10">
-                {t.sansGroupe.map((p) => (
-                  <li key={p.id} className="flex items-center gap-3 py-2.5">
-                    <UserPlus aria-hidden className="size-4 shrink-0 text-rose" />
-                    <Link href={`/admin/participants/${p.id}`} className="min-w-0 flex-1 truncate text-sm font-semibold text-noir hover:underline">
-                      {p.nom}
-                    </Link>
-                    <span className="shrink-0 text-xs">inscrit le {formaterJourComplet(p.inscritLe)}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-3 text-sm font-semibold">Tous les participants sont rattachés à un groupe.</p>
-            )}
-          </Panneau>
-
-          <Panneau id="titre-groupes" titre="Groupes">
-            {t.groupes.length > 0 ? (
-              <ul className="mt-3 divide-y divide-black/10">
-                {t.groupes.map((g) => (
-                  <li key={g.id} className="flex items-center gap-3 py-2.5">
-                    <Link href={`/admin/groupes/${g.id}`} className="group min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold text-noir group-hover:underline">{g.nom}</span>
-                      {g.promotion ? <span className="block text-xs">{g.promotion}</span> : null}
-                    </Link>
-                    <span className="shrink-0 rounded-full border border-black/20 px-3 py-1 text-xs font-semibold text-noir">
-                      {g.effectif} participant{g.effectif > 1 ? "s" : ""}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-3 text-sm font-semibold">Aucun groupe pour l&apos;instant.</p>
-            )}
-          </Panneau>
-        </div>
+        <Panneau id="titre-inscrits" titre="Derniers inscrits">
+          {t.derniersInscrits.length > 0 ? (
+            <ul className="mt-3 divide-y divide-black/10">
+              {t.derniersInscrits.map((p) => (
+                <li key={p.id} className="flex items-center gap-3 py-2.5">
+                  <UserPlus aria-hidden className="size-4 shrink-0 text-rose" />
+                  <Link href={`/admin/participants/${p.id}`} className="min-w-0 flex-1 truncate text-sm font-semibold text-noir hover:underline">
+                    {p.nom}
+                  </Link>
+                  <span className="shrink-0 text-xs">inscrit le {formaterJourComplet(p.inscritLe)}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-sm font-semibold">Aucun participant inscrit pour l&apos;instant.</p>
+          )}
+        </Panneau>
       </div>
     </div>
   );

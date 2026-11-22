@@ -5,7 +5,7 @@ import { Champ } from "@/components/auth/champ";
 import { EtatVide } from "@/components/coquille/etat-vide";
 import { changerStatutRendu, creerDevoir, modifierDevoir, supprimerDevoir } from "@/lib/admin/actions";
 import { isoVersParis } from "@/lib/admin/validation";
-import { lireDevoirAdmin, lireDevoirsAdmin, lireOptionsDevoir, type DevoirAdmin, type OptionsDevoir } from "@/lib/donnees/admin";
+import { lireDevoirAdmin, lireDevoirsAdmin, lireOptionsCours, type DevoirAdmin, type OptionsCours } from "@/lib/donnees/admin";
 import { formaterCreneau } from "@/lib/format";
 import { FormulaireAction } from "./formulaire-action";
 
@@ -24,7 +24,7 @@ function Pastille({ children, couleur }: { children: React.ReactNode; couleur: "
 }
 
 /** Champs d'un devoir (création et modification). L'échéance est en heure de Paris. */
-function ChampsDevoir({ options, devoir, coursParDefaut }: { options: OptionsDevoir; devoir?: DevoirAdmin; coursParDefaut?: string }) {
+function ChampsDevoir({ options, devoir, coursParDefaut }: { options: OptionsCours; devoir?: DevoirAdmin; coursParDefaut?: string }) {
   const echeance = devoir?.echeance ? isoVersParis(devoir.echeance) : null;
   return (
     <>
@@ -36,14 +36,10 @@ function ChampsDevoir({ options, devoir, coursParDefaut }: { options: OptionsDev
           <option value="" disabled>
             Choisissez…
           </option>
-          {options.groupes.map((g) => (
-            <optgroup key={g.id} label={g.nom}>
-              {g.cours.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.titre}
-                </option>
-              ))}
-            </optgroup>
+          {options.cours.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.titre}
+            </option>
           ))}
         </select>
       </div>
@@ -60,7 +56,7 @@ function ChampsDevoir({ options, devoir, coursParDefaut }: { options: OptionsDev
       </div>
       <label className="flex min-h-11 cursor-pointer items-center gap-2.5 font-semibold text-noir">
         <input type="checkbox" name="publie" defaultChecked={devoir?.publie ?? true} className="size-5 accent-rose" />
-        Publié (visible par le groupe, si le cours est publié)
+        Publié (visible par les participants, si le cours est publié)
       </label>
     </>
   );
@@ -95,7 +91,7 @@ export async function ListeDevoirs() {
                       )}
                     </span>
                     <span className="mt-1 block text-xs">
-                      {d.echeance ? `Pour le ${formaterCreneau(d.echeance)}` : "Sans échéance"} · {d.cours} · {d.groupe} · {d.rendus} rendu
+                      {d.echeance ? `Pour le ${formaterCreneau(d.echeance)}` : "Sans échéance"} · {d.cours} · {d.rendus} rendu
                       {d.rendus > 1 ? "s" : ""}
                     </span>
                   </span>
@@ -121,14 +117,14 @@ function Retour() {
 
 /** Création d'un devoir. Sous <Suspense>. */
 export async function NouveauDevoir({ coursId }: { coursId?: string }) {
-  const options = await lireOptionsDevoir();
+  const options = await lireOptionsCours();
   return (
     <div className="flex flex-col gap-5">
       <Retour />
       <h1 className="titre-charte text-3xl sm:text-5xl">
         <span className="pinceau">Nouveau devoir</span>
       </h1>
-      {options.groupes.length === 0 ? (
+      {options.cours.length === 0 ? (
         <p className="text-sm font-semibold">
           Créez d&apos;abord un cours : chaque devoir appartient à un cours.{" "}
           <Link href="/admin/cours" className="underline">
@@ -148,7 +144,7 @@ export async function NouveauDevoir({ coursId }: { coursId?: string }) {
 
 /** Fiche d'un devoir : rendus à corriger, modification, suppression. Sous <Suspense>. */
 export async function FicheDevoir({ id, cree, erreurFichier }: { id: string; cree: boolean; erreurFichier: boolean }) {
-  const [devoir, options] = await Promise.all([lireDevoirAdmin(id), lireOptionsDevoir()]);
+  const [devoir, options] = await Promise.all([lireDevoirAdmin(id), lireOptionsCours()]);
   if (!devoir) notFound();
   const aCorriger = devoir.rendus.filter((r) => r.statut === "depose").length;
 
@@ -160,7 +156,7 @@ export async function FicheDevoir({ id, cree, erreurFichier }: { id: string; cre
           <span className="pinceau">{devoir.titre}</span>
         </h1>
         <p className="mt-2 text-sm font-semibold">
-          {devoir.cours} · {devoir.groupe} · {devoir.echeance ? `pour le ${formaterCreneau(devoir.echeance)}` : "sans échéance"}
+          {devoir.cours} · {devoir.echeance ? `pour le ${formaterCreneau(devoir.echeance)}` : "sans échéance"}
           {devoir.publie ? "" : " · non publié"}
         </p>
       </div>
@@ -255,7 +251,7 @@ export async function FicheDevoir({ id, cree, erreurFichier }: { id: string; cre
                 ))}
               </ul>
             ) : (
-              <p className="mt-2 text-sm">Tous les participants du groupe ont rendu ce devoir.</p>
+              <p className="mt-2 text-sm">Tous les participants ont rendu ce devoir.</p>
             )}
           </section>
         </div>

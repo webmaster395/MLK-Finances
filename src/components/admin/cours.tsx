@@ -4,35 +4,20 @@ import { ArrowLeft, BookOpen, BookPlus, ChevronRight, Download, ExternalLink, Ey
 import { Champ } from "@/components/auth/champ";
 import { EtatVide } from "@/components/coquille/etat-vide";
 import { ajouterLien, creerCours, modifierCours, supprimerCours, supprimerSupport } from "@/lib/admin/actions";
-import { lireCoursAdmin, lireCoursFiche, lireOptionsSeance, type CoursAdmin, type OptionsSeance } from "@/lib/donnees/admin";
+import { lireCoursAdmin, lireCoursFiche, type CoursAdmin } from "@/lib/donnees/admin";
 import { EnvoiSupport } from "./envoi-support";
 import { FormulaireAction } from "./formulaire-action";
 
 const CLASSE_CHAMP = "min-h-11 w-full rounded-md border border-black/25 bg-white px-3 text-base font-semibold text-noir";
 
 /** Champs d'un cours (création et modification). */
-function ChampsCours({ groupes, cours, groupeParDefaut }: { groupes: OptionsSeance["groupes"]; cours?: CoursAdmin; groupeParDefaut?: string }) {
+function ChampsCours({ cours }: { cours?: CoursAdmin }) {
   return (
     <>
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_7rem]">
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="groupe_id" className="text-sm font-semibold text-noir">
-            Groupe
-          </label>
-          <select id="groupe_id" name="groupe_id" required defaultValue={cours?.groupeId ?? groupeParDefaut ?? ""} className={CLASSE_CHAMP}>
-            <option value="" disabled>
-              Choisissez…
-            </option>
-            {groupes.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.nom}
-              </option>
-            ))}
-          </select>
-        </div>
+        <Champ id="titre" libelle="Titre du cours" required maxLength={200} defaultValue={cours?.titre} placeholder="Ex. : Module 1 — Comprendre son budget" />
         <Champ id="ordre" libelle="Ordre" type="number" min={0} max={999} step={1} defaultValue={cours?.ordre ?? 0} />
       </div>
-      <Champ id="titre" libelle="Titre du cours" required maxLength={200} defaultValue={cours?.titre} placeholder="Ex. : Module 1 — Comprendre son budget" />
       <div className="flex flex-col gap-1.5">
         <label htmlFor="description" className="text-sm font-semibold text-noir">
           Description
@@ -57,36 +42,22 @@ function ChampsCours({ groupes, cours, groupeParDefaut }: { groupes: OptionsSean
       </div>
       <label className="flex min-h-11 cursor-pointer items-center gap-2.5 font-semibold text-noir">
         <input type="checkbox" name="publie" defaultChecked={cours?.publie ?? false} className="size-5 accent-rose" />
-        Publié (contenu, supports et devoirs visibles par le groupe)
+        Publié (contenu, supports et devoirs visibles par les participants)
       </label>
     </>
   );
 }
 
-/** Liste des cours, avec filtre par groupe. Sous <Suspense>. */
-export async function ListeCours({ groupeId }: { groupeId?: string }) {
-  const [cours, options] = await Promise.all([lireCoursAdmin(groupeId), lireOptionsSeance()]);
-  const filtre = (actif: boolean) =>
-    `rounded-full border px-3 py-1.5 text-xs font-semibold ${actif ? "border-noir bg-noir text-white" : "border-black/25 text-noir hover:bg-black/5"}`;
+/** Liste des cours. Sous <Suspense>. */
+export async function ListeCours() {
+  const cours = await lireCoursAdmin();
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <Link href={groupeId ? `/admin/cours/nouveau?groupe=${groupeId}` : "/admin/cours/nouveau"} className="btn btn-orange w-fit">
-          <BookPlus aria-hidden className="size-5" />
-          Nouveau cours
-        </Link>
-        <nav aria-label="Filtrer par groupe" className="flex flex-wrap gap-1.5 sm:ml-auto">
-          <Link href="/admin/cours" className={filtre(!groupeId)} aria-current={!groupeId ? "page" : undefined}>
-            Tous les groupes
-          </Link>
-          {options.groupes.map((g) => (
-            <Link key={g.id} href={`/admin/cours?groupe=${g.id}`} className={filtre(groupeId === g.id)} aria-current={groupeId === g.id ? "page" : undefined}>
-              {g.nom}
-            </Link>
-          ))}
-        </nav>
-      </div>
+      <Link href="/admin/cours/nouveau" className="btn btn-orange w-fit">
+        <BookPlus aria-hidden className="size-5" />
+        Nouveau cours
+      </Link>
       {cours.length === 0 ? (
         <EtatVide icone={BookOpen} titre="Aucun cours" texte="Créez un premier cours avec le bouton « Nouveau cours »." />
       ) : (
@@ -106,7 +77,7 @@ export async function ListeCours({ groupeId }: { groupeId?: string }) {
                       )}
                     </span>
                     <span className="mt-1 block text-xs">
-                      {c.groupe} · {c.seances} séance{c.seances > 1 ? "s" : ""} · {c.supports} support{c.supports > 1 ? "s" : ""} · {c.devoirs} devoir
+                      {c.seances} séance{c.seances > 1 ? "s" : ""} · {c.supports} support{c.supports > 1 ? "s" : ""} · {c.devoirs} devoir
                       {c.devoirs > 1 ? "s" : ""}
                     </span>
                   </span>
@@ -131,36 +102,26 @@ function Retour() {
 }
 
 /** Création d'un cours. Sous <Suspense>. */
-export async function NouveauCours({ groupeId }: { groupeId?: string }) {
-  const { groupes } = await lireOptionsSeance();
+export async function NouveauCours() {
   return (
     <div className="flex flex-col gap-5">
       <Retour />
       <h1 className="titre-charte text-3xl sm:text-5xl">
         <span className="pinceau">Nouveau cours</span>
       </h1>
-      {groupes.length === 0 ? (
-        <p className="text-sm font-semibold">
-          Créez d&apos;abord un groupe : chaque cours appartient à un groupe.{" "}
-          <Link href="/admin/groupes" className="underline">
-            Créer un groupe
-          </Link>
-        </p>
-      ) : (
         <section className="accueil-carte max-w-3xl p-5 sm:p-6">
           <FormulaireAction action={creerCours} bouton="Créer le cours" enCoursTexte="Création…">
-            <ChampsCours groupes={groupes} groupeParDefaut={groupeId} />
+            <ChampsCours />
           </FormulaireAction>
           <p className="mt-3 text-xs">Les supports (liens et fichiers) s&apos;ajoutent une fois le cours créé.</p>
         </section>
-      )}
     </div>
   );
 }
 
 /** Fiche d'un cours : modification, supports, suppression. Sous <Suspense>. */
 export async function FicheCours({ id, cree }: { id: string; cree: boolean }) {
-  const [cours, { groupes }] = await Promise.all([lireCoursFiche(id), lireOptionsSeance()]);
+  const cours = await lireCoursFiche(id);
   if (!cours) notFound();
   const supprimable = cours.seances === 0 && cours.devoirs === 0;
 
@@ -172,7 +133,7 @@ export async function FicheCours({ id, cree }: { id: string; cree: boolean }) {
           <span className="pinceau">{cours.titre}</span>
         </h1>
         <p className="mt-2 text-sm font-semibold">
-          {cours.groupe} · {cours.seances} séance{cours.seances > 1 ? "s" : ""} · {cours.devoirs} devoir{cours.devoirs > 1 ? "s" : ""}
+          {cours.seances} séance{cours.seances > 1 ? "s" : ""} · {cours.devoirs} devoir{cours.devoirs > 1 ? "s" : ""}
           {cours.publie ? "" : " · non publié"}
         </p>
       </div>
@@ -190,7 +151,7 @@ export async function FicheCours({ id, cree }: { id: string; cree: boolean }) {
             </h2>
             <FormulaireAction action={modifierCours} bouton="Enregistrer">
               <input type="hidden" name="id" value={cours.id} />
-              <ChampsCours groupes={groupes} cours={cours} />
+              <ChampsCours cours={cours} />
             </FormulaireAction>
           </section>
 

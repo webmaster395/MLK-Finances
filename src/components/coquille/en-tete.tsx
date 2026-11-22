@@ -1,6 +1,6 @@
 import { obtenirPersonne } from "@/lib/auth/personne";
 import { lireMessages } from "@/lib/donnees/annonces";
-import { lirePromotion } from "@/lib/donnees/profil";
+import { PROMOTION } from "@/lib/promotion";
 import { BasculeTheme } from "./bascule-theme";
 import { BoutonMessages } from "./bouton-messages";
 
@@ -10,7 +10,8 @@ import { BoutonMessages } from "./bouton-messages";
  * Lit la session de la personne : toujours sous <Suspense>.
  */
 export async function EnTete() {
-  const [personne, promotion, messages] = await Promise.all([obtenirPersonne(), lirePromotion(), lireMessages()]);
+  const [personne, messages] = await Promise.all([obtenirPersonne(), lireMessages()]);
+  const promotion = PROMOTION;
   const prenom = personne.prenom || personne.email;
 
   return (
