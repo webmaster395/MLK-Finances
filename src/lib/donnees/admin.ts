@@ -343,3 +343,92 @@ export async function lireOptionsSeance(): Promise<OptionsSeance> {
     cours: (cours.data ?? []).map((c) => ({ id: c.id, titre: c.titre, groupeId: c.groupe_id })),
   };
 }
+
+// ---------------------------------------------------------------
+// Cours et supports (lot 4)
+// ---------------------------------------------------------------
+
+export type CoursListe = {
+  id: string;
+  titre: string;
+  publie: boolean;
+  groupe: string;
+  seances: number;
+  supports: number;
+  devoirs: number;
+};
+
+export type SupportAdmin = { id: string; titre: string; type: "fichier" | "lien"; url: string | null; nomFichier: string | null };
+
+export type CoursAdmin = {
+  id: string;
+  groupeId: string;
+  groupe: string;
+  titre: string;
+  description: string;
+  objectifs: string[];
+  ordre: number;
+  publie: boolean;
+  seances: number;
+  devoirs: number;
+  supports: SupportAdmin[];
+};
+
+/** Tous les cours (ou ceux d'un groupe), avec leur contenu. */
+export async function lireCoursAdmin(groupeId?: string): Promise<CoursListe[]> {
+  await exigerAdmin();
+  await connection();
+  const supabase = await creerClientServeur();
+  let requete = supabase
+    .from("cours")
+    .select("id, titre, publie, groupes(nom), sessions(count), ressources(count), devoirs(count)")
+    .order("ordre")
+    .order("titre");
+  if (groupeId && UUID_ADMIN.test(groupeId)) requete = requete.eq("groupe_id", groupeId);
+  const { data } = await requete;
+  return (data ?? []).map((c) => ({
+    id: c.id,
+    titre: c.titre,
+    publie: c.publie,
+    groupe: c.groupes?.nom ?? "",
+    seances: c.sessions[0]?.count ?? 0,
+    supports: c.ressources[0]?.count ?? 0,
+    devoirs: c.devoirs[0]?.count ?? 0,
+  }));
+}
+
+/** Un cours à modifier, avec ses supports (null s'il n'existe pas). */
+export async function lireCoursFiche(id: string): Promise<CoursAdmin | null> {
+  if (!UUID_ADMIN.test(id)) return null;
+  await exigerAdmin();
+  await connection();
+  const supabase = await creerClientServeur();
+  const { data: c } = await supabase
+    .from("cours")
+    .select(
+      "id, groupe_id, titre, description, objectifs, ordre, publie, groupes(nom), sessions(count), devoirs(count), ressources(id, titre, type, url, storage_path, cree_le)",
+    )
+    .eq("id", id)
+    .order("cree_le", { referencedTable: "ressources", ascending: true })
+    .maybeSingle();
+  if (!c) return null;
+  return {
+    id: c.id,
+    groupeId: c.groupe_id,
+    groupe: c.groupes?.nom ?? "",
+    titre: c.titre,
+    description: c.description,
+    objectifs: c.objectifs,
+    ordre: c.ordre,
+    publie: c.publie,
+    seances: c.sessions[0]?.count ?? 0,
+    devoirs: c.devoirs[0]?.count ?? 0,
+    supports: c.ressources.map((r) => ({
+      id: r.id,
+      titre: r.titre,
+      type: r.type === "lien" ? "lien" : "fichier",
+      url: r.url,
+      nomFichier: r.storage_path ? (r.storage_path.split("/").pop() ?? null) : null,
+    })),
+  };
+}

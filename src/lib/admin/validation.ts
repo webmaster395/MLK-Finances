@@ -156,3 +156,90 @@ export function validerRubrique(s: { nom: string; couleur: string; ordre: string
   if (!Number.isInteger(ordre) || ordre < 0 || ordre > 999) return { message: "L'ordre doit être un nombre entier entre 0 et 999." };
   return { rubrique: { nom, couleur, ordre } };
 }
+
+// ---------------------------------------------------------------
+// Cours et supports
+// ---------------------------------------------------------------
+
+export type Cours = {
+  groupe_id: string;
+  titre: string;
+  description: string;
+  objectifs: string[];
+  ordre: number;
+  publie: boolean;
+};
+
+/** Objectifs saisis un par ligne. */
+export function lireObjectifs(texte: string): string[] {
+  return texte
+    .split("\n")
+    .map((o) => o.trim())
+    .filter(Boolean);
+}
+
+export function validerCours(s: {
+  groupeId: string;
+  titre: string;
+  description: string;
+  objectifs: string;
+  ordre: string;
+  publie: boolean;
+}): { cours: Cours } | { message: string } {
+  const titre = s.titre.trim();
+  if (!estUuid(s.groupeId)) return { message: "Choisissez le groupe du cours." };
+  if (titre.length === 0 || titre.length > 200) return { message: "Donnez un titre au cours (200 caractères au maximum)." };
+  if (s.description.length > 5000) return { message: "La description est trop longue (5 000 caractères au maximum)." };
+  const objectifs = lireObjectifs(s.objectifs);
+  if (objectifs.length > 20) return { message: "20 objectifs au maximum." };
+  if (objectifs.some((o) => o.length > 300)) return { message: "Un objectif est trop long (300 caractères au maximum)." };
+  const ordre = s.ordre.trim() === "" ? 0 : Number(s.ordre);
+  if (!Number.isInteger(ordre) || ordre < 0 || ordre > 999) return { message: "L'ordre doit être un nombre entier entre 0 et 999." };
+  return { cours: { groupe_id: s.groupeId, titre, description: s.description.trim(), objectifs, ordre, publie: s.publie } };
+}
+
+/** Lien d'un support : titre et adresse web complète (http ou https). */
+export function validerLien(s: { titre: string; url: string }): { titre: string; url: string } | { message: string } {
+  const titre = s.titre.trim();
+  const url = s.url.trim();
+  if (titre.length === 0 || titre.length > 200) return { message: "Donnez un titre au support (200 caractères au maximum)." };
+  if (url.length > 2000 || !/^https?:\/\//i.test(url)) return { message: "Saisissez une adresse complète, qui commence par https://" };
+  try {
+    new URL(url);
+  } catch {
+    return { message: "Cette adresse n'est pas valide." };
+  }
+  return { titre, url };
+}
+
+/** Taille maximale d'un fichier de support (limite du seau « ressources »). */
+export const SUPPORT_TAILLE_MAX_OCTETS = 50 * 1024 * 1024;
+
+/** Nom de fichier sans accents ni caractères spéciaux, gardé lisible pour le téléchargement. */
+export function nomFichierSur(nom: string): string {
+  const propre = nom
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^A-Za-z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^[-.]+|-+$/g, "")
+    .slice(-100);
+  return propre || "fichier";
+}
+
+/** Chemin d'un support dans le stockage : cours/{cours}/{identifiant unique}/{nom du fichier}. */
+export function cheminSupport(coursId: string, identifiant: string, nomFichier: string) {
+  return `cours/${coursId}/${identifiant}/${nomFichierSur(nomFichier)}`;
+}
+
+/** Vérifie qu'un chemin a bien été préparé pour CE cours (jamais un chemin libre envoyé par le navigateur). */
+export function estCheminSupport(chemin: string, coursId: string) {
+  const parties = chemin.split("/");
+  return (
+    parties.length === 4 &&
+    parties[0] === "cours" &&
+    parties[1] === coursId &&
+    estUuid(parties[2]) &&
+    parties[3] === nomFichierSur(parties[3])
+  );
+}

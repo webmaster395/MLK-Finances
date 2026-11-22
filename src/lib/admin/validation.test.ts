@@ -1,7 +1,20 @@
 // Test des règles de saisie de l'espace admin : npm run test:unit
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { estDate, estUuid, isoVersParis, parisVersIso, validerGroupe, validerRubrique, validerSeance } from "./validation.ts";
+import {
+  cheminSupport,
+  estCheminSupport,
+  estDate,
+  estUuid,
+  isoVersParis,
+  nomFichierSur,
+  parisVersIso,
+  validerCours,
+  validerGroupe,
+  validerLien,
+  validerRubrique,
+  validerSeance,
+} from "./validation.ts";
 
 test("l'heure de Paris est convertie en tenant compte de l'heure d'été et d'hiver", () => {
   // Hiver : Paris = UTC+1 ; été : Paris = UTC+2
@@ -78,4 +91,49 @@ test("un groupe a un nom, et des dates facultatives dans le bon ordre", () => {
   assert.ok("message" in validerGroupe({ nom: "x".repeat(151), debut: "", fin: "" }));
   assert.ok("message" in validerGroupe({ nom: "Promo C", debut: "2027-01-01", fin: "2026-01-01" }));
   assert.ok("message" in validerGroupe({ nom: "Promo D", debut: "2026-13-01", fin: "" }));
+});
+
+const COURS = {
+  groupeId: "aaaaaaaa-0000-4000-8000-000000000001",
+  titre: " Module 5 ",
+  description: "Les bases.",
+  objectifs: "Comprendre le taux\n\n  Comparer deux offres ",
+  ordre: "5",
+  publie: false,
+};
+
+test("un cours valide est préparé pour la base (objectifs un par ligne)", () => {
+  const r = validerCours(COURS);
+  assert.ok("cours" in r);
+  assert.equal(r.cours.titre, "Module 5");
+  assert.deepEqual(r.cours.objectifs, ["Comprendre le taux", "Comparer deux offres"]);
+  assert.equal(r.cours.ordre, 5);
+  assert.ok("message" in validerCours({ ...COURS, titre: "" }));
+  assert.ok("message" in validerCours({ ...COURS, groupeId: "x" }));
+  assert.ok("message" in validerCours({ ...COURS, ordre: "-1" }));
+});
+
+test("le lien d'un support doit être une adresse web complète", () => {
+  assert.deepEqual(validerLien({ titre: "Simulateur", url: " https://example.com/outil " }), {
+    titre: "Simulateur",
+    url: "https://example.com/outil",
+  });
+  assert.ok("message" in validerLien({ titre: "X", url: "example.com" }));
+  assert.ok("message" in validerLien({ titre: "X", url: "javascript:alert(1)" }));
+  assert.ok("message" in validerLien({ titre: "", url: "https://example.com" }));
+});
+
+test("le chemin d'un fichier de support est calculé et contrôlé", () => {
+  const cours = "cccccccc-0000-4000-8000-000000000001";
+  const id = "0b9f2c3e-1d2a-4b5c-8d9e-0f1a2b3c4d5e";
+  assert.equal(nomFichierSur("Guide d'épargne (v2).pdf"), "Guide-d-epargne-v2-.pdf");
+  assert.equal(nomFichierSur("../../secret"), "secret");
+  assert.equal(nomFichierSur("###"), "fichier");
+  const chemin = cheminSupport(cours, id, "Budget été.xlsx");
+  assert.equal(chemin, `cours/${cours}/${id}/Budget-ete.xlsx`);
+  assert.equal(estCheminSupport(chemin, cours), true);
+  assert.equal(estCheminSupport(chemin, "cccccccc-0000-4000-8000-000000000002"), false);
+  assert.equal(estCheminSupport(`cours/${cours}/pas-un-id/x.pdf`, cours), false);
+  assert.equal(estCheminSupport(`cours/${cours}/${id}/../x.pdf`, cours), false);
+  assert.equal(estCheminSupport(`autre/${cours}/${id}/x.pdf`, cours), false);
 });
