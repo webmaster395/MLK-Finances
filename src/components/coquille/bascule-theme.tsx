@@ -48,7 +48,7 @@ export function InitialiserTheme() {
 }
 
 /** Bouton clair / sombre. Le choix est mémorisé sur cet appareil. */
-export function BasculeTheme() {
+export function BasculeTheme({ avecTexte = false }: { avecTexte?: boolean }) {
   const sombre = useSyncExternalStore(abonner, lireSombre, () => false);
 
   function basculer() {
@@ -58,6 +58,21 @@ export function BasculeTheme() {
       localStorage.setItem(CLE, suivant ? "sombre" : "clair");
     } catch {}
     window.dispatchEvent(new Event(EVENEMENT));
+  }
+
+  if (avecTexte) {
+    // Version large (tiroir du téléphone) : une ligne facile à toucher avec son libellé
+    return (
+      <button
+        type="button"
+        onClick={basculer}
+        aria-pressed={sombre}
+        className="flex min-h-11 w-full items-center gap-3 rounded-[0.6rem] px-3 text-sm font-semibold text-texte transition-colors hover:bg-black/5"
+      >
+        {sombre ? <Sun aria-hidden className="size-5 text-noir" strokeWidth={1.75} /> : <Moon aria-hidden className="size-5 text-noir" strokeWidth={1.75} />}
+        {sombre ? "Passer en mode clair" : "Passer en mode sombre"}
+      </button>
+    );
   }
 
   return (
