@@ -225,11 +225,12 @@ export function MenuLateral({
         </div>
       </aside>
 
-      {/* Téléphone : logo, messages et bouton menu seulement (promotion et clair/sombre sont dans le tiroir) */}
+      {/* Téléphone : logo, messages et bouton menu seulement (la promotion est dans le tiroir) */}
       <div className="sticky top-0 z-30 flex items-center justify-between gap-3 menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-center px-4 py-2 shadow-md md:hidden">
         <Logo lien={accueil} compact />
         <div className="flex shrink-0 items-center gap-2">
           {enAdmin ? null : <BoutonMessages messages={messages} />}
+          <BasculeTheme />
           <button
             type="button"
             onClick={() => setOuvert(true)}
@@ -271,8 +272,6 @@ export function MenuLateral({
             </div>
             <nav aria-label="Menu principal" className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain px-3 pb-3">
               {groupes(true, () => setOuvert(false))}
-              <Separateur />
-              <BasculeTheme avecTexte />
             </nav>
             <div className="flex items-center gap-1 border-t border-black/10 p-3">
               <Link

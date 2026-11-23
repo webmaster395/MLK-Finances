@@ -48,7 +48,7 @@ export function InitialiserTheme() {
 }
 
 /** Bouton clair / sombre. Le choix est mémorisé sur cet appareil. */
-export function BasculeTheme({ avecTexte = false }: { avecTexte?: boolean }) {
+export function BasculeTheme() {
   const sombre = useSyncExternalStore(abonner, lireSombre, () => false);
 
   function basculer() {
@@ -60,21 +60,6 @@ export function BasculeTheme({ avecTexte = false }: { avecTexte?: boolean }) {
     window.dispatchEvent(new Event(EVENEMENT));
   }
 
-  if (avecTexte) {
-    // Version large (tiroir du téléphone) : une ligne facile à toucher avec son libellé
-    return (
-      <button
-        type="button"
-        onClick={basculer}
-        aria-pressed={sombre}
-        className="flex min-h-11 w-full items-center gap-3 rounded-[0.6rem] px-3 text-sm font-semibold text-texte transition-colors hover:bg-black/5"
-      >
-        {sombre ? <Sun aria-hidden className="size-5 text-noir" strokeWidth={1.75} /> : <Moon aria-hidden className="size-5 text-noir" strokeWidth={1.75} />}
-        {sombre ? "Passer en mode clair" : "Passer en mode sombre"}
-      </button>
-    );
-  }
-
   return (
     <button
       type="button"
@@ -82,9 +67,9 @@ export function BasculeTheme({ avecTexte = false }: { avecTexte?: boolean }) {
       aria-pressed={sombre}
       aria-label="Mode sombre"
       title={sombre ? "Passer en mode clair" : "Passer en mode sombre"}
-      className="flex size-8 items-center justify-center rounded-md border border-black/25 bg-white text-noir hover:bg-black/5 md:size-10"
+      className="flex size-11 touch-manipulation items-center justify-center rounded-md border border-black/25 bg-white text-noir hover:bg-black/5 md:size-10"
     >
-      {sombre ? <Sun aria-hidden className="size-4 md:size-5" /> : <Moon aria-hidden className="size-4 md:size-5" />}
+      {sombre ? <Sun aria-hidden className="size-5" /> : <Moon aria-hidden className="size-5" />}
     </button>
   );
 }
