@@ -18,8 +18,8 @@ const lire = (chemin) => readFileSync(join(racine, chemin), "utf8");
 const A = "11111111-1111-4111-8111-111111111111"; // participant test 1
 const B = "22222222-2222-4222-8222-222222222222"; // participant test 2
 const DEVOIR_G1 = "dddddddd-0000-4000-8000-000000000001"; // devoir publié (cours publié)
-const DEVOIR_BROUILLON = "dddddddd-0000-4000-8000-000000000004"; // devoir d'un cours NON publié
-const COURS_BROUILLON = "cccccccc-0000-4000-8000-000000000004";
+const DEVOIR_BROUILLON = "dddddddd-0000-4000-8000-0000000000b1"; // devoir d'un cours NON publié (créé par le test)
+const COURS_BROUILLON = "cccccccc-0000-4000-8000-0000000000b1"; // cours NON publié (créé par le test)
 
 const TABLES = [
   "profils", "cours", "sessions",
@@ -74,10 +74,13 @@ before(async () => {
     insert into public.rendus (devoir_id, participant_id, fichier_path, nom_fichier)
     values ('dddddddd-0000-4000-8000-000000000003', '${A}',
             '${A}/dddddddd-0000-4000-8000-000000000003/analyse-credit.pdf', 'analyse-credit.pdf');`);
-  // Objets de stockage utilisés par les tests
+  // Cas particuliers créés par le test (indépendants du contenu du seed) : un cours non publié et son contenu
   await db.exec(`
+    insert into public.cours (id, titre, publie) values ('${COURS_BROUILLON}', 'Cours en préparation', false);
+    insert into public.devoirs (id, cours_id, titre) values ('${DEVOIR_BROUILLON}', '${COURS_BROUILLON}', 'Devoir du cours en préparation');
+    insert into public.annonces (titre, message, publie) values ('Message en préparation', 'Brouillon', false);
     insert into public.ressources (cours_id, titre, type, storage_path)
-      values ('${COURS_BROUILLON}', '[test] Fichier d''un cours non publié', 'fichier', 'brouillon/doc.pdf');
+      values ('${COURS_BROUILLON}', 'Fichier du cours en préparation', 'fichier', 'brouillon/doc.pdf');
     insert into storage.objects (bucket_id, name) values
       ('ressources', 'test/guide-epargne.pdf'),
       ('ressources', 'brouillon/doc.pdf'),
@@ -210,23 +213,25 @@ describe("civilité et tranche d'âge", () => {
 });
 
 describe("contenu pédagogique", () => {
-  test("A voit les 3 cours publiés, pas le brouillon", async () => {
-    const r = await en(A, "select titre from public.cours");
-    assert.equal(r.rows.length, 3);
-    assert.ok(titres(r).every((t) => /^Module [123] /.test(t)));
+  test("A voit exactement les cours publiés, pas le brouillon", async () => {
+    const vus = await en(A, "select id from public.cours order by id");
+    const publies = await db.query("select id from public.cours where publie order by id");
+    assert.ok(publies.rows.length >= 1);
+    assert.deepEqual(vus.rows, publies.rows);
+    assert.ok(!vus.rows.some((l) => l.id === COURS_BROUILLON));
   });
-
   test("B voit les mêmes cours publiés que A (une seule promotion)", async () => {
     const a = await en(A, "select titre from public.cours");
     const b = await en(B, "select titre from public.cours");
     assert.deepEqual(titres(b), titres(a));
   });
 
-  test("A voit les 6 séances publiées", async () => {
-    const r = await en(A, "select titre from public.sessions");
-    assert.equal(r.rows.length, 6);
+  test("A voit exactement les séances publiées", async () => {
+    const vus = await en(A, "select id from public.sessions order by id");
+    const publiees = await db.query("select id from public.sessions where publie order by id");
+    assert.ok(publiees.rows.length >= 1);
+    assert.deepEqual(vus.rows, publiees.rows);
   });
-
   test("une séance non publiée est invisible", async () => {
     await db.exec("insert into public.sessions (titre, debut, publie) values ('[test] Séance cachée', now(), false)");
     const r = await en(A, "select titre from public.sessions where titre = '[test] Séance cachée'");
@@ -234,18 +239,19 @@ describe("contenu pédagogique", () => {
   });
 
   test("A ne voit que les ressources et devoirs des cours publiés", async () => {
-    const res = await en(A, "select titre from public.ressources");
-    const dev = await en(A, "select titre from public.devoirs");
-    assert.equal(res.rows.length, 2);
-    assert.equal(dev.rows.length, 3);
-    assert.ok([...titres(res), ...titres(dev)].every((t) => !t.includes("non publié")));
+    const res = await en(A, "select id from public.ressources order by id");
+    const dev = await en(A, "select id from public.devoirs order by id");
+    const resAttendues = await db.query("select r.id from public.ressources r join public.cours c on c.id = r.cours_id where r.publie and c.publie order by r.id");
+    const devAttendus = await db.query("select d.id from public.devoirs d join public.cours c on c.id = d.cours_id where d.publie and c.publie order by d.id");
+    assert.deepEqual(res.rows, resAttendues.rows);
+    assert.deepEqual(dev.rows, devAttendus.rows);
+    assert.ok(!dev.rows.some((l) => l.id === DEVOIR_BROUILLON));
   });
-
   test("A ne voit que les témoignages validés", async () => {
-    const r = await en(A, "select nom_affiche from public.temoignages");
-    assert.equal(r.rows.length, 3);
+    const r = await en(A, "select valide from public.temoignages");
+    assert.ok(r.rows.length >= 1);
+    assert.ok(r.rows.every((l) => l.valide === true));
   });
-
   test("A ne peut rien écrire dans le contenu pédagogique", async () => {
     await assert.rejects(en(A, "insert into public.cours (titre) values ('x')"), REFUS);
     // Modifier ou supprimer : la RLS ne lui laisse aucune ligne (rien ne change)
@@ -259,21 +265,23 @@ describe("contenu pédagogique", () => {
 
 describe("intervenants et messages de l'équipe", () => {
   test("A voit une séance avec ses intervenants", async () => {
-    const r = await en(A, "select s.titre, s.intervenants from public.sessions s where s.titre like '%Séance 2%'");
+    await db.exec("insert into public.sessions (titre, debut, intervenants) values ('Séance avec intervenants', now(), array['Intervenant finances', 'Pasteur'])");
+    const r = await en(A, "select intervenants from public.sessions where titre = 'Séance avec intervenants'");
     assert.equal(r.rows.length, 1);
-    assert.deepEqual(r.rows[0].intervenants, ["Claire Martin", "Karim Benali"]);
+    assert.deepEqual(r.rows[0].intervenants, ["Intervenant finances", "Pasteur"]);
   });
-
   test("A voit les messages publiés, pas les brouillons", async () => {
-    const r = await en(A, "select titre from public.annonces order by cree_le desc");
-    assert.deepEqual(r.rows.map((l) => l.titre), ["Prochaine journée de formation", "Bienvenue dans MLK Parcours Finances"]);
+    const vus = await en(A, "select titre from public.annonces order by cree_le desc");
+    const publies = await db.query("select titre from public.annonces where publie order by cree_le desc");
+    assert.ok(publies.rows.length >= 1);
+    assert.deepEqual(vus.rows, publies.rows);
+    assert.ok(!vus.rows.some((l) => l.titre === "Message en préparation"));
   });
-
   test("B voit les mêmes messages que A", async () => {
-    const r = await en(B, "select titre from public.annonces order by cree_le desc");
-    assert.deepEqual(r.rows.map((l) => l.titre), ["Prochaine journée de formation", "Bienvenue dans MLK Parcours Finances"]);
+    const a = await en(A, "select titre from public.annonces order by cree_le desc");
+    const b = await en(B, "select titre from public.annonces order by cree_le desc");
+    assert.deepEqual(b.rows, a.rows);
   });
-
   test("un visiteur ne lit aucun message et un participant ne peut pas en écrire", async () => {
     await assert.rejects(anonyme("select * from public.annonces"), REFUS);
     await assert.rejects(en(A, "insert into public.annonces (message) values ('piratage')"), REFUS);

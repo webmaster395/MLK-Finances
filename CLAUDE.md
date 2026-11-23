@@ -23,11 +23,11 @@ Feuille de route, schéma de base prévu et avancement : voir `PLAN.md` (le teni
 - Fichiers déposés : envoyés du navigateur vers Supabase Storage (RLS sur les buckets), puis une action serveur enregistre le chemin. Jamais de fichier dans le corps d'une action serveur. Téléchargement par URL signée de 60 secondes.
 - Auth : connexion et déconnexion par actions serveur ; redirections après lien d'e-mail protégées.
 - **CSS** : styles de base et classes de charte dans des `@layer` (voir `src/app/globals.css`), rien hors couche.
-- Données de démo : clairement marquées « test » dans les titres de cours.
+- Données de démo : contenu fictif mais présentable du parcours de l'Église MLK (`supabase/seed.sql`), à remplacer par le vrai avant la mise en ligne. Les comptes de test ne sont jamais dans le dépôt : fichier local ignoré `supabase/comptes-test.local.sql`.
 - **Accès aux données** : jamais depuis un composant client. Les lectures passent par `src/lib/donnees/` (côté serveur, après `await connection()`, sous `<Suspense>`). Le seul usage du client Supabase du navigateur est l'envoi de fichiers (devoirs, photo) vers le stockage, suivi d'une action serveur qui enregistre le chemin (calculé côté serveur).
 - **Vérifications avant chaque envoi** : `npm run lint`, `npx tsc --noEmit`, `npm run build`, `npm run test:unit`, `npm run test:rls`.
 - Les statuts des devoirs ne sont pas stockés : ils se déduisent (`src/lib/devoirs.ts`).
-- **Sessions et cours sont fusionnés** : une séance (`sessions`) porte une rubrique colorée (`rubriques`), des intervenants (noms) et un cours (`cours`). Le menu n'a pas d'entrée « Cours ». Les messages de l'équipe sont dans `annonces`.
+- **Sessions et cours sont fusionnés** : une séance (`sessions`) porte des intervenants (noms) et un cours (`cours`). Le menu n'a pas d'entrée « Cours ». Les messages de l'équipe sont dans `annonces`. Il n'y a ni groupes ni rubriques : une seule promotion (libellé dans `src/lib/promotion.ts`), tout le contenu publié est visible par toute personne inscrite.
 - **Inspiration d'un autre projet** : on peut reprendre la structure et le fonctionnement (ex. Ministry School), jamais sa charte graphique, ses icônes, ses logos ni ses textes.
 - Lint React : pas d'appel à `Date.now()` dans le rendu d'un composant ; les calculs qui dépendent de l'heure se font dans `src/lib/donnees/` après `await connection()`.
 
