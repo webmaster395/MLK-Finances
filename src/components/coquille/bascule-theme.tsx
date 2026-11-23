@@ -67,9 +67,9 @@ export function BasculeTheme() {
       aria-pressed={sombre}
       aria-label="Mode sombre"
       title={sombre ? "Passer en mode clair" : "Passer en mode sombre"}
-      className="flex size-8 items-center justify-center rounded-md border border-black/25 bg-white text-noir hover:bg-black/5 md:size-10"
+      className="flex size-11 touch-manipulation items-center justify-center rounded-md border border-black/25 bg-white text-noir hover:bg-black/5 md:size-10"
     >
-      {sombre ? <Sun aria-hidden className="size-4 md:size-5" /> : <Moon aria-hidden className="size-4 md:size-5" />}
+      {sombre ? <Sun aria-hidden className="size-5" /> : <Moon aria-hidden className="size-5" />}
     </button>
   );
 }

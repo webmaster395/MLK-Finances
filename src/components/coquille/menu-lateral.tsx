@@ -94,14 +94,27 @@ export function MenuLateral({
     ecrireReplie(!replie);
   }
 
-  // Échap ferme le menu du téléphone
+  // Le menu du téléphone se referme dès que la page change (y compris avec « retour »)
+  const [pageVue, setPageVue] = useState(chemin);
+  if (pageVue !== chemin) {
+    setPageVue(chemin);
+    if (ouvert) setOuvert(false);
+  }
+
+  // Menu du téléphone ouvert : Échap le ferme, et la page derrière ne défile plus
   useEffect(() => {
     if (!ouvert) return;
     const surTouche = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOuvert(false);
     };
     window.addEventListener("keydown", surTouche);
-    return () => window.removeEventListener("keydown", surTouche);
+    const html = document.documentElement;
+    const avant = html.style.overflow;
+    html.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", surTouche);
+      html.style.overflow = avant;
+    };
   }, [ouvert]);
 
   // Le tableau de bord (/admin) n'est actif que sur sa propre page, pas sur les pages /admin/…
@@ -212,50 +225,52 @@ export function MenuLateral({
         </div>
       </aside>
 
-      {/* Téléphone : logo + messages + promotion + clair/sombre + menu sur la même ligne */}
-      <div className="sticky top-0 z-30 flex items-center justify-between gap-1.5 menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-center px-2.5 py-2 shadow-md md:hidden">
+      {/* Téléphone : logo, messages et bouton menu seulement (la promotion est dans le tiroir) */}
+      <div className="sticky top-0 z-30 flex items-center justify-between gap-3 menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-center px-4 py-2 shadow-md md:hidden">
         <Logo lien={accueil} compact />
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center gap-2">
           {enAdmin ? null : <BoutonMessages messages={messages} />}
-          {promotion ? (
-            <span className="whitespace-nowrap rounded-full border border-black/25 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.04em] text-noir sm:px-3 sm:py-1 sm:text-xs">
-              {promotion}
-            </span>
-          ) : null}
           <BasculeTheme />
           <button
             type="button"
             onClick={() => setOuvert(true)}
             aria-label="Ouvrir le menu"
             aria-expanded={ouvert}
-            className="flex size-8 items-center justify-center rounded-[0.5rem] bg-rose-clair text-noir sm:size-10"
+            className="flex size-11 touch-manipulation items-center justify-center rounded-[0.6rem] bg-rose-clair text-noir"
           >
-            <Menu aria-hidden className="size-5 sm:size-6" />
+            <Menu aria-hidden className="size-6" />
           </button>
         </div>
       </div>
 
       {ouvert && (
-        <div className="fixed inset-0 z-40 md:hidden" role="dialog" aria-modal="true" aria-label="Menu">
+        <div className="fixed inset-0 z-40 h-dvh overscroll-none md:hidden" role="dialog" aria-modal="true" aria-label="Menu">
           <button
             type="button"
             aria-label="Fermer le menu"
             onClick={() => setOuvert(false)}
             className="absolute inset-0 bg-noir/50"
           />
-          <div className="relative flex h-full w-[78%] max-w-72 flex-col menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-top shadow-2xl">
+          <div className="relative flex h-full w-[80%] max-w-80 flex-col menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-top shadow-2xl">
             <div className="flex items-start justify-between p-3.5">
-              <Logo lien={accueil} />
+              <div className="flex min-w-0 flex-col items-start gap-2">
+                <Logo lien={accueil} />
+                {promotion ? (
+                  <span className="rounded-full border border-black/25 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-noir">
+                    {promotion}
+                  </span>
+                ) : null}
+              </div>
               <button
                 type="button"
                 onClick={() => setOuvert(false)}
                 aria-label="Fermer le menu"
-                className="flex size-9 items-center justify-center rounded-[0.5rem] bg-rose-clair text-noir"
+                className="flex size-11 shrink-0 touch-manipulation items-center justify-center rounded-[0.6rem] bg-rose-clair text-noir"
               >
-                <X aria-hidden className="size-5" />
+                <X aria-hidden className="size-6" />
               </button>
             </div>
-            <nav aria-label="Menu principal" className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-3 pb-3">
+            <nav aria-label="Menu principal" className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain px-3 pb-3">
               {groupes(true, () => setOuvert(false))}
             </nav>
             <div className="flex items-center gap-1 border-t border-black/10 p-3">

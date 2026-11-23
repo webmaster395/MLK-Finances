@@ -48,7 +48,7 @@ export function BoutonMessages({ messages = [] }: { messages?: Annonce[] }) {
         aria-expanded={ouvert}
         aria-label={libelle}
         title={libelle}
-        className="relative flex size-8 items-center justify-center rounded-md text-noir transition-colors hover:bg-black/5 md:size-10"
+        className="relative flex size-11 items-center justify-center rounded-md text-noir transition-colors hover:bg-black/5 md:size-10"
       >
         <Megaphone aria-hidden className="size-5" strokeWidth={1.85} />
         {nb > 0 ? (
@@ -65,7 +65,7 @@ export function BoutonMessages({ messages = [] }: { messages?: Annonce[] }) {
         <div
           role="dialog"
           aria-label="Messages de l'équipe"
-          className=" fixed left-3 right-3 top-14 z-50 max-h-[75vh] overflow-y-auto rounded-[0.65rem] border border-black/15 bg-carte p-4 shadow-xl sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80"
+          className="fixed left-3 right-3 top-[4.25rem] z-50 max-h-[75vh] overflow-y-auto rounded-[0.65rem] border border-black/15 bg-carte p-4 shadow-xl sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80"
         >
           <div className="flex items-center justify-between gap-2">
             <h2 className="titre-charte flex items-center gap-2 text-xl">
