@@ -224,6 +224,8 @@ export type TemoignageAdmin = {
   nom: string;
   texte: string;
   valide: boolean;
+  /** Montré aussi aux visiteurs non connectés (page publique). */
+  visiblePublic: boolean;
   photoPath: string | null;
   /** Lien temporaire pour afficher la photo (null s'il n'y en a pas). */
   photoUrl: string | null;
@@ -237,7 +239,7 @@ export async function lireTemoignagesAdmin(): Promise<TemoignageAdmin[]> {
   const supabase = await creerClientServeur();
   const { data } = await supabase
     .from("temoignages")
-    .select("id, nom_affiche, texte, valide, photo_path, cree_le")
+    .select("id, nom_affiche, texte, valide, visible_public, photo_path, cree_le")
     .order("valide", { ascending: true })
     .order("cree_le", { ascending: false });
   const liste = data ?? [];
@@ -249,6 +251,7 @@ export async function lireTemoignagesAdmin(): Promise<TemoignageAdmin[]> {
     nom: t.nom_affiche,
     texte: t.texte,
     valide: t.valide,
+    visiblePublic: t.visible_public,
     photoPath: t.photo_path,
     photoUrl: t.photo_path ? (parChemin.get(t.photo_path) ?? null) : null,
     creeLe: t.cree_le,

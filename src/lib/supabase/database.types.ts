@@ -170,6 +170,7 @@ export type Database = {
           photo_path: string | null
           texte: string
           valide: boolean
+          visible_public: boolean
         }
         Insert: {
           auteur_id?: string | null
@@ -179,6 +180,7 @@ export type Database = {
           photo_path?: string | null
           texte: string
           valide?: boolean
+          visible_public?: boolean
         }
         Update: {
           auteur_id?: string | null
@@ -188,6 +190,7 @@ export type Database = {
           photo_path?: string | null
           texte?: string
           valide?: boolean
+          visible_public?: boolean
         }
         Relationships: [
           {

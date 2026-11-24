@@ -274,7 +274,12 @@ export async function supprimerAnnonce(_: EtatAdmin, formData: FormData): Promis
 
 function saisieTemoignage(formData: FormData) {
   const v = formData.get("texte");
-  return { nom: texte(formData, "nom"), texte: typeof v === "string" ? v : "", valide: formData.get("valide") === "on" };
+  return {
+    nom: texte(formData, "nom"),
+    texte: typeof v === "string" ? v : "",
+    valide: formData.get("valide") === "on",
+    public: formData.get("public") === "on",
+  };
 }
 
 export async function creerTemoignage(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {

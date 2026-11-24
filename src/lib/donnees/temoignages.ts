@@ -36,6 +36,25 @@ export async function lireTemoignages(): Promise<Temoignage[]> {
   }));
 }
 
+export type TemoignagePublic = { id: string; prenom: string; texte: string };
+
+/**
+ * Les témoignages que l'équipe a choisi de montrer au public (validés ET « public »), pour la page /avis.
+ * Lu sans connexion : la base ne donne au public que ces témoignages et quatre colonnes
+ * (jamais l'auteur ni la photo).
+ */
+export async function lireTemoignagesPublics(): Promise<TemoignagePublic[]> {
+  await connection();
+  const supabase = await creerClientServeur();
+  const { data } = await supabase
+    .from("temoignages")
+    .select("id, nom_affiche, texte")
+    .eq("valide", true)
+    .eq("visible_public", true)
+    .order("cree_le", { ascending: false });
+  return (data ?? []).map((t) => ({ id: t.id, prenom: t.nom_affiche, texte: t.texte }));
+}
+
 export type MonTemoignage = { id: string; texte: string; valide: boolean; nomAffiche: string };
 
 /** Le témoignage proposé par la personne connectée (null si elle n'en a pas proposé). */

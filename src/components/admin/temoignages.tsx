@@ -1,4 +1,4 @@
-import { CircleCheck, MessageCircle } from "lucide-react";
+import { CircleCheck, Globe, MessageCircle } from "lucide-react";
 import { Champ } from "@/components/auth/champ";
 import { Avatar } from "@/components/profil/avatar";
 import { EtatVide } from "@/components/coquille/etat-vide";
@@ -18,7 +18,7 @@ function initiales(nom: string) {
 function ChampsTemoignage({ prefixe, t }: { prefixe: string; t?: TemoignageAdmin }) {
   return (
     <>
-      <Champ id={`${prefixe}-nom`} name="nom" libelle="Nom affiché" required maxLength={100} defaultValue={t?.nom} placeholder="Ex. : Léa M., promotion 2026" />
+      <Champ id={`${prefixe}-nom`} name="nom" libelle="Prénom affiché" required maxLength={100} defaultValue={t?.nom} placeholder="Ex. : Léa (le prénom seul)" />
       <div className="flex flex-col gap-1.5">
         <label htmlFor={`${prefixe}-texte`} className="text-sm font-semibold text-noir">
           Témoignage
@@ -28,6 +28,13 @@ function ChampsTemoignage({ prefixe, t }: { prefixe: string; t?: TemoignageAdmin
       <label className="flex min-h-11 cursor-pointer items-center gap-2.5 font-semibold text-noir">
         <input type="checkbox" name="valide" defaultChecked={t?.valide ?? false} className="size-5 accent-accent" />
         Validé (visible par les participants)
+      </label>
+      <label className="flex min-h-11 cursor-pointer items-start gap-2.5 font-semibold text-noir">
+        <input type="checkbox" name="public" defaultChecked={t?.visiblePublic ?? false} className="mt-0.5 size-5 accent-accent" />
+        <span>
+          Montré aussi au public
+          <span className="block text-xs font-normal">Page publique « Ils ont suivi le parcours », visible sans compte. Seulement s&apos;il est validé.</span>
+        </span>
       </label>
     </>
   );
@@ -49,6 +56,12 @@ function CarteTemoignage({ t }: { t: TemoignageAdmin }) {
             ) : (
               <span className="rounded-full bg-orange px-2 py-0.5 text-[11px] font-semibold text-noir">À valider</span>
             )}
+            {t.valide && t.visiblePublic ? (
+              <span className="inline-flex items-center gap-1 rounded-full border border-black/25 px-2 py-0.5 text-[11px] font-semibold text-noir">
+                <Globe aria-hidden className="size-3.5" />
+                Public
+              </span>
+            ) : null}
           </p>
           <p className="text-xs">Ajouté le {formaterJourComplet(t.creeLe)}</p>
         </div>

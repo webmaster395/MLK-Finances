@@ -3,10 +3,9 @@ import { obtenirPersonne } from "@/lib/auth/personne";
 import { lireMonTemoignage } from "@/lib/donnees/temoignages";
 import { FormulaireTemoignage } from "./formulaire-temoignage";
 
-/** « Prénom N. » : le nom sous lequel le témoignage sera publié (la base applique la même règle). */
-function nomPublie(prenom: string, nom: string) {
-  const initiale = nom.trim().charAt(0);
-  return `${prenom.trim()}${initiale ? ` ${initiale}.` : ""}`.trim() || "Participant";
+/** Le prénom seul : le nom sous lequel le témoignage sera publié (la base applique la même règle). */
+function nomPublie(prenom: string) {
+  return prenom.trim() || "Participant";
 }
 
 /** Bloc « Mon témoignage » de la page Témoignages. Lit les données de la personne : sous <Suspense>. */
@@ -39,7 +38,7 @@ export async function MonTemoignage() {
           ) : (
             <p className="text-sm">
               Racontez en quelques phrases ce que le parcours vous apporte. Il sera publié sous le nom «{" "}
-              {nomPublie(personne.prenom, personne.nom)} », après validation par l&apos;équipe.
+              {nomPublie(personne.prenom)} », après validation par l&apos;équipe.
             </p>
           )}
           <FormulaireTemoignage texte={mien?.texte ?? ""} enAttente={Boolean(mien)} />

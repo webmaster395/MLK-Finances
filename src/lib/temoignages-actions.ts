@@ -29,7 +29,7 @@ export async function envoyerTemoignage(_: EtatTemoignage, formData: FormData): 
   if (existant?.valide) return { message: "Votre témoignage est déjà publié : contactez l'équipe pour le modifier." };
   const { error } = existant
     ? await supabase.from("temoignages").update({ texte }).eq("id", existant.id)
-    : // Le nom affiché est remplacé par la base (« Prénom N. ») : la valeur envoyée ici est ignorée
+    : // Le nom affiché est remplacé par la base ((le prénom seul)) : la valeur envoyée ici est ignorée
       await supabase.from("temoignages").insert({ texte, nom_affiche: "-" });
   if (error) return ECHEC;
 

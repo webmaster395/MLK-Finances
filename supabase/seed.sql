@@ -82,8 +82,8 @@ insert into public.ressources (id, session_id, titre, type, url, storage_path) v
 -- ---------------------------------------------------------------
 -- Témoignages (fictifs : à remplacer par de vrais retours de participants)
 -- ---------------------------------------------------------------
-insert into public.temoignages (nom_affiche, texte, valide) values
-  ('Léa M.', 'Grâce à ce parcours, j''ai repris le contrôle de mon budget et je gère enfin mon argent avec sérénité.', true),
-  ('Sandrine T.', 'L''éclairage biblique m''a aidée à voir l''argent autrement : je suis devenue une meilleure intendante de ce que Dieu me confie.', true),
-  ('Karim B.', 'Des intervenants compétents et à l''écoute. En quelques samedis, j''ai posé un vrai plan de remboursement.', true),
-  ('Julien R.', 'Les samedis en visioconférence sont bien rythmés : j''ai pu avancer sur mes projets sans me sentir seul.', false);
+insert into public.temoignages (nom_affiche, texte, valide, visible_public) values
+  ('Léa', 'Grâce à ce parcours, j''ai repris le contrôle de mon budget et je gère enfin mon argent avec sérénité.', true, true),
+  ('Sandrine', 'L''éclairage biblique m''a aidée à voir l''argent autrement : je suis devenue une meilleure intendante de ce que Dieu me confie.', true, true),
+  ('Karim', 'Des échanges concrets et bienveillants. En quelques samedis, j''ai posé un vrai plan de remboursement.', true, false),
+  ('Julien', 'Les samedis en visioconférence sont bien rythmés : j''ai pu avancer sur mes projets sans me sentir seul.', false, false);
