@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Logo } from "@/components/logo";
 
 /** Coquille des pages publiques : présentation avec la photo du parcours et carte centrée, sans menu. */
@@ -36,10 +35,6 @@ export default function Layout({ children }: LayoutProps<"/">) {
               className="h-28 w-full object-cover object-[72%_center] sm:h-40 lg:h-auto lg:object-contain"
             />
           </div>
-
-          <Link href="/avis" className="w-fit text-sm font-semibold text-noir underline underline-offset-4 hover:no-underline">
-            Lire les témoignages de ceux qui ont suivi le parcours →
-          </Link>
         </div>
 
         <div className="flex justify-center lg:justify-end">{children}</div>

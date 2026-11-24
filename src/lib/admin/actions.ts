@@ -274,12 +274,7 @@ export async function supprimerAnnonce(_: EtatAdmin, formData: FormData): Promis
 
 function saisieTemoignage(formData: FormData) {
   const v = formData.get("texte");
-  return {
-    nom: texte(formData, "nom"),
-    texte: typeof v === "string" ? v : "",
-    valide: formData.get("valide") === "on",
-    public: formData.get("public") === "on",
-  };
+  return { nom: texte(formData, "nom"), texte: typeof v === "string" ? v : "", valide: formData.get("valide") === "on" };
 }
 
 export async function creerTemoignage(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
@@ -290,7 +285,7 @@ export async function creerTemoignage(_: EtatAdmin, formData: FormData): Promise
   const { error } = await supabase.from("temoignages").insert(v.temoignage);
   if (error) return ECHEC;
   actualiser();
-  return { ok: true, message: v.temoignage.valide ? "Témoignage publié." : "Témoignage enregistré (à valider)." };
+  return { ok: true, message: v.temoignage.valide ? "Témoignage affiché aux participants." : "Témoignage enregistré (non affiché)." };
 }
 
 export async function modifierTemoignage(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {

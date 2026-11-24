@@ -26,7 +26,7 @@ function RepereTemoignage({ etat }: { etat: "valide" | "attente" }) {
   return etat === "attente" ? (
     <span className="inline-flex items-center gap-1 rounded-full bg-orange px-2.5 py-0.5 text-[11px] font-semibold text-noir">
       <MessageCircle aria-hidden className="size-3.5" />
-      Témoignage à valider
+      Témoignage non affiché
     </span>
   ) : (
     <span className="inline-flex items-center gap-1 rounded-full bg-accent-clair px-2.5 py-0.5 text-[11px] font-semibold text-noir">
@@ -83,7 +83,7 @@ export async function ListeParticipants({ searchParams }: { searchParams: Promis
               defaultValue={q}
               maxLength={60}
               placeholder="Prénom ou nom"
-              className="min-h-12 w-full rounded-md border border-black/25 bg-white pl-11 pr-4 text-base font-semibold text-noir placeholder:font-normal placeholder:text-black/60"
+              className="min-h-12 w-full rounded-md border border-black/25 bg-white pl-11 pr-4 text-base font-semibold text-noir placeholder:font-normal placeholder:text-doux"
             />
           </div>
         </div>

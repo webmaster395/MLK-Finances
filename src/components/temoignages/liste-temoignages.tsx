@@ -2,6 +2,7 @@ import { MessageCircle, PenLine, Quote } from "lucide-react";
 import { EtatVide } from "@/components/coquille/etat-vide";
 import { Avatar } from "@/components/profil/avatar";
 import { lireTemoignages } from "@/lib/donnees/temoignages";
+import { formaterJourComplet } from "@/lib/format";
 
 /** Initiales pour l'avatar (le nom affiché peut commencer par un marqueur comme « [test] »). */
 function initiales(nom: string) {
@@ -21,17 +22,17 @@ function Bandeau({ nombre }: { nombre: number }) {
             Les expériences de ceux qui ont suivi le parcours
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-white/80 sm:text-base">
-            Des retours sincères, publiés après relecture par l&apos;équipe. Vous aussi, partagez ce que le parcours vous apporte.
+            Les témoignages que l&apos;équipe a choisi de partager avec les participants. Vous aussi, écrivez ce qui vous a parlé.
           </p>
           <a href="#mon-temoignage" className="btn btn-principal mt-5 w-fit gap-2">
             <PenLine aria-hidden className="size-4" />
-            Partager mon témoignage
+            Écrire un témoignage
           </a>
         </div>
         <dl className="grid grid-cols-1 gap-3">
           <div className="rounded-lg bg-white/10 p-4">
             <dd className="titre-charte text-4xl !leading-none text-white">{nombre}</dd>
-            <dt className="mt-1 text-xs font-semibold text-white/70">témoignage{nombre > 1 ? "s" : ""} publié{nombre > 1 ? "s" : ""}</dt>
+            <dt className="mt-1 text-xs font-semibold text-white/70">témoignage{nombre > 1 ? "s" : ""} partagé{nombre > 1 ? "s" : ""}</dt>
           </div>
         </dl>
       </div>
@@ -51,7 +52,7 @@ export async function ListeTemoignages() {
         <EtatVide
           icone={MessageCircle}
           titre="Aucun témoignage pour le moment"
-          texte="Les expériences des participants apparaîtront ici dès qu'elles seront publiées."
+          texte="Les témoignages partagés par l'équipe apparaîtront ici."
         />
       ) : (
         <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -77,9 +78,12 @@ export async function ListeTemoignages() {
                       {initiales(t.nom_affiche)}
                     </span>
                   )}
-                  <cite className="min-w-0 text-sm font-semibold not-italic leading-snug text-noir [overflow-wrap:anywhere]">
-                    {t.nom_affiche}
-                  </cite>
+                  <span className="min-w-0">
+                    <cite className="block text-sm font-semibold not-italic leading-snug text-noir [overflow-wrap:anywhere]">
+                      {t.nom_affiche}
+                    </cite>
+                    <span className="block text-xs">{formaterJourComplet(t.creeLe)}</span>
+                  </span>
                 </footer>
               </article>
             </li>

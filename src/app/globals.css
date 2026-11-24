@@ -284,6 +284,11 @@
   #espace-connecte[data-theme="sombre"] .bg-white {
     background-color: #262626;
   }
+  #espace-connecte[data-theme="sombre"] input::placeholder,
+  #espace-connecte[data-theme="sombre"] textarea::placeholder {
+    color: var(--color-doux);
+    opacity: 1;
+  }
   #espace-connecte[data-theme="sombre"] input[type="file"]::file-selector-button {
     color: #070707;
   }

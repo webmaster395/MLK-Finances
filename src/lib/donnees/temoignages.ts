@@ -6,20 +6,22 @@ export type Temoignage = {
   id: string;
   nom_affiche: string;
   texte: string;
+  /** Date d'écriture (elle permet de retrouver la session). */
+  creeLe: string;
   /** Lien temporaire (5 minutes) vers la photo ; null s'il n'y en a pas. */
   photoUrl: string | null;
 };
 
 /**
- * Les témoignages validés (publiés). Les règles de la base ne montrent aux autres que les validés ;
- * le filtre « valide » écarte aussi le témoignage en attente de la personne elle-même.
+ * Les témoignages affichés aux participants (validés par l'équipe). Les règles de la base ne montrent aux autres que les validés ;
+ * le filtre « valide » écarte aussi les témoignages en attente de la personne elle-même.
  */
 export async function lireTemoignages(): Promise<Temoignage[]> {
   await connection();
   const supabase = await creerClientServeur();
   const { data } = await supabase
     .from("temoignages")
-    .select("id, nom_affiche, texte, photo_path")
+    .select("id, nom_affiche, texte, photo_path, cree_le")
     .eq("valide", true)
     .order("cree_le", { ascending: false });
   const liste = data ?? [];
@@ -32,41 +34,37 @@ export async function lireTemoignages(): Promise<Temoignage[]> {
     id: t.id,
     nom_affiche: t.nom_affiche,
     texte: t.texte,
+    creeLe: t.cree_le,
     photoUrl: t.photo_path ? (parChemin.get(t.photo_path) ?? null) : null,
   }));
 }
 
-export type TemoignagePublic = { id: string; prenom: string; texte: string };
+export type MonTemoignage = {
+  id: string;
+  texte: string;
+  /** Affiché aux participants par l'équipe. */
+  valide: boolean;
+  /** La personne a demandé que ce soit confidentiel (équipe / pasteur). */
+  confidentiel: boolean;
+  creeLe: string;
+};
 
-/**
- * Les témoignages que l'équipe a choisi de montrer au public (validés ET « public »), pour la page /avis.
- * Lu sans connexion : la base ne donne au public que ces témoignages et quatre colonnes
- * (jamais l'auteur ni la photo).
- */
-export async function lireTemoignagesPublics(): Promise<TemoignagePublic[]> {
-  await connection();
-  const supabase = await creerClientServeur();
-  const { data } = await supabase
-    .from("temoignages")
-    .select("id, nom_affiche, texte")
-    .eq("valide", true)
-    .eq("visible_public", true)
-    .order("cree_le", { ascending: false });
-  return (data ?? []).map((t) => ({ id: t.id, prenom: t.nom_affiche, texte: t.texte }));
-}
-
-export type MonTemoignage = { id: string; texte: string; valide: boolean; nomAffiche: string };
-
-/** Le témoignage proposé par la personne connectée (null si elle n'en a pas proposé). */
-export async function lireMonTemoignage(): Promise<MonTemoignage | null> {
+/** L'historique des témoignages de la personne connectée, du plus récent au plus ancien. */
+export async function lireMesTemoignages(): Promise<MonTemoignage[]> {
   await connection();
   const supabase = await creerClientServeur();
   const { data: utilisateur } = await supabase.auth.getUser();
-  if (!utilisateur.user) return null;
+  if (!utilisateur.user) return [];
   const { data } = await supabase
     .from("temoignages")
-    .select("id, texte, valide, nom_affiche")
+    .select("id, texte, valide, confidentiel, cree_le")
     .eq("auteur_id", utilisateur.user.id)
-    .maybeSingle();
-  return data ? { id: data.id, texte: data.texte, valide: data.valide, nomAffiche: data.nom_affiche } : null;
+    .order("cree_le", { ascending: false });
+  return (data ?? []).map((t) => ({
+    id: t.id,
+    texte: t.texte,
+    valide: t.valide,
+    confidentiel: t.confidentiel,
+    creeLe: t.cree_le,
+  }));
 }

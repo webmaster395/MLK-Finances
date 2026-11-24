@@ -1,4 +1,4 @@
-import { CircleCheck, Globe, MessageCircle } from "lucide-react";
+import { CircleCheck, Lock, MessageCircle } from "lucide-react";
 import { Champ } from "@/components/auth/champ";
 import { Avatar } from "@/components/profil/avatar";
 import { EtatVide } from "@/components/coquille/etat-vide";
@@ -27,15 +27,11 @@ function ChampsTemoignage({ prefixe, t }: { prefixe: string; t?: TemoignageAdmin
       </div>
       <label className="flex min-h-11 cursor-pointer items-center gap-2.5 font-semibold text-noir">
         <input type="checkbox" name="valide" defaultChecked={t?.valide ?? false} className="size-5 accent-accent" />
-        Validé (visible par les participants)
+        Affiché aux participants
       </label>
-      <label className="flex min-h-11 cursor-pointer items-start gap-2.5 font-semibold text-noir">
-        <input type="checkbox" name="public" defaultChecked={t?.visiblePublic ?? false} className="mt-0.5 size-5 accent-accent" />
-        <span>
-          Montré aussi au public
-          <span className="block text-xs font-normal">Page publique « Ils ont suivi le parcours », visible sans compte. Seulement s&apos;il est validé.</span>
-        </span>
-      </label>
+      {t?.confidentiel ? (
+        <p className="text-xs">L&apos;auteur a demandé la confidentialité (équipe / pasteur) : réfléchissez avant de l&apos;afficher.</p>
+      ) : null}
     </>
   );
 }
@@ -51,38 +47,46 @@ function CarteTemoignage({ t }: { t: TemoignageAdmin }) {
             {t.valide ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-accent-clair px-2 py-0.5 text-[11px] font-semibold text-noir">
                 <CircleCheck aria-hidden className="size-3.5" />
-                Validé
+                Affiché
               </span>
             ) : (
-              <span className="rounded-full bg-orange px-2 py-0.5 text-[11px] font-semibold text-noir">À valider</span>
+              <span className="rounded-full bg-orange px-2 py-0.5 text-[11px] font-semibold text-noir">Non affiché</span>
             )}
-            {t.valide && t.visiblePublic ? (
-              <span className="inline-flex items-center gap-1 rounded-full border border-black/25 px-2 py-0.5 text-[11px] font-semibold text-noir">
-                <Globe aria-hidden className="size-3.5" />
-                Public
+            {t.confidentiel ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-noir px-2 py-0.5 text-[11px] font-semibold text-white">
+                <Lock aria-hidden className="size-3.5" />
+                Confidentiel : équipe / pasteur
               </span>
             ) : null}
           </p>
-          <p className="text-xs">Ajouté le {formaterJourComplet(t.creeLe)}</p>
+          <p className="text-xs font-semibold">Écrit le {formaterJourComplet(t.creeLe)}</p>
         </div>
       </div>
       <blockquote className="mt-3 whitespace-pre-line text-sm font-semibold text-noir [overflow-wrap:anywhere]">« {t.texte} »</blockquote>
 
       <div className="mt-4 flex flex-wrap gap-2">
         {t.valide ? (
-          <FormulaireAction key="retirer" action={changerValidation} bouton="Retirer de la publication" enCoursTexte="…" style="secondaire" afficherSucces={false} className="items-start">
+          <FormulaireAction key="retirer" action={changerValidation} bouton="Ne plus afficher" enCoursTexte="…" style="secondaire" afficherSucces={false} className="items-start">
             <input type="hidden" name="id" value={t.id} />
             <input type="hidden" name="valide" value="non" />
           </FormulaireAction>
         ) : (
-          <FormulaireAction key="valider" action={changerValidation} bouton="Valider" enCoursTexte="…" afficherSucces={false} className="items-start">
+          <FormulaireAction
+            key="valider"
+            action={changerValidation}
+            bouton="Afficher aux participants"
+            enCoursTexte="…"
+            afficherSucces={false}
+            confirmation={t.confidentiel ? "Cette personne a demandé la confidentialité (équipe / pasteur). L'afficher quand même à tous les participants ?" : undefined}
+            className="items-start"
+          >
             <input type="hidden" name="id" value={t.id} />
             <input type="hidden" name="valide" value="oui" />
           </FormulaireAction>
         )}
         <FormulaireAction
           action={supprimerTemoignage}
-          bouton={t.valide ? "Supprimer" : "Refuser et supprimer"}
+          bouton="Supprimer"
           enCoursTexte="…"
           style="danger"
           afficherSucces={false}
@@ -123,7 +127,7 @@ function CarteTemoignage({ t }: { t: TemoignageAdmin }) {
   );
 }
 
-/** Gestion des témoignages : valider, refuser, modifier, ajouter une photo. Sous <Suspense>. */
+/** Gestion des témoignages : afficher ou non, modifier, ajouter une photo. Sous <Suspense>. */
 export async function GestionTemoignages() {
   const temoignages = await lireTemoignagesAdmin();
   const aValider = temoignages.filter((t) => !t.valide).length;
@@ -136,7 +140,7 @@ export async function GestionTemoignages() {
         ) : (
           <>
             <p className="text-sm font-semibold">
-              {temoignages.length} témoignage{temoignages.length > 1 ? "s" : ""} · {aValider} à valider
+              {temoignages.length} témoignage{temoignages.length > 1 ? "s" : ""} · {aValider} non affiché{aValider > 1 ? "s" : ""}
             </p>
             {temoignages.map((t) => (
               <CarteTemoignage key={t.id} t={t} />

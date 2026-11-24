@@ -119,15 +119,11 @@ test("un message de l'équipe a un texte et un titre facultatif", () => {
 });
 
 test("un témoignage a un nom affiché et un texte ; la photo est une image légère", () => {
-  assert.deepEqual(validerTemoignage({ nom: " Léa ", texte: " Super parcours ", valide: false, public: true }), {
-    temoignage: { nom_affiche: "Léa", texte: "Super parcours", valide: false, visible_public: false },
+  assert.deepEqual(validerTemoignage({ nom: " Léa ", texte: " Super parcours ", valide: false }), {
+    temoignage: { nom_affiche: "Léa", texte: "Super parcours", valide: false },
   });
-  assert.equal(
-    (validerTemoignage({ nom: "Léa", texte: "Super", valide: true, public: true }) as { temoignage: { visible_public: boolean } }).temoignage.visible_public,
-    true,
-  );
-  assert.ok("message" in validerTemoignage({ nom: "", texte: "x", valide: true, public: false }));
-  assert.ok("message" in validerTemoignage({ nom: "x", texte: "y".repeat(1001), valide: true, public: false }));
+  assert.ok("message" in validerTemoignage({ nom: "", texte: "x", valide: true }));
+  assert.ok("message" in validerTemoignage({ nom: "x", texte: "y".repeat(1001), valide: true }));
   assert.equal(verifierPhotoTemoignage({ size: 100_000, type: "image/webp" }), null);
   assert.ok(verifierPhotoTemoignage({ size: 3 * 1024 * 1024, type: "image/png" }));
   assert.ok(verifierPhotoTemoignage({ size: 1000, type: "application/pdf" }));

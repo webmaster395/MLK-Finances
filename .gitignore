@@ -10,3 +10,5 @@ supabase/*.local.sql
 
 # Plan de développement : reste en local, pas sur GitHub
 PLAN.md
+# Prompts et notes locales (jamais sur GitHub)
+*.local.md

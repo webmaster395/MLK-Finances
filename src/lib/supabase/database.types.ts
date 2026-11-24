@@ -164,33 +164,33 @@ export type Database = {
       temoignages: {
         Row: {
           auteur_id: string | null
+          confidentiel: boolean
           cree_le: string
           id: string
           nom_affiche: string
           photo_path: string | null
           texte: string
           valide: boolean
-          visible_public: boolean
         }
         Insert: {
           auteur_id?: string | null
+          confidentiel?: boolean
           cree_le?: string
           id?: string
           nom_affiche: string
           photo_path?: string | null
           texte: string
           valide?: boolean
-          visible_public?: boolean
         }
         Update: {
           auteur_id?: string | null
+          confidentiel?: boolean
           cree_le?: string
           id?: string
           nom_affiche?: string
           photo_path?: string | null
           texte?: string
           valide?: boolean
-          visible_public?: boolean
         }
         Relationships: [
           {

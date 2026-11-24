@@ -89,17 +89,15 @@ describe("structure", () => {
     assert.deepEqual(r.rows, []);
   });
 
-  test("« anon » n'a aucun droit sur les tables publiques, sauf quatre colonnes de témoignages", async () => {
+  test("« anon » n'a aucun droit sur les tables publiques", async () => {
     const tables = await db.query(`
       select table_name from information_schema.role_table_grants
       where grantee = 'anon' and table_schema = 'public'`);
     assert.deepEqual(tables.rows, []);
     const colonnes = await db.query(`
       select table_name, column_name from information_schema.role_column_grants
-      where grantee = 'anon' and table_schema = 'public' and privilege_type = 'SELECT'
-      order by column_name`);
-    assert.deepEqual(colonnes.rows.map((l) => `${l.table_name}.${l.column_name}`),
-      ["temoignages.cree_le", "temoignages.id", "temoignages.nom_affiche", "temoignages.texte", "temoignages.valide", "temoignages.visible_public"]);
+      where grantee = 'anon' and table_schema = 'public'`);
+    assert.deepEqual(colonnes.rows, []);
   });
 
   test("la fonction rls_auto_enable n'est appelable ni par les visiteurs ni par les participants", async () => {
@@ -409,100 +407,62 @@ describe("administrateur", () => {
   });
 });
 
-describe("témoignage proposé par un participant", () => {
+describe("témoignages d'un participant (historique)", () => {
   const ADMIN = "77777777-7777-4777-8777-777777777777"; // créé dans le bloc « administrateur »
-  const leSien = async (uid) => (await en(uid, `select id, texte, valide, nom_affiche, photo_path from public.temoignages where auteur_id = '${uid}'`)).rows;
+  const lesSiens = async (uid) =>
+    (await en(uid, `select id, texte, valide, confidentiel from public.temoignages where auteur_id = '${uid}' order by texte`)).rows;
 
-  test("A propose un témoignage : il est « à valider », signé de son prénom seul, jamais public, même s'il tente de tricher", async () => {
-    const r = await en(A, `insert into public.temoignages (texte, nom_affiche, valide, visible_public, photo_path)
-      values ('Un parcours très utile.', 'Quelqu''un d''autre', true, true, 'temoignages/pirate/photo')
-      returning nom_affiche, valide, visible_public, photo_path, auteur_id`);
-    assert.equal(r.rows[0].valide, false);
-    assert.equal(r.rows[0].visible_public, false);
-    assert.equal(r.rows[0].nom_affiche, "Alex");
-    assert.equal(r.rows[0].photo_path, null);
-    assert.equal(r.rows[0].auteur_id, A);
+  test("A écrit un témoignage : « à valider », signé de son prénom, daté du jour, même s'il tente de tricher", async () => {
+    const r = await en(A, `insert into public.temoignages (texte, nom_affiche, valide, photo_path, cree_le)
+      values ('Premier retour.', 'Quelqu''un d''autre', true, 'temoignages/pirate/photo', '2000-01-01')
+      returning nom_affiche, valide, photo_path, auteur_id, confidentiel, cree_le > now() - interval '1 minute' as du_jour`);
+    assert.deepEqual(r.rows[0], { nom_affiche: "Alex", valide: false, photo_path: null, auteur_id: A, confidentiel: false, du_jour: true });
   });
 
-  test("A voit son témoignage en attente ; B ne le voit pas", async () => {
-    assert.equal((await leSien(A)).length, 1);
-    assert.equal((await en(B, "select id from public.temoignages where texte = 'Un parcours très utile.'")).rows.length, 0);
+  test("A peut en écrire plusieurs, dont un confidentiel, et les retrouve tous", async () => {
+    await en(A, "insert into public.temoignages (texte, nom_affiche, confidentiel) values ('Second retour, pour un pasteur.', 'x', true)");
+    const siens = await lesSiens(A);
+    assert.deepEqual(siens.map((l) => l.confidentiel), [false, true]);
   });
 
-  test("A ne peut pas en proposer un second, même en se faisant passer pour B", async () => {
-    await assert.rejects(en(A, "insert into public.temoignages (texte, nom_affiche) values ('Encore', 'x')"), /unique|duplicate/i);
-    // L'auteur est imposé par la base : la tentative « au nom de B » reste un second témoignage de A
-    await assert.rejects(en(A, `insert into public.temoignages (texte, nom_affiche, auteur_id) values ('Encore', 'x', '${B}')`), /unique|duplicate/i);
-    assert.equal((await en(B, `select id from public.temoignages where auteur_id = '${B}'`)).rows.length, 0);
+  test("A ne peut pas écrire au nom de B", async () => {
+    await en(A, `insert into public.temoignages (texte, nom_affiche, auteur_id) values ('Tentative au nom de B', 'x', '${B}')`);
+    assert.equal((await lesSiens(B)).length, 0);
+    await en(A, "delete from public.temoignages where texte = 'Tentative au nom de B'");
   });
 
-  test("A peut le modifier tant qu'il n'est pas validé, sans pouvoir le valider lui-même", async () => {
-    const r = await en(A, `update public.temoignages set texte = 'Texte corrigé.', valide = true where auteur_id = '${A}' returning texte, valide`);
-    assert.deepEqual(r.rows[0], { texte: "Texte corrigé.", valide: false });
+  test("B ne voit pas les témoignages en attente de A, confidentiels ou non", async () => {
+    assert.equal((await en(B, `select id from public.temoignages where auteur_id = '${A}'`)).rows.length, 0);
   });
 
-  test("une fois validé par l'admin, A ne peut plus le modifier ni le retirer, et il est publié", async () => {
-    const id = (await leSien(A))[0].id;
+  test("A peut modifier le sien sans pouvoir le valider ni changer sa date", async () => {
+    const r = await en(A, `update public.temoignages set texte = 'Premier retour corrigé.', valide = true, cree_le = '2000-01-01'
+      where texte = 'Premier retour.' returning valide, cree_le > now() - interval '1 hour' as date_gardee`);
+    assert.deepEqual(r.rows[0], { valide: false, date_gardee: true });
+  });
+
+  test("l'admin voit la demande de confidentialité et décide : tant qu'il n'affiche pas, personne d'autre ne le voit", async () => {
+    const vu = await en(ADMIN, "select id, confidentiel, valide from public.temoignages where texte = 'Second retour, pour un pasteur.'");
+    assert.deepEqual([vu.rows[0].confidentiel, vu.rows[0].valide], [true, false]);
+    assert.equal((await en(B, `select id from public.temoignages where id = '${vu.rows[0].id}'`)).rows.length, 0);
+  });
+
+  test("une fois affiché par l'admin, B le voit et A ne peut plus le modifier ni le retirer", async () => {
+    const id = (await lesSiens(A)).find((l) => l.texte === "Premier retour corrigé.").id;
     await en(ADMIN, `update public.temoignages set valide = true where id = '${id}'`);
+    assert.equal((await en(B, `select id from public.temoignages where id = '${id}'`)).rows.length, 1);
     assert.equal((await en(A, `update public.temoignages set texte = 'Après coup' where id = '${id}' returning id`)).rows.length, 0);
     assert.equal((await en(A, `delete from public.temoignages where id = '${id}' returning id`)).rows.length, 0);
-    assert.equal((await en(B, `select id from public.temoignages where id = '${id}'`)).rows.length, 1);
   });
 
-  test("B peut retirer son témoignage tant qu'il n'est pas validé", async () => {
+  test("B peut retirer un témoignage non affiché ; il ne peut pas retirer celui de A", async () => {
     await en(B, "insert into public.temoignages (texte, nom_affiche) values ('À retirer', 'x')");
-    const r = await en(B, `delete from public.temoignages where auteur_id = '${B}' returning id`);
-    assert.equal(r.rows.length, 1);
+    assert.equal((await en(B, `delete from public.temoignages where auteur_id = '${A}' returning id`)).rows.length, 0);
+    assert.equal((await en(B, `delete from public.temoignages where auteur_id = '${B}' returning id`)).rows.length, 1);
   });
 
-  test("un visiteur ne peut pas proposer de témoignage", async () => {
+  test("un visiteur sans compte ne peut ni lire ni écrire de témoignage", async () => {
+    await assert.rejects(anonyme("select id, texte from public.temoignages"), REFUS);
     await assert.rejects(anonyme("insert into public.temoignages (texte, nom_affiche) values ('x', 'x')"), REFUS);
-  });
-});
-
-describe("témoignages visibles par le public", () => {
-  const ADMIN = "77777777-7777-4777-8777-777777777777";
-  const PUBLIC_ID = "eeeeeeee-0000-4000-8000-0000000000a1";
-  const PRIVE_ID = "eeeeeeee-0000-4000-8000-0000000000a2";
-  const NON_VALIDE_ID = "eeeeeeee-0000-4000-8000-0000000000a3";
-
-  before(async () => {
-    await db.exec(`
-      insert into public.temoignages (id, nom_affiche, texte, valide, visible_public, photo_path) values
-        ('${PUBLIC_ID}', 'Public', 'Montré à tous', true, true, 'temoignages/${PUBLIC_ID}/photo'),
-        ('${PRIVE_ID}', 'Inscrits', 'Pour les inscrits seulement', true, false, null),
-        ('${NON_VALIDE_ID}', 'Brouillon', 'Pas encore validé', false, true, null)`);
-  });
-
-  test("un visiteur voit seulement les témoignages validés ET choisis par l'équipe", async () => {
-    const r = await anonyme("select id from public.temoignages order by id");
-    const ids = r.rows.map((l) => l.id);
-    assert.ok(ids.includes(PUBLIC_ID));
-    assert.ok(!ids.includes(PRIVE_ID));
-    assert.ok(!ids.includes(NON_VALIDE_ID));
-  });
-
-  test("un visiteur ne peut lire ni l'auteur ni la photo", async () => {
-    await assert.rejects(anonyme("select auteur_id from public.temoignages"), REFUS);
-    await assert.rejects(anonyme("select photo_path from public.temoignages"), REFUS);
-    await assert.rejects(anonyme("select * from public.temoignages"), REFUS);
-  });
-
-  test("un visiteur ne peut rien écrire", async () => {
-    await assert.rejects(anonyme(`update public.temoignages set visible_public = true where id = '${PRIVE_ID}'`), REFUS);
-    await assert.rejects(anonyme(`delete from public.temoignages where id = '${PUBLIC_ID}'`), REFUS);
-  });
-
-  test("les participants voient toujours tous les témoignages validés (publics ou non)", async () => {
-    const ids = (await en(A, "select id from public.temoignages")).rows.map((l) => l.id);
-    assert.ok(ids.includes(PUBLIC_ID) && ids.includes(PRIVE_ID));
-    assert.ok(!ids.includes(NON_VALIDE_ID));
-  });
-
-  test("un participant ne peut pas rendre un témoignage public ; l'admin le peut", async () => {
-    const r = await en(A, `update public.temoignages set visible_public = true where id = '${PRIVE_ID}' returning id`);
-    assert.equal(r.rows.length, 0);
-    const admin = await en(ADMIN, `update public.temoignages set visible_public = true where id = '${PRIVE_ID}' returning visible_public`);
-    assert.equal(admin.rows[0].visible_public, true);
   });
 });
