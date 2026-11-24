@@ -8,7 +8,7 @@ import { Logo } from "@/components/logo";
 import { Avatar } from "@/components/profil/avatar";
 import { deconnexion } from "@/lib/auth/actions";
 import type { Annonce } from "@/lib/donnees/annonces";
-import { GROUPES_MENU, GROUPES_MENU_ADMIN, PAGE_ADMINISTRATION, PAGE_PROFIL } from "@/lib/navigation";
+import { GROUPES_MENU, PAGE_ADMINISTRATION, PAGE_PROFIL } from "@/lib/navigation";
 import { BasculeTheme } from "./bascule-theme";
 import { BoutonMessages } from "./bouton-messages";
 
@@ -27,8 +27,6 @@ type Props = {
   promotion?: string | null;
   /** Messages publiés de l'équipe (affichés via l'icône mégaphone). */
   messages?: Annonce[];
-  /** Espace affiché : le menu participant ou le menu administrateur. */
-  espace?: "participant" | "admin";
   /** Dans l'espace participant : ajoute le lien « Administration » (personne admin). */
   estAdmin?: boolean;
 };
@@ -79,13 +77,11 @@ export function MenuLateral({
   pastilles = {},
   promotion = null,
   messages = [],
-  espace = "participant",
   estAdmin = false,
 }: Props) {
   const chemin = usePathname();
-  const enAdmin = espace === "admin";
-  const accueil = enAdmin ? "/admin" : "/accueil";
-  const groupesMenu = enAdmin ? GROUPES_MENU_ADMIN : estAdmin ? [...GROUPES_MENU, [PAGE_ADMINISTRATION]] : GROUPES_MENU;
+  const accueil = "/accueil";
+  const groupesMenu = estAdmin ? [...GROUPES_MENU, [PAGE_ADMINISTRATION]] : GROUPES_MENU;
   // Côté serveur et au premier affichage : déplié ; ensuite on applique le choix mémorisé
   const replie = useSyncExternalStore(abonnerReplie, lireReplie, () => false);
   const [ouvert, setOuvert] = useState(false); // menu du téléphone
@@ -118,8 +114,7 @@ export function MenuLateral({
   }, [ouvert]);
 
   // Le tableau de bord (/admin) n'est actif que sur sa propre page, pas sur les pages /admin/…
-  const sur = (href: string) =>
-    chemin === href || (!(enAdmin && href === "/admin") && chemin.startsWith(`${href}/`));
+  const sur = (href: string) => chemin === href || chemin.startsWith(`${href}/`);
 
   const groupes = (afficherNoms: boolean, apresClic?: () => void) => (
     <>
@@ -229,7 +224,7 @@ export function MenuLateral({
       <div className="sticky top-0 z-30 flex items-center justify-between gap-3 menu-fond px-4 py-2 shadow-md md:hidden">
         <Logo lien={accueil} compact />
         <div className="flex shrink-0 items-center gap-2">
-          {enAdmin ? null : <BoutonMessages messages={messages} />}
+          <BoutonMessages messages={messages} />
           <BasculeTheme />
           <button
             type="button"
