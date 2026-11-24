@@ -42,7 +42,7 @@ export function FormulaireTemoignage({ texte, enAttente }: { texte: string; enAt
         <p id="aide-temoignage" className="text-xs">
           1 000 caractères au maximum. L&apos;équipe le relit avant de le publier.
         </p>
-        <button type="submit" disabled={enCours} className="btn btn-orange w-fit disabled:opacity-60">
+        <button type="submit" disabled={enCours} className="btn btn-principal w-fit disabled:opacity-60">
           {enCours ? "Envoi…" : enAttente ? "Mettre à jour" : "Envoyer mon témoignage"}
         </button>
       </form>

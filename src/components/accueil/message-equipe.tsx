@@ -11,7 +11,7 @@ export async function MessageEquipe() {
   return (
     <section className="accueil-carte p-5 sm:p-6" aria-labelledby="titre-message">
       <h2 id="titre-message" className="titre-charte flex items-center gap-2.5 text-xl sm:text-2xl">
-        <Megaphone aria-hidden className="size-5 text-rose" />
+        <Megaphone aria-hidden className="size-5 text-accent" />
         Message de l&apos;équipe
       </h2>
       {message ? (
@@ -35,7 +35,7 @@ export function MessageEquipeChargement() {
     <section className="accueil-carte p-5 sm:p-6" role="status" aria-live="polite">
       <span className="sr-only">Chargement du message…</span>
       <h2 className="titre-charte flex items-center gap-2.5 text-2xl">
-        <Megaphone aria-hidden className="size-5 text-rose" />
+        <Megaphone aria-hidden className="size-5 text-accent" />
         Message de l&apos;équipe
       </h2>
       <div className="mt-3 flex flex-col gap-2 motion-safe:animate-pulse">

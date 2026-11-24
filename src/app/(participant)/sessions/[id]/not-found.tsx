@@ -10,7 +10,7 @@ export default function NotFound() {
         titre="Session introuvable"
         texte="Cette session n'existe pas, ou elle ne fait pas partie de votre parcours."
       />
-      <Link href="/sessions" className="btn btn-orange w-fit">
+      <Link href="/sessions" className="btn btn-principal w-fit">
         Voir toutes les sessions
       </Link>
     </div>

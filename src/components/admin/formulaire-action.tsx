@@ -23,7 +23,7 @@ type Props = {
 };
 
 const STYLES = {
-  principal: "btn btn-orange w-fit disabled:opacity-60",
+  principal: "btn btn-principal w-fit disabled:opacity-60",
   secondaire:
     "inline-flex min-h-10 w-fit items-center rounded-[0.6rem] border border-black/25 px-4 text-sm font-semibold text-noir hover:bg-black/5 disabled:opacity-60",
   danger:

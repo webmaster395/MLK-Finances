@@ -17,14 +17,9 @@ const lire = (chemin) => readFileSync(join(racine, chemin), "utf8");
 // Identifiants du seed
 const A = "11111111-1111-4111-8111-111111111111"; // participant test 1
 const B = "22222222-2222-4222-8222-222222222222"; // participant test 2
-const DEVOIR_G1 = "dddddddd-0000-4000-8000-000000000001"; // devoir publié (cours publié)
-const DEVOIR_BROUILLON = "dddddddd-0000-4000-8000-0000000000b1"; // devoir d'un cours NON publié (créé par le test)
-const COURS_BROUILLON = "cccccccc-0000-4000-8000-0000000000b1"; // cours NON publié (créé par le test)
+const SESSION_BROUILLON = "55555555-0000-4000-8000-0000000000b1"; // session NON publiée (créée par le test)
 
-const TABLES = [
-  "profils", "cours", "sessions",
-  "ressources", "devoirs", "rendus", "temoignages", "annonces",
-];
+const TABLES = ["profils", "sessions", "ressources", "temoignages", "annonces"];
 
 let db;
 
@@ -69,23 +64,16 @@ before(async () => {
       ('00000000-0000-0000-0000-000000000000', '${B}', 'authenticated', 'authenticated', 'b@example.com', now(),
        '{"provider":"email","providers":["email"]}', '{"prenom":"Sam","nom":"Test Deux","civilite":"madame","tranche_age":"18_25"}', now(), now());`);
   await db.exec(lire("seed.sql"));
-  // Dépôt d'exemple de A (devoir « Analyser une offre de crédit »)
+  // Cas particuliers créés par le test (indépendants du contenu du seed) : une session non publiée et son document
   await db.exec(`
-    insert into public.rendus (devoir_id, participant_id, fichier_path, nom_fichier)
-    values ('dddddddd-0000-4000-8000-000000000003', '${A}',
-            '${A}/dddddddd-0000-4000-8000-000000000003/analyse-credit.pdf', 'analyse-credit.pdf');`);
-  // Cas particuliers créés par le test (indépendants du contenu du seed) : un cours non publié et son contenu
-  await db.exec(`
-    insert into public.cours (id, titre, publie) values ('${COURS_BROUILLON}', 'Cours en préparation', false);
-    insert into public.devoirs (id, cours_id, titre) values ('${DEVOIR_BROUILLON}', '${COURS_BROUILLON}', 'Devoir du cours en préparation');
+    insert into public.sessions (id, titre, debut, publie) values ('${SESSION_BROUILLON}', 'Session en préparation', now(), false);
     insert into public.annonces (titre, message, publie) values ('Message en préparation', 'Brouillon', false);
-    insert into public.ressources (cours_id, titre, type, storage_path)
-      values ('${COURS_BROUILLON}', 'Fichier du cours en préparation', 'fichier', 'brouillon/doc.pdf');
+    insert into public.ressources (session_id, titre, type, storage_path)
+      values ('${SESSION_BROUILLON}', 'Fichier de la session en préparation', 'fichier', 'brouillon/doc.pdf');
     insert into storage.objects (bucket_id, name) values
       ('ressources', 'test/guide-epargne.pdf'),
       ('ressources', 'brouillon/doc.pdf'),
-      ('ressources', 'orphelin.pdf'),
-      ('rendus', '${B}/${DEVOIR_G1}/rendu-de-b.pdf');
+      ('ressources', 'orphelin.pdf');
   `);
 });
 
@@ -212,64 +200,56 @@ describe("civilité et tranche d'âge", () => {
   });
 });
 
-describe("contenu pédagogique", () => {
-  test("A voit exactement les cours publiés, pas le brouillon", async () => {
-    const vus = await en(A, "select id from public.cours order by id");
-    const publies = await db.query("select id from public.cours where publie order by id");
-    assert.ok(publies.rows.length >= 1);
-    assert.deepEqual(vus.rows, publies.rows);
-    assert.ok(!vus.rows.some((l) => l.id === COURS_BROUILLON));
-  });
-  test("B voit les mêmes cours publiés que A (une seule promotion)", async () => {
-    const a = await en(A, "select titre from public.cours");
-    const b = await en(B, "select titre from public.cours");
-    assert.deepEqual(titres(b), titres(a));
-  });
-
-  test("A voit exactement les séances publiées", async () => {
+describe("sessions et documents", () => {
+  test("A voit exactement les sessions publiées, pas le brouillon", async () => {
     const vus = await en(A, "select id from public.sessions order by id");
     const publiees = await db.query("select id from public.sessions where publie order by id");
     assert.ok(publiees.rows.length >= 1);
     assert.deepEqual(vus.rows, publiees.rows);
+    assert.ok(!vus.rows.some((l) => l.id === SESSION_BROUILLON));
   });
-  test("une séance non publiée est invisible", async () => {
-    await db.exec("insert into public.sessions (titre, debut, publie) values ('[test] Séance cachée', now(), false)");
-    const r = await en(A, "select titre from public.sessions where titre = '[test] Séance cachée'");
-    assert.equal(r.rows.length, 0);
+  test("B voit les mêmes sessions que A (une seule promotion)", async () => {
+    const a = await en(A, "select titre from public.sessions");
+    const b = await en(B, "select titre from public.sessions");
+    assert.deepEqual(titres(b), titres(a));
+  });
+  test("A lit le lien de visioconférence, les travaux et le matériel d'une session", async () => {
+    const r = await en(A, "select lien_visio, travaux_avant, travaux_apres, materiel from public.sessions where publie and lien_visio is not null limit 1");
+    assert.equal(r.rows.length, 1);
+    assert.match(r.rows[0].lien_visio, /^https:\/\//);
+  });
+  test("la base refuse un lien de visioconférence qui n'est pas en https", async () => {
+    await assert.rejects(db.exec("insert into public.sessions (titre, debut, lien_visio) values ('x', now(), 'javascript:alert(1)')"), /check constraint/i);
   });
 
-  test("A ne voit que les ressources et devoirs des cours publiés", async () => {
+  test("A ne voit que les documents publiés des sessions publiées", async () => {
     const res = await en(A, "select id from public.ressources order by id");
-    const dev = await en(A, "select id from public.devoirs order by id");
-    const resAttendues = await db.query("select r.id from public.ressources r join public.cours c on c.id = r.cours_id where r.publie and c.publie order by r.id");
-    const devAttendus = await db.query("select d.id from public.devoirs d join public.cours c on c.id = d.cours_id where d.publie and c.publie order by d.id");
-    assert.deepEqual(res.rows, resAttendues.rows);
-    assert.deepEqual(dev.rows, devAttendus.rows);
-    assert.ok(!dev.rows.some((l) => l.id === DEVOIR_BROUILLON));
+    const attendues = await db.query("select r.id from public.ressources r join public.sessions s on s.id = r.session_id where r.publie and s.publie order by r.id");
+    assert.ok(attendues.rows.length >= 1);
+    assert.deepEqual(res.rows, attendues.rows);
   });
   test("A ne voit que les témoignages validés", async () => {
     const r = await en(A, "select valide from public.temoignages");
     assert.ok(r.rows.length >= 1);
     assert.ok(r.rows.every((l) => l.valide === true));
   });
-  test("A ne peut rien écrire dans le contenu pédagogique", async () => {
-    await assert.rejects(en(A, "insert into public.cours (titre) values ('x')"), REFUS);
+  test("A ne peut rien écrire dans les sessions ni les documents", async () => {
+    await assert.rejects(en(A, "insert into public.sessions (titre, debut) values ('x', now())"), REFUS);
+    await assert.rejects(en(A, "insert into public.ressources (session_id, titre, type, url) values ('55555555-0000-4000-8000-000000000001', 'x', 'lien', 'https://x.fr')"), REFUS);
     // Modifier ou supprimer : la RLS ne lui laisse aucune ligne (rien ne change)
-    assert.equal((await en(A, "update public.devoirs set titre = 'x' returning id")).rows.length, 0);
+    assert.equal((await en(A, "update public.sessions set titre = 'x' returning id")).rows.length, 0);
     assert.equal((await en(A, "delete from public.sessions returning id")).rows.length, 0);
     assert.equal((await en(A, "update public.temoignages set valide = true returning id")).rows.length, 0);
-    const reste = await db.query("select count(*)::int as n from public.devoirs where titre = 'x'");
+    const reste = await db.query("select count(*)::int as n from public.sessions where titre = 'x'");
     assert.equal(reste.rows[0].n, 0);
+  });
+  test("cours, devoirs et rendus n'existent plus", async () => {
+    const r = await db.query("select table_name from information_schema.tables where table_schema = 'public' and table_name in ('cours', 'devoirs', 'rendus')");
+    assert.deepEqual(r.rows, []);
   });
 });
 
-describe("intervenants et messages de l'équipe", () => {
-  test("A voit une séance avec ses intervenants", async () => {
-    await db.exec("insert into public.sessions (titre, debut, intervenants) values ('Séance avec intervenants', now(), array['Intervenant finances', 'Pasteur'])");
-    const r = await en(A, "select intervenants from public.sessions where titre = 'Séance avec intervenants'");
-    assert.equal(r.rows.length, 1);
-    assert.deepEqual(r.rows[0].intervenants, ["Intervenant finances", "Pasteur"]);
-  });
+describe("messages de l'équipe", () => {
   test("A voit les messages publiés, pas les brouillons", async () => {
     const vus = await en(A, "select titre from public.annonces order by cree_le desc");
     const publies = await db.query("select titre from public.annonces where publie order by cree_le desc");
@@ -290,103 +270,14 @@ describe("intervenants et messages de l'équipe", () => {
   });
 });
 
-describe("rendus (devoirs déposés)", () => {
-  test("A voit son rendu du seed, B ne le voit pas", async () => {
-    assert.equal((await en(A, "select id from public.rendus")).rows.length, 1);
-    assert.equal((await en(B, "select id from public.rendus")).rows.length, 0);
-  });
-
-  test("A peut déposer un rendu pour un devoir publié", async () => {
-    const r = await en(A, `
-      insert into public.rendus (devoir_id, participant_id, fichier_path, nom_fichier)
-      values ('${DEVOIR_G1}', '${A}', '${A}/${DEVOIR_G1}/budget.pdf', 'budget.pdf') returning statut`);
-    assert.equal(r.rows[0].statut, "depose");
-  });
-
-  test("A ne peut pas déposer pour le devoir d'un cours non publié", async () => {
-    await assert.rejects(en(A, `
-      insert into public.rendus (devoir_id, participant_id, fichier_path)
-      values ('${DEVOIR_BROUILLON}', '${A}', '${A}/${DEVOIR_BROUILLON}/x.pdf')`), REFUS);
-  });
-
-  test("A ne peut pas déposer au nom de B", async () => {
-    await assert.rejects(en(A, `
-      insert into public.rendus (devoir_id, participant_id, fichier_path)
-      values ('${DEVOIR_G1}', '${B}', '${B}/${DEVOIR_G1}/x.pdf')`), REFUS);
-  });
-
-  test("A ne peut pas choisir le statut « corrigé »", async () => {
-    await assert.rejects(en(A, `update public.rendus set statut = 'corrige' where participant_id = '${A}'`), REFUS);
-    await assert.rejects(en(A, `
-      insert into public.rendus (devoir_id, participant_id, fichier_path, statut)
-      values ('dddddddd-0000-4000-8000-000000000002', '${A}', 'x', 'corrige')`), REFUS);
-  });
-
-  test("A peut remplacer son fichier, et la date de dépôt est mise à jour", async () => {
-    const avant = await db.query(`select depose_le from public.rendus where participant_id = '${A}' and devoir_id = '${DEVOIR_G1}'`);
-    await new Promise((ok) => setTimeout(ok, 20));
-    const r = await en(A, `
-      update public.rendus set fichier_path = '${A}/${DEVOIR_G1}/budget-v2.pdf', nom_fichier = 'budget-v2.pdf'
-      where devoir_id = '${DEVOIR_G1}' returning depose_le`);
-    assert.equal(r.rows.length, 1);
-    assert.ok(new Date(r.rows[0].depose_le) > new Date(avant.rows[0].depose_le));
-  });
-
-  test("A ne peut plus remplacer un rendu déjà corrigé", async () => {
-    await db.exec(`update public.rendus set statut = 'corrige' where participant_id = '${A}' and devoir_id = '${DEVOIR_G1}'`);
-    const r = await en(A, `update public.rendus set nom_fichier = 'trop-tard.pdf' where devoir_id = '${DEVOIR_G1}' returning id`);
-    assert.equal(r.rows.length, 0);
-  });
-
-  test("A ne peut pas supprimer de rendu", async () => {
-    await assert.rejects(en(A, "delete from public.rendus"), REFUS);
-  });
-});
-
 describe("stockage de fichiers", () => {
-  test("A peut envoyer un fichier dans son dossier, pour un devoir qu'il voit", async () => {
-    const r = await en(A, `
-      insert into storage.objects (bucket_id, name, owner)
-      values ('rendus', '${A}/${DEVOIR_G1}/nouveau.pdf', '${A}') returning name`);
-    assert.equal(r.rows.length, 1);
+  test("plus personne ne peut envoyer de fichier dans l'ancien seau des rendus", async () => {
+    await assert.rejects(en(A, `insert into storage.objects (bucket_id, name) values ('rendus', '${A}/x/x.pdf')`), REFUS);
   });
 
-  test("A ne peut plus remplacer le fichier d'un devoir corrigé", async () => {
-    // Le rendu du devoir 1 a été marqué « corrigé » plus haut
-    const r = await en(A, `update storage.objects set name = name where bucket_id = 'rendus' and name like '${A}/${DEVOIR_G1}/%' returning name`);
-    assert.equal(r.rows.length, 0);
-  });
-
-  test("A peut remplacer le fichier d'un devoir non corrigé", async () => {
-    const devoir2 = "dddddddd-0000-4000-8000-000000000002";
-    await en(A, `insert into storage.objects (bucket_id, name, owner) values ('rendus', '${A}/${devoir2}/depot', '${A}')`);
-    const r = await en(A, `update storage.objects set name = name where bucket_id = 'rendus' and name = '${A}/${devoir2}/depot' returning name`);
-    assert.equal(r.rows.length, 1);
-  });
-
-  test("A ne peut pas envoyer dans le dossier de B", async () => {
-    await assert.rejects(en(A, `
-      insert into storage.objects (bucket_id, name) values ('rendus', '${B}/${DEVOIR_G1}/x.pdf')`), REFUS);
-  });
-
-  test("A ne peut pas envoyer de fichier pour le devoir d'un cours non publié", async () => {
-    await assert.rejects(en(A, `
-      insert into storage.objects (bucket_id, name) values ('rendus', '${A}/${DEVOIR_BROUILLON}/x.pdf')`), REFUS);
-  });
-
-  test("A ne voit pas les fichiers rendus par B", async () => {
-    const r = await en(A, "select name from storage.objects where bucket_id = 'rendus'");
-    assert.ok(r.rows.every((l) => l.name.startsWith(`${A}/`)));
-  });
-
-  test("A ne lit que les fichiers de ressources des cours publiés", async () => {
+  test("A ne lit que les fichiers des documents des sessions publiées", async () => {
     const r = await en(A, "select name from storage.objects where bucket_id = 'ressources'");
     assert.deepEqual(r.rows.map((l) => l.name), ["test/guide-epargne.pdf"]);
-  });
-
-  test("A ne peut pas supprimer un fichier rendu", async () => {
-    const r = await en(A, "delete from storage.objects where bucket_id = 'rendus' returning name");
-    assert.equal(r.rows.length, 0);
   });
 
   test("A peut gérer sa photo dans son dossier, pas dans celui de B", async () => {
@@ -419,9 +310,7 @@ describe("administrateur", () => {
     await db.exec(`
       insert into auth.users (id, email, raw_user_meta_data)
       values ('${ADMIN}', 'admin@example.com', '{"prenom":"Adèle","nom":"Admin"}');
-      update public.profils set role = 'admin' where id = '${ADMIN}';
-      insert into public.rendus (devoir_id, participant_id, fichier_path)
-      values ('${DEVOIR_G1}', '${B}', '${B}/${DEVOIR_G1}/rendu-de-b.pdf');`);
+      update public.profils set role = 'admin' where id = '${ADMIN}';`);
   });
 
   test("« est_admin » répond vrai pour l'admin, faux pour un participant", async () => {
@@ -429,39 +318,33 @@ describe("administrateur", () => {
     assert.equal((await en(A, "select private.est_admin() as v")).rows[0].v, false);
   });
 
-  test("l'admin voit tout : profils, brouillons, rendus de chacun et contenus", async () => {
-    for (const table of ["profils", "cours", "sessions", "ressources", "devoirs", "rendus", "temoignages", "annonces"]) {
+  test("l'admin voit tout : profils, brouillons et contenus", async () => {
+    for (const table of TABLES) {
       assert.equal(await compter(ADMIN, table), await total(table), `l'admin doit tout voir dans « ${table} »`);
     }
   });
 
-  test("l'admin crée, modifie et supprime une séance, un cours, un devoir et un message", async () => {
-    const c = await en(ADMIN, `insert into public.cours (titre, publie) values ('[test] Cours admin', true) returning id`);
-    const cours = c.rows[0].id;
-    await en(ADMIN, `insert into public.sessions (cours_id, titre, debut) values ('${cours}', '[test] Séance admin', now()) returning id`);
-    await en(ADMIN, `insert into public.devoirs (cours_id, titre) values ('${cours}', '[test] Devoir admin')`);
-    await en(ADMIN, `insert into public.ressources (cours_id, titre, type, url) values ('${cours}', '[test] Lien admin', 'lien', 'https://example.com')`);
+  test("l'admin crée, modifie et supprime une session, un document et un message", async () => {
+    const s = await en(ADMIN, "insert into public.sessions (titre, debut, lien_visio) values ('[test] Session admin', now(), 'https://zoom.us/j/1') returning id");
+    const session = s.rows[0].id;
+    await en(ADMIN, `insert into public.ressources (session_id, titre, type, url) values ('${session}', '[test] Lien admin', 'lien', 'https://www.canva.com/')`);
     await en(ADMIN, "insert into public.annonces (titre, message) values ('[test] Message admin', 'Bonjour')");
     // Un participant voit le nouveau contenu publié
-    assert.equal((await en(A, "select id from public.sessions where titre = '[test] Séance admin'")).rows.length, 1);
+    assert.equal((await en(A, `select id from public.sessions where id = '${session}'`)).rows.length, 1);
+    assert.equal((await en(A, `select id from public.ressources where session_id = '${session}'`)).rows.length, 1);
     assert.equal((await en(A, "select id from public.annonces where titre = '[test] Message admin'")).rows.length, 1);
-    // Modification puis suppression
-    const m = await en(ADMIN, `update public.cours set titre = '[test] Cours admin modifié' where id = '${cours}' returning id`);
+    // Modification puis suppression (le document part avec la session)
+    const m = await en(ADMIN, `update public.sessions set travaux_avant = 'Lire le guide' where id = '${session}' returning id`);
     assert.equal(m.rows.length, 1);
     await en(ADMIN, "delete from public.annonces where titre = '[test] Message admin'");
-    const s = await en(ADMIN, `delete from public.cours where id = '${cours}' returning id`);
-    assert.equal(s.rows.length, 1);
+    const d = await en(ADMIN, `delete from public.sessions where id = '${session}' returning id`);
+    assert.equal(d.rows.length, 1);
+    assert.equal((await db.query(`select id from public.ressources where session_id = '${session}'`)).rows.length, 0);
   });
 
   test("l'admin valide un témoignage", async () => {
     const r = await en(ADMIN, "update public.temoignages set valide = true where not valide returning id");
     assert.ok(r.rows.length >= 1);
-  });
-
-  test("l'admin marque un rendu « corrigé », mais ne peut pas le supprimer", async () => {
-    const r = await en(ADMIN, `update public.rendus set statut = 'corrige' where participant_id = '${B}' returning statut`);
-    assert.deepEqual(r.rows.map((l) => l.statut), ["corrige"]);
-    await assert.rejects(en(ADMIN, "delete from public.rendus"), REFUS);
   });
 
   test("l'admin nomme un autre admin, puis lui retire le rôle", async () => {
@@ -485,7 +368,6 @@ describe("administrateur", () => {
 
   test("un participant ne voit toujours que ses propres données", async () => {
     assert.deepEqual((await en(A, "select id from public.profils")).rows.map((l) => l.id), [A]);
-    assert.ok((await en(A, "select participant_id from public.rendus")).rows.every((l) => l.participant_id === A));
   });
 
   test("stockage : l'admin gère les fichiers de ressources, un participant non", async () => {
@@ -494,13 +376,6 @@ describe("administrateur", () => {
     await assert.rejects(en(A, "insert into storage.objects (bucket_id, name) values ('ressources', 'pirate.pdf')"), REFUS);
     const s = await en(ADMIN, "delete from storage.objects where bucket_id = 'ressources' and name = 'admin/support.pdf' returning name");
     assert.equal(s.rows.length, 1);
-  });
-
-  test("stockage : l'admin lit les fichiers rendus sans pouvoir les supprimer ni les remplacer", async () => {
-    const r = await en(ADMIN, `select name from storage.objects where bucket_id = 'rendus' and name like '${B}/%'`);
-    assert.ok(r.rows.length >= 1);
-    assert.equal((await en(ADMIN, "delete from storage.objects where bucket_id = 'rendus' returning name")).rows.length, 0);
-    assert.equal((await en(ADMIN, "update storage.objects set name = name where bucket_id = 'rendus' returning name")).rows.length, 0);
   });
 
   test("stockage : un participant voit la photo d'un témoignage validé, jamais celle d'un témoignage non validé ni la photo d'un autre", async () => {

@@ -31,10 +31,10 @@ Feuille de route, schéma de base prévu et avancement : voir `PLAN.md` (le teni
 - **Inspiration d'un autre projet** : on peut reprendre la structure et le fonctionnement (ex. Ministry School), jamais sa charte graphique, ses icônes, ses logos ni ses textes.
 - Lint React : pas d'appel à `Date.now()` dans le rendu d'un composant ; les calculs qui dépendent de l'heure se font dans `src/lib/donnees/` après `await connection()`.
 
-## Charte graphique (issue de la maquette Canva, slide 1)
-- Couleurs : orange `#e95609`, rose `#d634ba`, rose clair `#ecb6e5`, noir `#070707`, texte `#333333`, fond `#e9e9e8`, cartes `#ededec`.
-- Polices : **Antonio** (titres, condensés, majuscules) et **Poppins** (texte), via `next/font`.
-- Éléments : logo MLK / Parcours / Finances avec trait de pinceau rose, boutons orange ou rose à coins légèrement arrondis, cartes gris clair, photos en noir et blanc.
+## Charte graphique (nouvelle charte : style épuré d'après l'image des responsables, novembre 2026)
+- Couleurs : bleu-violet `#6b78f5` (`accent`), bleu-violet clair `#dfe3fd`, noir `#0b0b10`, texte `#3b3d4f`, fond lavande `#eceefa`, cartes blanches. L'orange `#e95609` ne sert plus qu'aux alertes et à « à valider ».
+- Police : **Inter** pour tout le site (titres sans majuscules). **Antonio** ne sert plus qu'au logo.
+- Éléments : logo MLK / Parcours / Finances conservé tel quel (avec son trait de pinceau rose), boutons principaux noirs (`btn-principal`) ou bleu-violet (`btn-accent`) très arrondis, cartes blanches très arrondies, menu blanc.
 - Ne reprendre **ni style, ni icônes, ni logos, ni textes** d'un autre projet (notamment `Campus-MLK-Portail`). Un logo fourni sous forme de fichier est utilisé tel quel, jamais redessiné.
 - Mode sombre : réservé à l'espace connecté, via `data-theme="sombre"` sur le conteneur `#espace-connecte` (bouton lune / soleil en haut à droite, choix mémorisé sur l'appareil). Les surcharges sombres sont dans `@layer utilities` à la fin de `src/app/globals.css` ; toute nouvelle couleur doit y être vérifiée.
 - Page de référence visuelle : `/charte`. Ancien site HTML de référence : `archive/maquette-html/`.

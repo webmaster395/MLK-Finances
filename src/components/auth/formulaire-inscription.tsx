@@ -15,7 +15,7 @@ export function FormulaireInscription() {
     return (
       <div className="flex flex-col gap-4">
         <MessageFormulaire ok message={etat.message} />
-        <Link href="/connexion" className="btn btn-rose w-full">
+        <Link href="/connexion" className="btn btn-accent w-full">
           Aller à la connexion
         </Link>
       </div>
@@ -36,7 +36,7 @@ export function FormulaireInscription() {
                 value={code}
                 required
                 defaultChecked={etat.valeurs?.civilite === code}
-                className="size-5 accent-rose"
+                className="size-5 accent-accent"
               />
               {libelle}
             </label>
@@ -87,7 +87,7 @@ export function FormulaireInscription() {
         aide="8 caractères minimum, avec au moins une lettre et un chiffre."
       />
       <Champ id="confirmation" libelle="Confirmer le mot de passe" type="password" autoComplete="new-password" required />
-      <button type="submit" disabled={enCours} className="btn btn-orange w-full disabled:opacity-60">
+      <button type="submit" disabled={enCours} className="btn btn-principal w-full disabled:opacity-60">
         {enCours ? "Inscription…" : "Créer mon compte"}
       </button>
       <p className="text-center text-sm font-semibold">

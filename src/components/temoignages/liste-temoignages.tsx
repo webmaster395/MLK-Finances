@@ -23,7 +23,7 @@ function Bandeau({ nombre }: { nombre: number }) {
           <p className="mt-4 max-w-2xl text-sm leading-6 text-white/80 sm:text-base">
             Des retours sincères, publiés après relecture par l&apos;équipe. Vous aussi, partagez ce que le parcours vous apporte.
           </p>
-          <a href="#mon-temoignage" className="btn btn-orange mt-5 w-fit gap-2">
+          <a href="#mon-temoignage" className="btn btn-principal mt-5 w-fit gap-2">
             <PenLine aria-hidden className="size-4" />
             Partager mon témoignage
           </a>
@@ -59,7 +59,7 @@ export async function ListeTemoignages() {
             <li key={t.id} className="entree-cascade" style={{ "--i": Math.min(i, 12) } as React.CSSProperties}>
               <article className="carte-survol accueil-carte flex h-full flex-col justify-between gap-5 p-5 sm:p-6">
                 <div className="flex flex-col gap-4">
-                  <span aria-hidden className="flex size-12 items-center justify-center rounded-[0.6rem] bg-rose-clair text-noir">
+                  <span aria-hidden className="flex size-12 items-center justify-center rounded-[0.6rem] bg-accent-clair text-noir">
                     <Quote className="size-6" strokeWidth={1.75} />
                   </span>
                   <blockquote className="whitespace-pre-line text-sm font-semibold leading-relaxed text-noir sm:text-base [overflow-wrap:anywhere]">
@@ -72,7 +72,7 @@ export async function ListeTemoignages() {
                   ) : (
                     <span
                       aria-hidden
-                      className="flex size-10 shrink-0 items-center justify-center rounded-full bg-rose-clair text-xs font-semibold text-noir"
+                      className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent-clair text-xs font-semibold text-noir"
                     >
                       {initiales(t.nom_affiche)}
                     </span>

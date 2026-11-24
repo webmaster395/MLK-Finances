@@ -2,22 +2,19 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { BookOpen, CalendarX, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
-import { Intervenants } from "@/components/seances/intervenants";
+import { CalendarX, ChevronLeft, ChevronRight, ClipboardList, Video } from "lucide-react";
 import { couleursSeancesJour } from "@/components/seances/couleur-seance";
 import { formaterJourIso } from "@/lib/format";
 
-/** Une séance, prête à afficher (les heures sont déjà écrites à l'heure de Paris par le serveur). */
+/** Une session, prête à afficher (les heures sont déjà écrites à l'heure de Paris par le serveur). */
 export type SeanceCalendrier = {
   id: string;
   titre: string;
   /** Jour à Paris, « AAAA-MM-JJ » */
   jour: string;
   horaires: string;
-  lieu: string | null;
-  intervenants: string[];
-  coursTitre: string | null;
-  aPreparer: number;
+  /** Vrai s'il y a des travaux à faire avant la session */
+  aPreparer: boolean;
   passee: boolean;
 };
 
@@ -58,7 +55,7 @@ export function CalendrierMois({
 
   const seancesDuJour = parJour.get(choisi) ?? [];
   const couleursDuJour = couleursSeancesJour(
-    seancesDuJour.map((s) => ({ debut: s.horaires, avecCours: Boolean(s.coursTitre) })),
+    seancesDuJour.map((s) => ({ debut: s.horaires })),
   );
 
   function allerAuJour(jour: string) {
@@ -129,7 +126,7 @@ export function CalendrierMois({
                     const couleurs = [
                       ...new Set(
                         couleursSeancesJour(
-                          duJour.map((s) => ({ debut: s.horaires, avecCours: Boolean(s.coursTitre) })),
+                          duJour.map((s) => ({ debut: s.horaires })),
                         ),
                       ),
                     ].slice(0, 3);
@@ -142,12 +139,12 @@ export function CalendrierMois({
                           onClick={() => setChoisi(date)}
                           aria-pressed={estChoisi}
                           aria-current={estAujourdhui ? "date" : undefined}
-                          aria-label={`${formaterJourIso(date)}${duJour.length ? `, ${duJour.length} séance${duJour.length > 1 ? "s" : ""}` : ""}`}
+                          aria-label={`${formaterJourIso(date)}${duJour.length ? `, ${duJour.length} session${duJour.length > 1 ? "s" : ""}` : ""}`}
                           className="flex h-14 w-full flex-col items-center pt-1.5 hover:bg-black/5 sm:h-[4.75rem] sm:pt-3"
                         >
                           <span
                             className={`flex size-8 items-center justify-center rounded-full text-sm font-semibold text-noir ${
-                              estChoisi ? "bg-noir !text-carte" : estAujourdhui ? "ring-2 ring-rose" : ""
+                              estChoisi ? "bg-noir !text-carte" : estAujourdhui ? "ring-2 ring-accent" : ""
                             }`}
                           >
                             {jour}
@@ -168,14 +165,14 @@ export function CalendrierMois({
         </section>
 
         <section className="accueil-carte p-5 sm:p-6" aria-labelledby="titre-jour">
-          <p className="text-xs sm:text-sm">{choisi === aujourdhui ? "Aujourd'hui" : choisi === prochainJour ? "Prochaine journée" : "Journée"}</p>
+          <p className="text-xs sm:text-sm">{choisi === aujourdhui ? "Aujourd'hui" : choisi === prochainJour ? "Prochaine session" : "Journée"}</p>
           <h2 id="titre-jour" className="titre-charte mt-1 text-2xl !leading-tight first-letter:uppercase sm:text-3xl">
             {formaterJourIso(choisi, true)}
           </h2>
-          {seancesDuJour[0]?.lieu ? (
+          {seancesDuJour.length > 0 ? (
             <p className="mt-1 flex items-center gap-1.5 text-sm">
-              <MapPin aria-hidden className="size-4 shrink-0" />
-              {seancesDuJour[0].lieu}
+              <Video aria-hidden className="size-4 shrink-0" />
+              En visioconférence
             </p>
           ) : null}
 
@@ -196,20 +193,12 @@ export function CalendrierMois({
                       <span className="text-sm font-semibold text-noir">{s.horaires}</span>
                     </span>
                     <span className="text-base font-semibold leading-snug text-noir group-hover:underline [overflow-wrap:anywhere]">
-                      {s.coursTitre ?? s.titre}
+                      {s.titre}
                     </span>
-                    {s.coursTitre && s.titre !== s.coursTitre ? <span className="-mt-1 text-sm">{s.titre}</span> : null}
-                    <Intervenants noms={s.intervenants} />
-                    {s.lieu ? (
-                      <span className="flex items-center gap-1.5 text-sm">
-                        <MapPin aria-hidden className="size-4 shrink-0" />
-                        {s.lieu}
-                      </span>
-                    ) : null}
-                    {s.aPreparer > 0 ? (
-                      <span className="flex items-center gap-1.5 text-sm font-semibold text-[#b45309]">
-                        <BookOpen aria-hidden className="size-4 shrink-0" />
-                        {s.aPreparer} {s.aPreparer > 1 ? "travaux" : "travail"} à préparer
+                    {s.aPreparer && !s.passee ? (
+                      <span className="flex items-center gap-1.5 text-sm font-semibold text-accent">
+                        <ClipboardList aria-hidden className="size-4 shrink-0" />
+                        Travail à faire avant la session
                       </span>
                     ) : null}
                   </Link>
@@ -220,15 +209,15 @@ export function CalendrierMois({
             <div className="flex flex-col items-start gap-3 py-2">
               <p className="flex items-center gap-2 font-semibold">
                 <CalendarX aria-hidden className="size-5 shrink-0" />
-                Aucune séance ce jour-là.
+                Aucune session ce jour-là.
               </p>
               {prochainJour && prochainJour !== choisi ? (
                 <button
                   type="button"
                   onClick={() => allerAuJour(prochainJour)}
-                  className="btn btn-orange min-h-10 px-4 text-sm"
+                  className="btn btn-principal min-h-10 px-4 text-sm"
                 >
-                  Voir la prochaine journée
+                  Voir la prochaine session
                 </button>
               ) : null}
             </div>

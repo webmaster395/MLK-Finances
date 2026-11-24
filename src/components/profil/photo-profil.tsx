@@ -67,7 +67,7 @@ export function PhotoProfil({
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap gap-2">
           <label
-            className={`btn btn-rose min-h-10 cursor-pointer gap-2 px-4 text-sm ${occupe ? "pointer-events-none opacity-60" : ""}`}
+            className={`btn btn-accent min-h-10 cursor-pointer gap-2 px-4 text-sm ${occupe ? "pointer-events-none opacity-60" : ""}`}
           >
             <Camera aria-hidden className="size-4" />
             {occupe ? "Envoi en cours…" : photoUrl ? "Changer ma photo" : "Ajouter une photo"}

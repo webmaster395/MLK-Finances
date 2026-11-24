@@ -60,7 +60,7 @@ export function isoVersParis(iso: string) {
 }
 
 // ---------------------------------------------------------------
-// Séances
+// Sessions (cours et séances fusionnés)
 // ---------------------------------------------------------------
 
 export type SaisieSeance = {
@@ -68,10 +68,12 @@ export type SaisieSeance = {
   date: string;
   heureDebut: string;
   heureFin: string;
-  lieu: string;
+  lienVisio: string;
   description: string;
-  coursId: string;
-  intervenants: string;
+  objectifs: string;
+  travauxAvant: string;
+  travauxApres: string;
+  materiel: string;
   publie: boolean;
 };
 
@@ -79,59 +81,12 @@ export type Seance = {
   titre: string;
   debut: string;
   fin: string | null;
-  lieu: string | null;
-  description: string;
-  cours_id: string | null;
-  intervenants: string[];
-  publie: boolean;
-};
-
-/** Intervenants saisis un par ligne (ou séparés par des virgules). */
-export function lireIntervenants(texte: string): string[] {
-  return texte
-    .split(/[\n,]/)
-    .map((n) => n.trim())
-    .filter(Boolean);
-}
-
-export function validerSeance(s: SaisieSeance): { seance: Seance } | { message: string } {
-  const titre = s.titre.trim();
-  if (titre.length === 0 || titre.length > 200) return { message: "Donnez un titre à la séance (200 caractères au maximum)." };
-  if (!estDate(s.date)) return { message: "Indiquez la date de la séance." };
-  if (!estHeure(s.heureDebut)) return { message: "Indiquez l'heure de début." };
-  if (s.heureFin && !estHeure(s.heureFin)) return { message: "L'heure de fin n'est pas valide." };
-  if (s.heureFin && s.heureFin < s.heureDebut) return { message: "L'heure de fin doit être après l'heure de début." };
-  if (s.coursId && !estUuid(s.coursId)) return { message: "Cours non valide." };
-  if (s.description.length > 5000) return { message: "La description est trop longue (5 000 caractères au maximum)." };
-  const intervenants = lireIntervenants(s.intervenants);
-  if (intervenants.length > 10) return { message: "10 intervenants au maximum." };
-  if (intervenants.some((n) => n.length > 100)) return { message: "Un nom d'intervenant est trop long (100 caractères au maximum)." };
-  const lieu = s.lieu.trim();
-  if (lieu.length > 200) return { message: "Le lieu est trop long (200 caractères au maximum)." };
-
-  return {
-    seance: {
-      titre,
-      debut: parisVersIso(s.date, s.heureDebut),
-      fin: s.heureFin ? parisVersIso(s.date, s.heureFin) : null,
-      lieu: lieu || null,
-      description: s.description.trim(),
-      cours_id: s.coursId || null,
-      intervenants,
-      publie: s.publie,
-    },
-  };
-}
-
-// ---------------------------------------------------------------
-// Cours et supports
-// ---------------------------------------------------------------
-
-export type Cours = {
-  titre: string;
+  lien_visio: string | null;
   description: string;
   objectifs: string[];
-  ordre: number;
+  travaux_avant: string;
+  travaux_apres: string;
+  materiel: string;
   publie: boolean;
 };
 
@@ -143,29 +98,65 @@ export function lireObjectifs(texte: string): string[] {
     .filter(Boolean);
 }
 
-export function validerCours(s: {
-  titre: string;
-  description: string;
-  objectifs: string;
-  ordre: string;
-  publie: boolean;
-}): { cours: Cours } | { message: string } {
+/** Adresse web complète en https (lien de visioconférence ou document). */
+function estLienHttps(url: string) {
+  if (url.length > 2000 || !/^https:\/\//i.test(url)) return false;
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function validerSeance(s: SaisieSeance): { seance: Seance } | { message: string } {
   const titre = s.titre.trim();
-  if (titre.length === 0 || titre.length > 200) return { message: "Donnez un titre au cours (200 caractères au maximum)." };
+  if (titre.length === 0 || titre.length > 200) return { message: "Donnez un titre à la session (200 caractères au maximum)." };
+  if (!estDate(s.date)) return { message: "Indiquez la date de la session." };
+  if (!estHeure(s.heureDebut)) return { message: "Indiquez l'heure de début." };
+  if (s.heureFin && !estHeure(s.heureFin)) return { message: "L'heure de fin n'est pas valide." };
+  if (s.heureFin && s.heureFin < s.heureDebut) return { message: "L'heure de fin doit être après l'heure de début." };
+  const lienVisio = s.lienVisio.trim();
+  if (lienVisio && !estLienHttps(lienVisio)) {
+    return { message: "Le lien de visioconférence doit être une adresse complète, qui commence par https://" };
+  }
   if (s.description.length > 5000) return { message: "La description est trop longue (5 000 caractères au maximum)." };
   const objectifs = lireObjectifs(s.objectifs);
   if (objectifs.length > 20) return { message: "20 objectifs au maximum." };
   if (objectifs.some((o) => o.length > 300)) return { message: "Un objectif est trop long (300 caractères au maximum)." };
-  const ordre = s.ordre.trim() === "" ? 0 : Number(s.ordre);
-  if (!Number.isInteger(ordre) || ordre < 0 || ordre > 999) return { message: "L'ordre doit être un nombre entier entre 0 et 999." };
-  return { cours: { titre, description: s.description.trim(), objectifs, ordre, publie: s.publie } };
+  for (const [texte, nom] of [
+    [s.travauxAvant, "Les travaux avant la session"],
+    [s.travauxApres, "Les travaux après la session"],
+    [s.materiel, "Le matériel à prévoir"],
+  ] as const) {
+    if (texte.trim().length > 5000) return { message: `${nom} : texte trop long (5 000 caractères au maximum).` };
+  }
+
+  return {
+    seance: {
+      titre,
+      debut: parisVersIso(s.date, s.heureDebut),
+      fin: s.heureFin ? parisVersIso(s.date, s.heureFin) : null,
+      lien_visio: lienVisio || null,
+      description: s.description.trim(),
+      objectifs,
+      travaux_avant: s.travauxAvant.trim(),
+      travaux_apres: s.travauxApres.trim(),
+      materiel: s.materiel.trim(),
+      publie: s.publie,
+    },
+  };
 }
 
-/** Lien d'un support : titre et adresse web complète (http ou https). */
+// ---------------------------------------------------------------
+// Documents d'une session (PDF ou lien, par exemple Canva)
+// ---------------------------------------------------------------
+
+/** Lien d'un document : titre et adresse web complète (http ou https). */
 export function validerLien(s: { titre: string; url: string }): { titre: string; url: string } | { message: string } {
   const titre = s.titre.trim();
   const url = s.url.trim();
-  if (titre.length === 0 || titre.length > 200) return { message: "Donnez un titre au support (200 caractères au maximum)." };
+  if (titre.length === 0 || titre.length > 200) return { message: "Donnez un titre au document (200 caractères au maximum)." };
   if (url.length > 2000 || !/^https?:\/\//i.test(url)) return { message: "Saisissez une adresse complète, qui commence par https://" };
   try {
     new URL(url);
@@ -175,14 +166,19 @@ export function validerLien(s: { titre: string; url: string }): { titre: string;
   return { titre, url };
 }
 
-/** Taille maximale d'un fichier de support (limite du seau « ressources »). */
+/** Taille maximale d'un document (limite du seau « ressources »). */
 export const SUPPORT_TAILLE_MAX_OCTETS = 50 * 1024 * 1024;
+
+/** Les documents envoyés sont des PDF. */
+export function estPdf(f: { name: string; type: string }) {
+  return f.type === "application/pdf" || /\.pdf$/i.test(f.name);
+}
 
 /** Nom de fichier sans accents ni caractères spéciaux, gardé lisible pour le téléchargement. */
 export function nomFichierSur(nom: string): string {
   const propre = nom
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^A-Za-z0-9._-]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^[-.]+|-+$/g, "")
@@ -190,54 +186,21 @@ export function nomFichierSur(nom: string): string {
   return propre || "fichier";
 }
 
-/** Chemin d'un support dans le stockage : cours/{cours}/{identifiant unique}/{nom du fichier}. */
-export function cheminSupport(coursId: string, identifiant: string, nomFichier: string) {
-  return `cours/${coursId}/${identifiant}/${nomFichierSur(nomFichier)}`;
+/** Chemin d'un document dans le stockage : sessions/{session}/{identifiant unique}/{nom du fichier}. */
+export function cheminSupport(sessionId: string, identifiant: string, nomFichier: string) {
+  return `sessions/${sessionId}/${identifiant}/${nomFichierSur(nomFichier)}`;
 }
 
-/** Vérifie qu'un chemin a bien été préparé pour CE cours (jamais un chemin libre envoyé par le navigateur). */
-export function estCheminSupport(chemin: string, coursId: string) {
+/** Vérifie qu'un chemin a bien été préparé pour CETTE session (jamais un chemin libre envoyé par le navigateur). */
+export function estCheminSupport(chemin: string, sessionId: string) {
   const parties = chemin.split("/");
   return (
     parties.length === 4 &&
-    parties[0] === "cours" &&
-    parties[1] === coursId &&
+    parties[0] === "sessions" &&
+    parties[1] === sessionId &&
     estUuid(parties[2]) &&
     parties[3] === nomFichierSur(parties[3])
   );
-}
-
-// ---------------------------------------------------------------
-// Devoirs
-// ---------------------------------------------------------------
-
-export type Devoir = { cours_id: string; titre: string; consigne: string; echeance: string | null; publie: boolean };
-
-/** Devoir saisi : échéance facultative ; sans heure, elle tombe à 23:59 (heure de Paris). */
-export function validerDevoir(s: {
-  coursId: string;
-  titre: string;
-  consigne: string;
-  date: string;
-  heure: string;
-  publie: boolean;
-}): { devoir: Devoir } | { message: string } {
-  const titre = s.titre.trim();
-  if (!estUuid(s.coursId)) return { message: "Choisissez le cours du devoir." };
-  if (titre.length === 0 || titre.length > 200) return { message: "Donnez un titre au devoir (200 caractères au maximum)." };
-  if (s.consigne.length > 5000) return { message: "La consigne est trop longue (5 000 caractères au maximum)." };
-  if (s.date && !estDate(s.date)) return { message: "La date d'échéance n'est pas valide." };
-  if (s.heure && !estHeure(s.heure)) return { message: "L'heure d'échéance n'est pas valide." };
-  if (s.heure && !s.date) return { message: "Indiquez aussi la date d'échéance." };
-  return {
-    devoir: {
-      cours_id: s.coursId,
-      titre,
-      consigne: s.consigne.trim(),
-      echeance: s.date ? parisVersIso(s.date, s.heure || "23:59") : null,
-      publie: s.publie,
-    },
-  };
 }
 
 // ---------------------------------------------------------------

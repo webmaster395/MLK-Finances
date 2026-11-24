@@ -1,10 +1,12 @@
 import { Suspense } from "react";
-import { EnTeteAdmin, EnTeteAdminSquelette, MenuAdmin } from "@/components/admin/coquille-admin";
+import { EnTeteAdmin, EnTeteAdminSquelette } from "@/components/admin/coquille-admin";
 import { InitialiserTheme, SCRIPT_THEME } from "@/components/coquille/bascule-theme";
 import { MenuSquelette } from "@/components/coquille/menu-lateral";
+import { MenuParticipant } from "@/components/coquille/menu-participant";
 
 /**
- * Coquille de l'espace administrateur : même structure que l'espace participant (menu + bande du haut).
+ * Coquille de l'espace administrateur : exactement la vue des participants (même menu à gauche),
+ * avec en haut à droite une liste déroulante pour les pages d'administration.
  * Réservé au rôle « admin » : le proxy filtre, chaque composant appelle exigerAdmin(), et la base applique la RLS.
  */
 export default function Layout({ children }: LayoutProps<"/">) {
@@ -19,7 +21,7 @@ export default function Layout({ children }: LayoutProps<"/">) {
         Aller au contenu
       </a>
       <Suspense fallback={<MenuSquelette />}>
-        <MenuAdmin />
+        <MenuParticipant />
       </Suspense>
       <div className="flex min-w-0 flex-1 flex-col">
         <Suspense fallback={<EnTeteAdminSquelette />}>

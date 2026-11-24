@@ -39,75 +39,6 @@ export type Database = {
         Relationships: [
         ]
       }
-      cours: {
-        Row: {
-          cree_le: string
-          description: string
-          id: string
-          objectifs: string[]
-          ordre: number
-          publie: boolean
-          titre: string
-        }
-        Insert: {
-          cree_le?: string
-          description?: string
-          id?: string
-          objectifs?: string[]
-          ordre?: number
-          publie?: boolean
-          titre: string
-        }
-        Update: {
-          cree_le?: string
-          description?: string
-          id?: string
-          objectifs?: string[]
-          ordre?: number
-          publie?: boolean
-          titre?: string
-        }
-        Relationships: [
-        ]
-      }
-      devoirs: {
-        Row: {
-          consigne: string
-          cours_id: string
-          cree_le: string
-          echeance: string | null
-          id: string
-          publie: boolean
-          titre: string
-        }
-        Insert: {
-          consigne?: string
-          cours_id: string
-          cree_le?: string
-          echeance?: string | null
-          id?: string
-          publie?: boolean
-          titre: string
-        }
-        Update: {
-          consigne?: string
-          cours_id?: string
-          cree_le?: string
-          echeance?: string | null
-          id?: string
-          publie?: boolean
-          titre?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "devoirs_cours_id_fkey"
-            columns: ["cours_id"]
-            isOneToOne: false
-            referencedRelation: "cours"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profils: {
         Row: {
           civilite: string | null
@@ -144,77 +75,32 @@ export type Database = {
         }
         Relationships: []
       }
-      rendus: {
-        Row: {
-          depose_le: string
-          devoir_id: string
-          fichier_path: string
-          id: string
-          nom_fichier: string | null
-          participant_id: string
-          statut: Database["public"]["Enums"]["statut_rendu"]
-        }
-        Insert: {
-          depose_le?: string
-          devoir_id: string
-          fichier_path: string
-          id?: string
-          nom_fichier?: string | null
-          participant_id: string
-          statut?: Database["public"]["Enums"]["statut_rendu"]
-        }
-        Update: {
-          depose_le?: string
-          devoir_id?: string
-          fichier_path?: string
-          id?: string
-          nom_fichier?: string | null
-          participant_id?: string
-          statut?: Database["public"]["Enums"]["statut_rendu"]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "rendus_devoir_id_fkey"
-            columns: ["devoir_id"]
-            isOneToOne: false
-            referencedRelation: "devoirs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "rendus_participant_id_fkey"
-            columns: ["participant_id"]
-            isOneToOne: false
-            referencedRelation: "profils"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       ressources: {
         Row: {
-          cours_id: string
           cree_le: string
           id: string
           publie: boolean
+          session_id: string
           storage_path: string | null
           titre: string
           type: string
           url: string | null
         }
         Insert: {
-          cours_id: string
           cree_le?: string
           id?: string
           publie?: boolean
+          session_id: string
           storage_path?: string | null
           titre: string
           type: string
           url?: string | null
         }
         Update: {
-          cours_id?: string
           cree_le?: string
           id?: string
           publie?: boolean
+          session_id?: string
           storage_path?: string | null
           titre?: string
           type?: string
@@ -222,60 +108,58 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "ressources_cours_id_fkey"
-            columns: ["cours_id"]
+            foreignKeyName: "ressources_session_id_fkey"
+            columns: ["session_id"]
             isOneToOne: false
-            referencedRelation: "cours"
+            referencedRelation: "sessions"
             referencedColumns: ["id"]
           },
         ]
       }
       sessions: {
         Row: {
-          cours_id: string | null
           cree_le: string
           debut: string
           description: string
           fin: string | null
           id: string
-          intervenants: string[]
-          lieu: string | null
+          lien_visio: string | null
+          materiel: string
+          objectifs: string[]
           publie: boolean
           titre: string
+          travaux_apres: string
+          travaux_avant: string
         }
         Insert: {
-          cours_id?: string | null
           cree_le?: string
           debut: string
           description?: string
           fin?: string | null
           id?: string
-          intervenants?: string[]
-          lieu?: string | null
+          lien_visio?: string | null
+          materiel?: string
+          objectifs?: string[]
           publie?: boolean
           titre: string
+          travaux_apres?: string
+          travaux_avant?: string
         }
         Update: {
-          cours_id?: string | null
           cree_le?: string
           debut?: string
           description?: string
           fin?: string | null
           id?: string
-          intervenants?: string[]
-          lieu?: string | null
+          lien_visio?: string | null
+          materiel?: string
+          objectifs?: string[]
           publie?: boolean
           titre?: string
+          travaux_apres?: string
+          travaux_avant?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "sessions_cours_id_fkey"
-            columns: ["cours_id"]
-            isOneToOne: false
-            referencedRelation: "cours"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       temoignages: {
         Row: {
@@ -324,7 +208,6 @@ export type Database = {
     }
     Enums: {
       role_profil: "participant" | "admin"
-      statut_rendu: "depose" | "corrige"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -453,7 +336,6 @@ export const Constants = {
   public: {
     Enums: {
       role_profil: ["participant", "admin"],
-      statut_rendu: ["depose", "corrige"],
     },
   },
 } as const

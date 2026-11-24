@@ -26,7 +26,7 @@ async function Contenu() {
     return (
       <CarteAuth titre="Lien expiré" sousTitre="Ce lien n'est plus valable">
         <p className="mb-4 font-semibold">Demandez un nouveau lien pour choisir votre mot de passe.</p>
-        <Link href="/mot-de-passe-oublie" className="btn btn-orange w-full">
+        <Link href="/mot-de-passe-oublie" className="btn btn-principal w-full">
           Demander un nouveau lien
         </Link>
       </CarteAuth>

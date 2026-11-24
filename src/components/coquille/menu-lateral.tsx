@@ -8,7 +8,7 @@ import { Logo } from "@/components/logo";
 import { Avatar } from "@/components/profil/avatar";
 import { deconnexion } from "@/lib/auth/actions";
 import type { Annonce } from "@/lib/donnees/annonces";
-import { GROUPES_MENU, GROUPES_MENU_ADMIN, PAGE_ADMINISTRATION, PAGE_PROFIL } from "@/lib/navigation";
+import { GROUPES_MENU, PAGE_ADMINISTRATION, PAGE_PROFIL } from "@/lib/navigation";
 import { BasculeTheme } from "./bascule-theme";
 import { BoutonMessages } from "./bouton-messages";
 
@@ -21,14 +21,12 @@ export type PersonneMenu = {
 
 type Props = {
   personne: PersonneMenu;
-  /** Pages qui affichent une pastille rouge (ex. devoirs à rendre). Vide pour l'instant. */
+  /** Pages qui affichent une pastille rouge (ex. nouveauté). Vide pour l'instant. */
   pastilles?: Record<string, boolean>;
   /** Libellé de la promotion (ex. « Promotion 2026–2027 ») affiché sur la barre du haut mobile. */
   promotion?: string | null;
   /** Messages publiés de l'équipe (affichés via l'icône mégaphone). */
   messages?: Annonce[];
-  /** Espace affiché : le menu participant ou le menu administrateur. */
-  espace?: "participant" | "admin";
   /** Dans l'espace participant : ajoute le lien « Administration » (personne admin). */
   estAdmin?: boolean;
 };
@@ -79,13 +77,11 @@ export function MenuLateral({
   pastilles = {},
   promotion = null,
   messages = [],
-  espace = "participant",
   estAdmin = false,
 }: Props) {
   const chemin = usePathname();
-  const enAdmin = espace === "admin";
-  const accueil = enAdmin ? "/admin" : "/accueil";
-  const groupesMenu = enAdmin ? GROUPES_MENU_ADMIN : estAdmin ? [...GROUPES_MENU, [PAGE_ADMINISTRATION]] : GROUPES_MENU;
+  const accueil = "/accueil";
+  const groupesMenu = estAdmin ? [...GROUPES_MENU, [PAGE_ADMINISTRATION]] : GROUPES_MENU;
   // Côté serveur et au premier affichage : déplié ; ensuite on applique le choix mémorisé
   const replie = useSyncExternalStore(abonnerReplie, lireReplie, () => false);
   const [ouvert, setOuvert] = useState(false); // menu du téléphone
@@ -118,8 +114,7 @@ export function MenuLateral({
   }, [ouvert]);
 
   // Le tableau de bord (/admin) n'est actif que sur sa propre page, pas sur les pages /admin/…
-  const sur = (href: string) =>
-    chemin === href || (!(enAdmin && href === "/admin") && chemin.startsWith(`${href}/`));
+  const sur = (href: string) => chemin === href || chemin.startsWith(`${href}/`);
 
   const groupes = (afficherNoms: boolean, apresClic?: () => void) => (
     <>
@@ -137,7 +132,7 @@ export function MenuLateral({
                     aria-current={actif ? "page" : undefined}
                     title={afficherNoms ? undefined : nom}
                     className={`relative flex min-h-10 items-center gap-3 rounded-[0.6rem] px-3 text-sm font-semibold tracking-tight text-texte transition-colors hover:bg-black/5 md:min-h-11 md:text-[1.02rem] ${
-                      actif ? "bg-black/10 shadow-sm" : ""
+                      actif ? "bg-accent/15" : ""
                     } ${afficherNoms ? "" : "justify-center"}`}
                   >
                     <span className="relative">
@@ -145,7 +140,7 @@ export function MenuLateral({
                       {pastilles[href] ? (
                         <span
                           aria-hidden
-                          className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-[#d62d2d] ring-2 ring-[#f1efec]"
+                          className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-[#d62d2d] ring-2 ring-white"
                         />
                       ) : null}
                     </span>
@@ -169,7 +164,7 @@ export function MenuLateral({
     <>
       {/* Ordinateur */}
       <aside
-        className={`sticky top-0 hidden h-screen shrink-0 flex-col menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-top transition-[width] duration-200 md:flex ${
+        className={`sticky top-0 hidden h-screen shrink-0 flex-col menu-fond transition-[width] duration-200 md:flex ${
           replie ? "w-[4.75rem]" : "w-64"
         }`}
       >
@@ -204,7 +199,7 @@ export function MenuLateral({
             aria-label={`Mon profil (${personne.nomComplet})`}
             title={replie ? `Mon profil — ${personne.nomComplet}` : undefined}
             className={`flex min-w-0 flex-1 items-center gap-3 rounded-[0.6rem] p-1.5 text-left hover:bg-black/5 ${
-              sur(PAGE_PROFIL.href) ? "bg-black/10" : ""
+              sur(PAGE_PROFIL.href) ? "bg-accent/15" : ""
             } ${replie ? "w-full justify-center" : ""}`}
           >
             {avatar}
@@ -226,17 +221,17 @@ export function MenuLateral({
       </aside>
 
       {/* Téléphone : logo, messages et bouton menu seulement (la promotion est dans le tiroir) */}
-      <div className="sticky top-0 z-30 flex items-center justify-between gap-3 menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-center px-4 py-2 shadow-md md:hidden">
+      <div className="sticky top-0 z-30 flex items-center justify-between gap-3 menu-fond px-4 py-2 shadow-md md:hidden">
         <Logo lien={accueil} compact />
         <div className="flex shrink-0 items-center gap-2">
-          {enAdmin ? null : <BoutonMessages messages={messages} />}
+          <BoutonMessages messages={messages} />
           <BasculeTheme />
           <button
             type="button"
             onClick={() => setOuvert(true)}
             aria-label="Ouvrir le menu"
             aria-expanded={ouvert}
-            className="flex size-11 touch-manipulation items-center justify-center rounded-[0.6rem] bg-rose-clair text-noir"
+            className="flex size-11 touch-manipulation items-center justify-center rounded-[0.6rem] bg-accent-clair text-noir"
           >
             <Menu aria-hidden className="size-6" />
           </button>
@@ -251,7 +246,7 @@ export function MenuLateral({
             onClick={() => setOuvert(false)}
             className="absolute inset-0 bg-noir/50"
           />
-          <div className="relative flex h-full w-[80%] max-w-80 flex-col menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-top shadow-2xl">
+          <div className="relative flex h-full w-[80%] max-w-80 flex-col menu-fond shadow-2xl">
             <div className="flex items-start justify-between p-3.5">
               <div className="flex min-w-0 flex-col items-start gap-2">
                 <Logo lien={accueil} />
@@ -265,7 +260,7 @@ export function MenuLateral({
                 type="button"
                 onClick={() => setOuvert(false)}
                 aria-label="Fermer le menu"
-                className="flex size-11 shrink-0 touch-manipulation items-center justify-center rounded-[0.6rem] bg-rose-clair text-noir"
+                className="flex size-11 shrink-0 touch-manipulation items-center justify-center rounded-[0.6rem] bg-accent-clair text-noir"
               >
                 <X aria-hidden className="size-6" />
               </button>
@@ -279,7 +274,7 @@ export function MenuLateral({
                 onClick={() => setOuvert(false)}
                 aria-current={sur(PAGE_PROFIL.href) ? "page" : undefined}
                 className={`flex min-w-0 flex-1 items-center gap-3 rounded-[0.6rem] p-1.5 hover:bg-black/5 ${
-                  sur(PAGE_PROFIL.href) ? "bg-black/10" : ""
+                  sur(PAGE_PROFIL.href) ? "bg-accent/15" : ""
                 }`}
               >
                 {avatar}
@@ -307,8 +302,8 @@ export function MenuLateral({
 export function MenuSquelette() {
   return (
     <>
-      <aside className="hidden h-screen w-64 shrink-0 menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-top md:block" />
-      <div className="h-[3.75rem] menu-fond bg-[#f4f2ef] bg-[url('/images/sidebar.webp')] bg-cover bg-center md:hidden" />
+      <aside className="hidden h-screen w-64 shrink-0 menu-fond md:block" />
+      <div className="h-[3.75rem] menu-fond md:hidden" />
     </>
   );
 }

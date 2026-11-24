@@ -55,7 +55,7 @@ export function EnvoiPhotoTemoignage({ temoignageId, remplacement }: { temoignag
         type="file"
         accept="image/jpeg,image/png,image/webp"
         disabled={enCours}
-        className="w-full rounded-md border border-black/25 bg-white p-2 text-sm font-semibold text-noir file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-rose-clair file:px-4 file:py-2 file:font-semibold file:text-noir"
+        className="w-full rounded-md border border-black/25 bg-white p-2 text-sm font-semibold text-noir file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-accent-clair file:px-4 file:py-2 file:font-semibold file:text-noir"
       />
       <p className="text-xs">JPG, PNG ou WebP, 2 Mo maximum.</p>
       <button type="submit" disabled={enCours} className="inline-flex min-h-10 w-fit items-center gap-2 rounded-[0.6rem] border border-black/25 px-4 text-sm font-semibold text-noir hover:bg-black/5 disabled:opacity-60">

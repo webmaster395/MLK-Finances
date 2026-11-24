@@ -36,7 +36,7 @@ export function MessageFormulaire({ ok, message }: { ok?: boolean; message?: str
     <p
       role={ok ? "status" : "alert"}
       className={`rounded-md px-3 py-2 text-sm font-semibold ${
-        ok ? "bg-rose-clair text-noir" : "bg-orange/15 text-[#8f3306]"
+        ok ? "bg-accent-clair text-noir" : "bg-orange/15 text-[#8f3306]"
       }`}
     >
       {message}
