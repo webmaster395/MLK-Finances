@@ -17,9 +17,9 @@
   --color-doux: #565a73; /* texte secondaire lisible (jamais de gris pâle pour du texte) */
   --color-fond: #eceefa;
   --color-carte: #ffffff;
-  --font-logo: var(--font-antonio), "Arial Narrow", sans-serif; /* réservé au logo */
-  --font-titre: var(--font-inter), system-ui, Arial, sans-serif;
-  --font-corps: var(--font-inter), system-ui, Arial, sans-serif;
+  --font-logo: var(--font-antonio), "Arial Narrow", sans-serif;
+  --font-titre: var(--font-antonio), "Arial Narrow", sans-serif; /* titres condensés (police d'origine) */
+  --font-corps: var(--font-poppins), Arial, sans-serif;
 }
 
 @layer base {
@@ -42,12 +42,12 @@
 }
 
 @layer components {
-  /* Titres : police simple, gras moyen, sans majuscules */
+  /* Titres condensés en majuscules (police d'origine) */
   .titre-charte {
     font-family: var(--font-titre);
-    font-weight: 650;
-    letter-spacing: -0.025em;
-    line-height: 1.12;
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 0.95;
     color: var(--color-noir);
   }
 

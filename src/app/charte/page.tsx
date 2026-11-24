@@ -36,9 +36,9 @@ export default function Page() {
       <section className="carte">
         <h2 className="titre-charte mb-4 text-3xl">Typographie</h2>
         <p className="titre-charte text-4xl sm:text-5xl">Bienvenue dans votre parcours</p>
-        <p className="mt-3 text-2xl font-semibold tracking-tight text-doux">MLK Parcours Finances</p>
+        <p className="mt-3 font-titre text-3xl font-medium tracking-wide text-doux">MLK Parcours Finances</p>
         <p className="mt-3 font-medium">
-          Texte courant en Inter : les informations de la prochaine session seront bientôt disponibles.
+          Texte courant en Poppins : les informations de la prochaine session seront bientôt disponibles.
         </p>
       </section>
 

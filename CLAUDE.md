@@ -33,7 +33,7 @@ Feuille de route, schéma de base prévu et avancement : voir `PLAN.md` (le teni
 
 ## Charte graphique (nouvelle charte : style épuré d'après l'image des responsables, novembre 2026)
 - Couleurs : bleu-violet `#4953d6` (`accent`, assez foncé pour du texte blanc ; `#6b78f5` en mode sombre), bleu-violet clair `#dfe3fd`, noir `#0b0b10`, texte `#3b3d4f`, fond lavande `#eceefa`, cartes blanches. L'orange `#e95609` ne sert plus qu'aux alertes et à « à valider ».
-- Police : **Inter** pour tout le site (titres sans majuscules). **Antonio** ne sert plus qu'au logo.
+- Polices (retour à l'ancien choix de l'utilisateur) : **Antonio** (titres, condensés, majuscules) et **Poppins** (texte), via `next/font`.
 - Lisibilité (demande de l'utilisateur) : le gris ne sert que de fond, jamais de texte pâle ; texte secondaire = `text-doux`. Tout nouveau texte doit rester lisible en mode clair ET sombre.
 - Éléments : logo MLK / Parcours / Finances sans trait de pinceau rose (un nouveau logo sera fourni par l'équipe), boutons principaux noirs (`btn-principal`) ou bleu-violet (`btn-accent`) très arrondis, cartes blanches très arrondies, menu blanc.
 - Ne reprendre **ni style, ni icônes, ni logos, ni textes** d'un autre projet (notamment `Campus-MLK-Portail`). Un logo fourni sous forme de fichier est utilisé tel quel, jamais redessiné.
