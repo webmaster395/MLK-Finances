@@ -248,3 +248,12 @@ export function verifierPhotoTemoignage(f: { size: number; type: string }): stri
 export function cheminPhotoTemoignage(temoignageId: string) {
   return `temoignages/${temoignageId}/photo`;
 }
+
+// ---------------------------------------------------------------
+// Recherche d'un participant
+// ---------------------------------------------------------------
+
+/** Garde seulement des lettres, chiffres, espaces, tirets et apostrophes : la recherche ne peut pas casser la requête. */
+export function nettoyerRecherche(brut: string): string {
+  return brut.replace(/[^\p{L}\p{N} '\-]/gu, "").replace(/\s+/g, " ").trim().slice(0, 60);
+}

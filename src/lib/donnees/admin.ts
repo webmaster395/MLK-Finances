@@ -1,5 +1,6 @@
 import "server-only";
 import { connection } from "next/server";
+import { nettoyerRecherche } from "@/lib/admin/validation";
 import { exigerAdmin } from "@/lib/auth/personne";
 import { creerClientServeur } from "@/lib/supabase/serveur";
 
@@ -52,7 +53,21 @@ export type ParticipantListe = {
   nom: string;
   role: "participant" | "admin";
   inscritLe: string;
+  /** Témoignage écrit par cette personne : « valide » (publié) ou « attente » (à valider) ; null s'il n'y en a pas. */
+  temoignage: "valide" | "attente" | null;
 };
+
+export type PageParticipants = {
+  personnes: ParticipantListe[];
+  /** Nombre de personnes correspondant à la recherche (toutes pages confondues). */
+  total: number;
+  page: number;
+  pages: number;
+  /** Nombre de personnes inscrites ayant écrit un témoignage (toutes pages, hors recherche). */
+  ontTemoigne: number;
+};
+
+export const PARTICIPANTS_PAR_PAGE = 25;
 
 export type ParticipantDetail = {
   id: string;
@@ -66,13 +81,46 @@ export type ParticipantDetail = {
   estMoi: boolean;
 };
 
-/** Toutes les personnes inscrites (participants et admins), les plus récentes d'abord. */
-export async function lireParticipants(): Promise<ParticipantListe[]> {
+/**
+ * Une page de personnes inscrites (participants et admins), par ordre alphabétique,
+ * avec recherche sur le prénom et le nom (chaque mot saisi doit se retrouver dans l'un des deux).
+ */
+export async function lireParticipants(recherche = "", pageDemandee = 1): Promise<PageParticipants> {
   await exigerAdmin();
   await connection();
   const supabase = await creerClientServeur();
-  const { data } = await supabase.from("profils").select("id, prenom, nom, role, cree_le").order("cree_le", { ascending: false });
-  return (data ?? []).map((p) => ({ id: p.id, nom: nomAffiche(p), role: p.role, inscritLe: p.cree_le }));
+  const q = nettoyerRecherche(recherche);
+  const page = Number.isInteger(pageDemandee) && pageDemandee > 0 ? pageDemandee : 1;
+
+  let requete = supabase.from("profils").select("id, prenom, nom, role, cree_le", { count: "exact" });
+  for (const mot of q.split(" ").filter(Boolean)) {
+    requete = requete.or(`prenom.ilike.%${mot}%,nom.ilike.%${mot}%`);
+  }
+  const debut = (page - 1) * PARTICIPANTS_PAR_PAGE;
+  const [liste, auteurs] = await Promise.all([
+    requete
+      .order("nom")
+      .order("prenom")
+      .order("id")
+      .range(debut, debut + PARTICIPANTS_PAR_PAGE - 1),
+    supabase.from("temoignages").select("auteur_id, valide").not("auteur_id", "is", null),
+  ]);
+
+  const parAuteur = new Map((auteurs.data ?? []).map((x) => [x.auteur_id, x.valide ? ("valide" as const) : ("attente" as const)]));
+  const total = liste.count ?? 0;
+  return {
+    personnes: (liste.data ?? []).map((p) => ({
+      id: p.id,
+      nom: nomAffiche(p),
+      role: p.role,
+      inscritLe: p.cree_le,
+      temoignage: parAuteur.get(p.id) ?? null,
+    })),
+    total,
+    page,
+    pages: Math.max(1, Math.ceil(total / PARTICIPANTS_PAR_PAGE)),
+    ontTemoigne: parAuteur.size,
+  };
 }
 
 /** La fiche d'une personne (null si elle n'existe pas). */
