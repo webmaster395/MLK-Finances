@@ -16,14 +16,14 @@ export async function MonTemoignage() {
   return (
     <section id="mon-temoignage" className="accueil-carte scroll-mt-4 p-5 sm:p-7" aria-labelledby="titre-mon-temoignage">
       <h2 id="titre-mon-temoignage" className="titre-charte flex items-center gap-2.5 text-2xl sm:text-3xl">
-        <PenLine aria-hidden className="size-6 text-rose" />
+        <PenLine aria-hidden className="size-6 text-accent" />
         {mien ? "Mon témoignage" : "Partager mon témoignage"}
       </h2>
 
       {mien?.valide ? (
         <div className="mt-3 flex flex-col gap-2">
           <p className="flex items-center gap-2 text-sm font-semibold text-noir">
-            <CircleCheck aria-hidden className="size-4 text-rose" />
+            <CircleCheck aria-hidden className="size-4 text-accent" />
             Publié, sous le nom « {mien.nomAffiche} ». Merci !
           </p>
           <blockquote className="whitespace-pre-line text-sm font-semibold text-noir [overflow-wrap:anywhere]">« {mien.texte} »</blockquote>

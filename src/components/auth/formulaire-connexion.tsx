@@ -27,7 +27,7 @@ export function FormulaireConnexion({ suivant, lienInvalide }: { suivant?: strin
         defaultValue={etat.valeurs?.email}
       />
       <Champ id="motdepasse" libelle="Mot de passe" type="password" autoComplete="current-password" required />
-      <button type="submit" disabled={enCours} className="btn btn-orange w-full disabled:opacity-60">
+      <button type="submit" disabled={enCours} className="btn btn-principal w-full disabled:opacity-60">
         {enCours ? "Connexion…" : "Se connecter"}
       </button>
       <div className="flex flex-col gap-2 text-center text-sm font-semibold">

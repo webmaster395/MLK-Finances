@@ -14,7 +14,7 @@ export function FormulaireOubli() {
     return (
       <div className="flex flex-col gap-4">
         <MessageFormulaire ok message={etat.message} />
-        <Link href="/connexion" className="btn btn-rose w-full">
+        <Link href="/connexion" className="btn btn-accent w-full">
           Retour à la connexion
         </Link>
       </div>
@@ -33,7 +33,7 @@ export function FormulaireOubli() {
         required
         defaultValue={etat.valeurs?.email}
       />
-      <button type="submit" disabled={enCours} className="btn btn-orange w-full disabled:opacity-60">
+      <button type="submit" disabled={enCours} className="btn btn-principal w-full disabled:opacity-60">
         {enCours ? "Envoi…" : "Recevoir un lien"}
       </button>
       <p className="text-center text-sm font-semibold">

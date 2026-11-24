@@ -85,7 +85,7 @@ async function Contenu() {
           Ma formation
         </h2>
         <p className="flex items-center gap-3 font-semibold text-noir">
-          <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-full bg-rose-clair text-noir">
+          <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent-clair text-noir">
             <GraduationCap className="size-5" />
           </span>
           MLK Parcours Finances — {PROMOTION}

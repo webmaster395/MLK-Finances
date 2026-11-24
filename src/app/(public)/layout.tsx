@@ -6,7 +6,7 @@ export default function Layout({ children }: LayoutProps<"/">) {
   return (
     <main
       id="contenu"
-      className="flex flex-1 items-center justify-center bg-[url('/images/hero-fond.webp')] bg-cover bg-center px-4 py-5 sm:py-8"
+      className="flex flex-1 items-center justify-center bg-fond px-4 py-5 sm:py-8"
     >
       <div className="mx-auto grid w-full max-w-5xl items-center gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,26rem)] lg:gap-10">
         <div className="flex flex-col gap-3 lg:gap-6">

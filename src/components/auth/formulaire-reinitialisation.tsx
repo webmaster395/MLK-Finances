@@ -22,7 +22,7 @@ export function FormulaireReinitialisation() {
         aide="8 caractères minimum, avec au moins une lettre et un chiffre."
       />
       <Champ id="confirmation" libelle="Confirmer le nouveau mot de passe" type="password" autoComplete="new-password" required />
-      <button type="submit" disabled={enCours} className="btn btn-orange w-full disabled:opacity-60">
+      <button type="submit" disabled={enCours} className="btn btn-principal w-full disabled:opacity-60">
         {enCours ? "Enregistrement…" : "Enregistrer le mot de passe"}
       </button>
     </form>

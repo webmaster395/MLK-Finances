@@ -41,7 +41,7 @@ function ChampsCours({ cours }: { cours?: CoursAdmin }) {
         </p>
       </div>
       <label className="flex min-h-11 cursor-pointer items-center gap-2.5 font-semibold text-noir">
-        <input type="checkbox" name="publie" defaultChecked={cours?.publie ?? false} className="size-5 accent-rose" />
+        <input type="checkbox" name="publie" defaultChecked={cours?.publie ?? false} className="size-5 accent-accent" />
         Publié (contenu, supports et devoirs visibles par les participants)
       </label>
     </>
@@ -54,7 +54,7 @@ export async function ListeCours() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Link href="/admin/cours/nouveau" className="btn btn-orange w-fit">
+      <Link href="/admin/cours/nouveau" className="btn btn-principal w-fit">
         <BookPlus aria-hidden className="size-5" />
         Nouveau cours
       </Link>
@@ -138,7 +138,7 @@ export async function FicheCours({ id, cree }: { id: string; cree: boolean }) {
         </p>
       </div>
       {cree ? (
-        <p role="status" className="w-fit rounded-md bg-rose-clair px-3 py-2 text-sm font-semibold text-noir">
+        <p role="status" className="w-fit rounded-md bg-accent-clair px-3 py-2 text-sm font-semibold text-noir">
           Le cours est créé. Ajoutez-lui des supports ci-dessous.
         </p>
       ) : null}
@@ -164,9 +164,9 @@ export async function FicheCours({ id, cree }: { id: string; cree: boolean }) {
                 {cours.supports.map((s) => (
                   <li key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 py-2.5">
                     {s.type === "lien" ? (
-                      <Link2 aria-hidden className="size-4 shrink-0 text-rose" />
+                      <Link2 aria-hidden className="size-4 shrink-0 text-accent" />
                     ) : (
-                      <FileText aria-hidden className="size-4 shrink-0 text-rose" />
+                      <FileText aria-hidden className="size-4 shrink-0 text-accent" />
                     )}
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-semibold text-noir [overflow-wrap:anywhere]">{s.titre}</span>

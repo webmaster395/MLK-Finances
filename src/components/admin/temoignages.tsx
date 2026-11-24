@@ -26,7 +26,7 @@ function ChampsTemoignage({ prefixe, t }: { prefixe: string; t?: TemoignageAdmin
         <textarea id={`${prefixe}-texte`} name="texte" rows={5} required maxLength={1000} defaultValue={t?.texte} className={`${CLASSE_CHAMP} py-2`} />
       </div>
       <label className="flex min-h-11 cursor-pointer items-center gap-2.5 font-semibold text-noir">
-        <input type="checkbox" name="valide" defaultChecked={t?.valide ?? false} className="size-5 accent-rose" />
+        <input type="checkbox" name="valide" defaultChecked={t?.valide ?? false} className="size-5 accent-accent" />
         Validé (visible par les participants)
       </label>
     </>
@@ -42,7 +42,7 @@ function CarteTemoignage({ t }: { t: TemoignageAdmin }) {
           <p className="flex flex-wrap items-center gap-2">
             <span className="text-base font-semibold text-noir [overflow-wrap:anywhere]">{t.nom}</span>
             {t.valide ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-rose-clair px-2 py-0.5 text-[11px] font-semibold text-noir">
+              <span className="inline-flex items-center gap-1 rounded-full bg-accent-clair px-2 py-0.5 text-[11px] font-semibold text-noir">
                 <CircleCheck aria-hidden className="size-3.5" />
                 Validé
               </span>

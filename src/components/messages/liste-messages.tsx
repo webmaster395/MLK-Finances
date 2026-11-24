@@ -3,7 +3,7 @@ import { EtatVide } from "@/components/coquille/etat-vide";
 import { lireMessages } from "@/lib/donnees/annonces";
 import { formaterJourComplet } from "@/lib/format";
 
-const COULEURS_BORDURE = ["#d634ba", "#e95609"];
+const COULEURS_BORDURE = ["#6b78f5", "#e95609"];
 
 /** Liste complète des messages de l'équipe (du plus récent au plus ancien). Lit la base : sous <Suspense>. */
 export async function ListeMessages() {
@@ -46,11 +46,11 @@ export async function ListeMessages() {
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="flex items-center gap-1.5 text-xs font-semibold">
-                  <CalendarDays aria-hidden className="size-3.5 shrink-0 text-rose" />
+                  <CalendarDays aria-hidden className="size-3.5 shrink-0 text-accent" />
                   <span>Publié le {formaterJourComplet(m.cree_le)}</span>
                 </span>
                 {estPlusRecent ? (
-                  <span className="rounded-full bg-rose-clair px-3 py-0.5 text-[11px] font-semibold text-noir">
+                  <span className="rounded-full bg-accent-clair px-3 py-0.5 text-[11px] font-semibold text-noir">
                     Dernier message
                   </span>
                 ) : null}

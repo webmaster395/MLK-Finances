@@ -10,7 +10,7 @@ export default function NotFound() {
         titre="Devoir introuvable"
         texte="Ce devoir n'existe pas, ou il ne fait pas partie de votre parcours."
       />
-      <Link href="/devoirs" className="btn btn-orange w-fit">
+      <Link href="/devoirs" className="btn btn-principal w-fit">
         Voir tous les devoirs
       </Link>
     </div>

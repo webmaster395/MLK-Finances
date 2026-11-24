@@ -46,7 +46,7 @@ export async function EnTeteAdmin() {
     <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 sm:px-6 sm:py-3 lg:px-8">
       <p className="text-lg font-semibold text-noir sm:text-2xl">Bonjour {prenom}</p>
       <div className="hidden items-center gap-2.5 md:flex">
-        <span className="rounded-full bg-rose px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-noir">
+        <span className="rounded-full bg-accent px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-noir">
           {LIBELLE}
         </span>
         <BasculeTheme />

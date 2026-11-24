@@ -8,7 +8,7 @@ function Chiffre({ icone: Icone, valeur, libelle, href, alerte = false }: { icon
     <Link href={href} className="accueil-carte flex items-center gap-4 p-4 hover:brightness-95 sm:p-5">
       <span
         aria-hidden
-        className={`flex size-11 shrink-0 items-center justify-center rounded-[0.6rem] ${alerte ? "bg-orange text-noir" : "bg-rose-clair text-noir"}`}
+        className={`flex size-11 shrink-0 items-center justify-center rounded-[0.6rem] ${alerte ? "bg-orange text-noir" : "bg-accent-clair text-noir"}`}
       >
         <Icone className="size-5" strokeWidth={1.85} />
       </span>
@@ -77,7 +77,7 @@ export async function TableauDeBordAdmin() {
             <ul className="mt-3 divide-y divide-black/10">
               {t.derniersInscrits.map((p) => (
                 <li key={p.id} className="flex items-center gap-3 py-2.5">
-                  <UserPlus aria-hidden className="size-4 shrink-0 text-rose" />
+                  <UserPlus aria-hidden className="size-4 shrink-0 text-accent" />
                   <Link href={`/admin/participants/${p.id}`} className="min-w-0 flex-1 truncate text-sm font-semibold text-noir hover:underline">
                     {p.nom}
                   </Link>

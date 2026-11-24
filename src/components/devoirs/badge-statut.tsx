@@ -2,7 +2,7 @@ import { CircleAlert, CircleCheck, Clock, FileCheck } from "lucide-react";
 import type { StatutDevoir } from "@/lib/devoirs";
 
 const STATUTS: Record<StatutDevoir, { libelle: string; classes: string; couleur: string; Icone: typeof Clock }> = {
-  a_rendre: { libelle: "À rendre", classes: "bg-rose-clair text-noir", couleur: "#d634ba", Icone: Clock },
+  a_rendre: { libelle: "À rendre", classes: "bg-accent-clair text-noir", couleur: "#6b78f5", Icone: Clock },
   bientot: { libelle: "Bientôt dû", classes: "bg-orange text-white", couleur: "#e95609", Icone: Clock },
   en_retard: { libelle: "En retard", classes: "bg-[#c4262e] text-white", couleur: "#c4262e", Icone: CircleAlert },
   rendu: { libelle: "Rendu", classes: "bg-[#1f7a3d] text-white", couleur: "#1f7a3d", Icone: CircleCheck },

@@ -14,7 +14,7 @@ export async function TravailAFaire() {
     <section className="accueil-carte p-5 sm:p-6" aria-labelledby="titre-travail">
       <div className="flex items-center justify-between gap-3">
         <h2 id="titre-travail" className="titre-charte flex items-center gap-2.5 text-xl sm:text-2xl">
-          <ClipboardList aria-hidden className="size-5 text-rose" />
+          <ClipboardList aria-hidden className="size-5 text-accent" />
           Travail à faire
         </h2>
         {aFaire.length > 0 ? (
@@ -63,7 +63,7 @@ export function TravailAFaireChargement() {
     <section className="accueil-carte p-5 sm:p-6" role="status" aria-live="polite">
       <span className="sr-only">Chargement du travail à faire…</span>
       <h2 className="titre-charte flex items-center gap-2.5 text-2xl">
-        <ClipboardList aria-hidden className="size-5 text-rose" />
+        <ClipboardList aria-hidden className="size-5 text-accent" />
         Travail à faire
       </h2>
       <div className="mt-3 flex flex-col gap-3 motion-safe:animate-pulse">

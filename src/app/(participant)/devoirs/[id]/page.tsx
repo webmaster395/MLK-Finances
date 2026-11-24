@@ -108,7 +108,7 @@ async function Detail({
                 {devoir.enRetard ? " — après la date limite" : ""}
               </p>
             </div>
-            <a href={`/devoirs/${devoir.id}/telecharger`} className="btn btn-rose min-h-10 gap-2 px-4 text-sm">
+            <a href={`/devoirs/${devoir.id}/telecharger`} className="btn btn-accent min-h-10 gap-2 px-4 text-sm">
               <Download aria-hidden className="size-4" />
               Télécharger
             </a>

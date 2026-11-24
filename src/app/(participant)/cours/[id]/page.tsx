@@ -92,7 +92,7 @@ async function Detail({ params }: { params: PageProps<"/cours/[id]">["params"] }
             {cours.objectifs.length > 0 ? (
               <div className="mt-6">
                 <h3 className="flex items-center gap-2 text-sm font-semibold text-noir">
-                  <BookOpen aria-hidden className="size-4 shrink-0 text-rose" />
+                  <BookOpen aria-hidden className="size-4 shrink-0 text-accent" />
                   <span>Objectifs ({cours.objectifs.length})</span>
                 </h3>
                 <ul className="mt-3 grid gap-2.5 sm:grid-cols-2">
@@ -101,7 +101,7 @@ async function Detail({ params }: { params: PageProps<"/cours/[id]">["params"] }
                       key={o}
                       className="flex items-start gap-2.5 rounded-lg border border-black/15 bg-white/40 p-3.5 text-sm font-semibold text-noir"
                     >
-                      <CircleCheck aria-hidden className="mt-0.5 size-4 shrink-0 text-rose" />
+                      <CircleCheck aria-hidden className="mt-0.5 size-4 shrink-0 text-accent" />
                       <span className="leading-snug">{o}</span>
                     </li>
                   ))}
@@ -115,7 +115,7 @@ async function Detail({ params }: { params: PageProps<"/cours/[id]">["params"] }
               <div>
                 <p className="text-xs sm:text-sm">Documents et liens</p>
                 <h2 id="titre-supports" className="titre-charte mt-1 flex items-center gap-2.5 text-2xl !leading-tight sm:text-3xl">
-                  <FolderOpen aria-hidden className="size-5 text-rose" />
+                  <FolderOpen aria-hidden className="size-5 text-accent" />
                   Supports de cours
                 </h2>
               </div>
@@ -159,7 +159,7 @@ async function Detail({ params }: { params: PageProps<"/cours/[id]">["params"] }
                           href={r.url!}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="btn btn-orange min-h-10 gap-2 px-4 text-sm"
+                          className="btn btn-principal min-h-10 gap-2 px-4 text-sm"
                         >
                           <ExternalLink aria-hidden className="size-4" />
                           Ouvrir
@@ -168,7 +168,7 @@ async function Detail({ params }: { params: PageProps<"/cours/[id]">["params"] }
                       ) : (
                         <a
                           href={`/ressources/${r.id}/telecharger`}
-                          className="btn btn-rose min-h-10 gap-2 px-4 text-sm"
+                          className="btn btn-accent min-h-10 gap-2 px-4 text-sm"
                         >
                           <Download aria-hidden className="size-4" />
                           Télécharger
@@ -243,7 +243,7 @@ async function Detail({ params }: { params: PageProps<"/cours/[id]">["params"] }
               <div>
                 <p className="text-xs sm:text-sm">Devoirs liés</p>
                 <h2 id="titre-devoirs" className="titre-charte mt-1 flex items-center gap-2 text-2xl !leading-tight">
-                  <ClipboardList aria-hidden className="size-5 text-rose" />
+                  <ClipboardList aria-hidden className="size-5 text-accent" />
                   Travail à préparer
                 </h2>
               </div>

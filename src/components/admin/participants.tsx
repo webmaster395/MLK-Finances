@@ -13,7 +13,7 @@ const CLASSE_SELECT = "min-h-11 w-full rounded-md border border-black/25 bg-whit
 
 function PastilleAdmin() {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-rose px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-noir">
+    <span className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-noir">
       <ShieldCheck aria-hidden className="size-3.5" />
       Admin
     </span>
@@ -88,7 +88,7 @@ export async function FicheParticipant({ id }: { id: string }) {
               <div className="flex flex-wrap gap-x-8 gap-y-2">
                 {CIVILITES.map(({ code, libelle }) => (
                   <label key={code} className="flex min-h-11 cursor-pointer items-center gap-2.5 font-semibold text-noir">
-                    <input type="radio" name="civilite" value={code} defaultChecked={p.civilite === code} className="size-5 accent-rose" />
+                    <input type="radio" name="civilite" value={code} defaultChecked={p.civilite === code} className="size-5 accent-accent" />
                     {libelle}
                   </label>
                 ))}

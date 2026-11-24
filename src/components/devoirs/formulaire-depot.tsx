@@ -71,7 +71,7 @@ export function FormulaireDepot({
   return (
     <form onSubmit={surEnvoi} className="flex flex-col gap-4" noValidate>
       {etat === "fait" ? (
-        <p role="status" className="flex items-start gap-3 rounded-md bg-rose-clair px-4 py-3 font-semibold text-noir">
+        <p role="status" className="flex items-start gap-3 rounded-md bg-accent-clair px-4 py-3 font-semibold text-noir">
           <CircleCheck aria-hidden className="mt-0.5 size-5 shrink-0" />
           Votre fichier a bien été déposé.
         </p>
@@ -94,7 +94,7 @@ export function FormulaireDepot({
           onChange={surChoix}
           disabled={etat === "envoi"}
           aria-describedby="aide-fichier"
-          className="w-full rounded-md border border-black/25 bg-white p-2 text-sm font-semibold text-noir file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-rose-clair file:px-4 file:py-2 file:font-semibold file:text-noir"
+          className="w-full rounded-md border border-black/25 bg-white p-2 text-sm font-semibold text-noir file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-accent-clair file:px-4 file:py-2 file:font-semibold file:text-noir"
         />
         <p id="aide-fichier" className="text-xs">
           {LISTE_TYPES_LISIBLE}. {TAILLE_MAX_OCTETS / (1024 * 1024)} Mo maximum.
@@ -102,7 +102,7 @@ export function FormulaireDepot({
         </p>
       </div>
 
-      <button type="submit" disabled={etat === "envoi" || !nomChoisi || Boolean(erreur)} className="btn btn-orange w-fit gap-2 disabled:opacity-60">
+      <button type="submit" disabled={etat === "envoi" || !nomChoisi || Boolean(erreur)} className="btn btn-principal w-fit gap-2 disabled:opacity-60">
         <Upload aria-hidden className="size-4" />
         {etat === "envoi" ? "Envoi en cours…" : remplacement ? "Remplacer le fichier" : "Déposer le fichier"}
       </button>

@@ -28,7 +28,7 @@ function ChampsMessage({ prefixe, annonce }: { prefixe: string; annonce?: Annonc
         />
       </div>
       <label className="flex min-h-11 cursor-pointer items-center gap-2.5 font-semibold text-noir">
-        <input type="checkbox" name="publie" defaultChecked={annonce?.publie ?? true} className="size-5 accent-rose" />
+        <input type="checkbox" name="publie" defaultChecked={annonce?.publie ?? true} className="size-5 accent-accent" />
         Publié (visible tout de suite par les participants)
       </label>
     </>

@@ -12,7 +12,7 @@ export async function JourneeAccueil() {
   if (!journee) {
     return (
       <section className="accueil-carte flex flex-col items-center gap-3 p-8 text-center" aria-labelledby="titre-journee">
-        <span className="flex size-14 items-center justify-center rounded-full bg-rose-clair text-noir">
+        <span className="flex size-14 items-center justify-center rounded-full bg-accent-clair text-noir">
           <CalendarX aria-hidden className="size-7" />
         </span>
         <h2 id="titre-journee" className="titre-charte text-3xl">
@@ -95,7 +95,7 @@ export async function JourneeAccueil() {
         })}
       </ol>
 
-      <Link href={`/sessions?jour=${jour}`} className="btn btn-orange mt-2 w-full sm:w-auto">
+      <Link href={`/sessions?jour=${jour}`} className="btn btn-principal mt-2 w-full sm:w-auto">
         Voir le programme de la journée →
       </Link>
     </section>

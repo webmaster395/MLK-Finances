@@ -73,7 +73,7 @@ function ChampsSeance({ options, seance }: { options: OptionsCours; seance?: Sea
       </div>
 
       <label className="flex min-h-11 cursor-pointer items-center gap-2.5 font-semibold text-noir">
-        <input type="checkbox" name="publie" defaultChecked={seance?.publie ?? true} className="size-5 accent-rose" />
+        <input type="checkbox" name="publie" defaultChecked={seance?.publie ?? true} className="size-5 accent-accent" />
         Publiée (visible par les participants)
       </label>
     </>
@@ -128,7 +128,7 @@ export async function ListeSeances() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Link href="/admin/seances/nouvelle" className="btn btn-orange w-fit">
+      <Link href="/admin/seances/nouvelle" className="btn btn-principal w-fit">
         <CalendarPlus aria-hidden className="size-5" />
         Nouvelle séance
       </Link>
@@ -186,7 +186,7 @@ export async function FicheSeance({ id, creee }: { id: string; creee: boolean })
         <p className="mt-2 text-sm font-semibold">{formaterCreneau(seance.debut, seance.fin)}</p>
       </div>
       {creee ? (
-        <p role="status" className="w-fit rounded-md bg-rose-clair px-3 py-2 text-sm font-semibold text-noir">
+        <p role="status" className="w-fit rounded-md bg-accent-clair px-3 py-2 text-sm font-semibold text-noir">
           La séance est créée.
         </p>
       ) : null}

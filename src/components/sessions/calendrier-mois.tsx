@@ -147,7 +147,7 @@ export function CalendrierMois({
                         >
                           <span
                             className={`flex size-8 items-center justify-center rounded-full text-sm font-semibold text-noir ${
-                              estChoisi ? "bg-noir !text-carte" : estAujourdhui ? "ring-2 ring-rose" : ""
+                              estChoisi ? "bg-noir !text-carte" : estAujourdhui ? "ring-2 ring-accent" : ""
                             }`}
                           >
                             {jour}
@@ -226,7 +226,7 @@ export function CalendrierMois({
                 <button
                   type="button"
                   onClick={() => allerAuJour(prochainJour)}
-                  className="btn btn-orange min-h-10 px-4 text-sm"
+                  className="btn btn-principal min-h-10 px-4 text-sm"
                 >
                   Voir la prochaine journée
                 </button>

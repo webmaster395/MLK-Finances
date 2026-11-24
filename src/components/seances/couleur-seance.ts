@@ -2,7 +2,7 @@
  * Couleurs d'accent des séances (liseré des cartes, points de la frise et du calendrier).
  * Permet de distinguer visuellement les séances du matin, de l'après-midi / du soir et l'accueil.
  */
-export const PALETTE_SEANCES = ["#d634ba", "#e95609", "#5b6fd6"] as const;
+export const PALETTE_SEANCES = ["#6b78f5", "#9a7cf0", "#4f9cf0"] as const;
 export const COULEUR_ACCUEIL = "#6b6560";
 export const COULEUR_SEANCE = PALETTE_SEANCES[0];
 
@@ -28,8 +28,8 @@ function heureDecimaleParis(debutOuHoraires: string): number {
 }
 
 /**
- * Couleur d'une séance selon son horaire à Paris (matin en rose, fin de matinée / après-midi en orange,
- * fin d'après-midi / soir en indigo, et séance sans cours en gris taupe).
+ * Couleur d'une séance selon son horaire à Paris (matin en bleu-violet, fin de matinée / après-midi en violet,
+ * fin d'après-midi / soir en bleu, et séance sans cours en gris taupe).
  */
 export function couleurSeance({
   debut,

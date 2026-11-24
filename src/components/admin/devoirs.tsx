@@ -55,7 +55,7 @@ function ChampsDevoir({ options, devoir, coursParDefaut }: { options: OptionsCou
         <Champ id="heure" libelle="Heure (Paris)" type="time" defaultValue={echeance?.heure} aide="Vide : 23:59." />
       </div>
       <label className="flex min-h-11 cursor-pointer items-center gap-2.5 font-semibold text-noir">
-        <input type="checkbox" name="publie" defaultChecked={devoir?.publie ?? true} className="size-5 accent-rose" />
+        <input type="checkbox" name="publie" defaultChecked={devoir?.publie ?? true} className="size-5 accent-accent" />
         Publié (visible par les participants, si le cours est publié)
       </label>
     </>
@@ -67,7 +67,7 @@ export async function ListeDevoirs() {
   const devoirs = await lireDevoirsAdmin();
   return (
     <div className="flex flex-col gap-4">
-      <Link href="/admin/devoirs/nouveau" className="btn btn-orange w-fit">
+      <Link href="/admin/devoirs/nouveau" className="btn btn-principal w-fit">
         <FilePlus aria-hidden className="size-5" />
         Nouveau devoir
       </Link>
@@ -161,7 +161,7 @@ export async function FicheDevoir({ id, cree, erreurFichier }: { id: string; cre
         </p>
       </div>
       {cree ? (
-        <p role="status" className="w-fit rounded-md bg-rose-clair px-3 py-2 text-sm font-semibold text-noir">
+        <p role="status" className="w-fit rounded-md bg-accent-clair px-3 py-2 text-sm font-semibold text-noir">
           Le devoir est créé.
         </p>
       ) : null}
@@ -190,7 +190,7 @@ export async function FicheDevoir({ id, cree, erreurFichier }: { id: string; cre
                           {r.participant}
                         </Link>
                         {r.statut === "corrige" ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-rose-clair px-2 py-0.5 text-[11px] font-semibold text-noir">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-accent-clair px-2 py-0.5 text-[11px] font-semibold text-noir">
                             <CircleCheck aria-hidden className="size-3.5" />
                             Corrigé
                           </span>

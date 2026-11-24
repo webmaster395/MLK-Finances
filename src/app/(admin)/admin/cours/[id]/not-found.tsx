@@ -6,7 +6,7 @@ export default function NotFound() {
   return (
     <div className="flex flex-col gap-6">
       <EtatVide icone={BookOpen} titre="Cours introuvable" texte="Ce cours n'existe pas ou a été supprimé." />
-      <Link href="/admin/cours" className="btn btn-orange w-fit">
+      <Link href="/admin/cours" className="btn btn-principal w-fit">
         Voir tous les cours
       </Link>
     </div>

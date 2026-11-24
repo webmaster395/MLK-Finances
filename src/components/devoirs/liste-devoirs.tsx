@@ -117,7 +117,7 @@ export async function ListeDevoirs() {
             {groupesAFaire.map(({ jour, devoirs: duJour }) => (
               <div key={jour ?? "sans-echeance"} className="flex flex-col gap-2.5">
                 <h3 className="flex items-center gap-2 text-sm font-semibold text-noir">
-                  <CalendarClock aria-hidden className="size-4 shrink-0 text-rose" />
+                  <CalendarClock aria-hidden className="size-4 shrink-0 text-accent" />
                   <span className="first-letter:uppercase">
                     {jour ? `Échéance du ${formaterJourIso(jour, true)}` : "Sans date limite"}
                   </span>

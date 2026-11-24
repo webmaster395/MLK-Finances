@@ -84,7 +84,7 @@ export function BibliothequeRessources({ elements, erreurFichier }: { elements: 
 
       {elements.length === 0 ? (
         <section className="carte flex flex-col items-center gap-3 py-12 text-center">
-          <span className="flex size-14 items-center justify-center rounded-full bg-rose-clair text-noir">
+          <span className="flex size-14 items-center justify-center rounded-full bg-accent-clair text-noir">
             <FolderOpen aria-hidden className="size-7" />
           </span>
           <h2 className="titre-charte text-2xl">Aucune ressource pour le moment</h2>
@@ -156,7 +156,7 @@ export function BibliothequeRessources({ elements, erreurFichier }: { elements: 
             </ul>
           ) : (
             <section className="carte flex flex-col items-center gap-3 py-12 text-center">
-              <span className="flex size-14 items-center justify-center rounded-full bg-rose-clair text-noir">
+              <span className="flex size-14 items-center justify-center rounded-full bg-accent-clair text-noir">
                 <Search aria-hidden className="size-7" />
               </span>
               <h2 className="titre-charte text-2xl">Aucune ressource trouvée</h2>
@@ -194,7 +194,7 @@ function CarteRessource({ element: e }: { element: ElementBibliotheque }) {
       <span className="flex items-start justify-between gap-3">
         <span
           aria-hidden
-          className={`flex size-12 items-center justify-center rounded-[0.6rem] text-noir ${estLien ? "bg-orange/20" : "bg-rose-clair"}`}
+          className={`flex size-12 items-center justify-center rounded-[0.6rem] text-noir ${estLien ? "bg-orange/20" : "bg-accent-clair"}`}
         >
           <Icone className="size-6" strokeWidth={1.75} />
         </span>

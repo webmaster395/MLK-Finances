@@ -78,13 +78,13 @@ export function EnvoiSupport({ coursId }: { coursId: string }) {
           type="file"
           disabled={enCours}
           aria-describedby="fichier-support-aide"
-          className="w-full rounded-md border border-black/25 bg-white p-2 text-sm font-semibold text-noir file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-rose-clair file:px-4 file:py-2 file:font-semibold file:text-noir"
+          className="w-full rounded-md border border-black/25 bg-white p-2 text-sm font-semibold text-noir file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-accent-clair file:px-4 file:py-2 file:font-semibold file:text-noir"
         />
         <p id="fichier-support-aide" className="text-xs">
           PDF, présentation, tableur, image… 50 Mo maximum.
         </p>
       </div>
-      <button type="submit" disabled={enCours} className="btn btn-orange w-fit gap-2 disabled:opacity-60">
+      <button type="submit" disabled={enCours} className="btn btn-principal w-fit gap-2 disabled:opacity-60">
         <Upload aria-hidden className="size-4" />
         {enCours ? "Envoi en cours…" : "Ajouter le fichier"}
       </button>
