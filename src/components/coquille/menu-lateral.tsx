@@ -33,9 +33,39 @@ type Props = {
 
 const CLE_MEMOIRE = "menu-replie";
 const EVENEMENT = "menu-replie-change";
+const CLE_DERNIERE_ADMIN = "derniere-page-admin";
+const EVENEMENT_ADMIN = "derniere-page-admin-change";
 
 // Mémoire du choix « replié » sur cet appareil (avec une copie en mémoire si le navigateur refuse le stockage)
 let copieEnMemoire = false;
+// Mémoire de la dernière sous-page d'administration visitée (pour y revenir depuis l'espace participant)
+let derniereAdminEnMemoire = PAGE_ADMINISTRATION.href;
+
+function estPageAdmin(chemin: string) {
+  return chemin === PAGE_ADMINISTRATION.href || chemin.startsWith(`${PAGE_ADMINISTRATION.href}/`);
+}
+
+function lireDernierePageAdmin() {
+  try {
+    const valeur = sessionStorage.getItem(CLE_DERNIERE_ADMIN);
+    if (valeur && estPageAdmin(valeur)) return valeur;
+  } catch {}
+  return derniereAdminEnMemoire;
+}
+
+function ecrireDernierePageAdmin(chemin: string) {
+  if (!estPageAdmin(chemin)) return;
+  derniereAdminEnMemoire = chemin;
+  try {
+    sessionStorage.setItem(CLE_DERNIERE_ADMIN, chemin);
+  } catch {}
+  window.dispatchEvent(new Event(EVENEMENT_ADMIN));
+}
+
+function abonnerDernierePageAdmin(rappel: () => void) {
+  window.addEventListener(EVENEMENT_ADMIN, rappel);
+  return () => window.removeEventListener(EVENEMENT_ADMIN, rappel);
+}
 
 function lireReplie() {
   try {
@@ -84,7 +114,17 @@ export function MenuLateral({
   const groupesMenu = estAdmin ? [...GROUPES_MENU, [PAGE_ADMINISTRATION]] : GROUPES_MENU;
   // Côté serveur et au premier affichage : déplié ; ensuite on applique le choix mémorisé
   const replie = useSyncExternalStore(abonnerReplie, lireReplie, () => false);
+  const dernierePageAdmin = useSyncExternalStore(
+    abonnerDernierePageAdmin,
+    lireDernierePageAdmin,
+    () => PAGE_ADMINISTRATION.href,
+  );
   const [ouvert, setOuvert] = useState(false); // menu du téléphone
+
+  // Mémorise la dernière page d'administration visitée pour y revenir au clic sur « Administration »
+  useEffect(() => {
+    if (estAdmin && estPageAdmin(chemin)) ecrireDernierePageAdmin(chemin);
+  }, [estAdmin, chemin]);
 
   function basculer() {
     ecrireReplie(!replie);
@@ -124,10 +164,11 @@ export function MenuLateral({
           <ul className="flex flex-col gap-1">
             {groupe.map(({ href, nom, icone: Icone }) => {
               const actif = sur(href);
+              const destination = href === PAGE_ADMINISTRATION.href ? dernierePageAdmin : href;
               return (
                 <li key={href}>
                   <Link
-                    href={href}
+                    href={destination}
                     onClick={apresClic}
                     aria-current={actif ? "page" : undefined}
                     title={afficherNoms ? undefined : nom}
