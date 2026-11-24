@@ -21,7 +21,7 @@ export type PersonneMenu = {
 
 type Props = {
   personne: PersonneMenu;
-  /** Pages qui affichent une pastille rouge (ex. devoirs à rendre). Vide pour l'instant. */
+  /** Pages qui affichent une pastille rouge (ex. nouveauté). Vide pour l'instant. */
   pastilles?: Record<string, boolean>;
   /** Libellé de la promotion (ex. « Promotion 2026–2027 ») affiché sur la barre du haut mobile. */
   promotion?: string | null;

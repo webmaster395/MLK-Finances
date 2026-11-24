@@ -7,7 +7,7 @@ const DUREE_LIEN_SECONDES = 60;
 /**
  * Téléchargement d'une ressource de type « fichier ».
  * 1. La personne doit être connectée ; la base ne renvoie la ressource que si elle est publiée
- *    et appartient à un cours publié (règles RLS).
+ *    et appartient à une session publiée (règles RLS).
  * 2. On crée un lien signé qui ne dure que 60 secondes, et on y redirige. Le fichier n'est
  *    jamais public, et ce lien n'est jamais enregistré ni affiché dans la page.
  * Les droits de lecture du fichier lui-même sont aussi vérifiés par le stockage (RLS sur le seau).

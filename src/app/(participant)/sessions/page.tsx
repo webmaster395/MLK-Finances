@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Sessions" };
 export default function Page({ searchParams }: PageProps<"/sessions">) {
   return (
     <div className="flex flex-col gap-4">
-      <TitrePage titre="Sessions" sousTitre="Votre calendrier et vos cours" />
+      <TitrePage titre="Sessions" sousTitre="Les 6 sessions du parcours, en visioconférence" />
       {/* Le calendrier lit les données de la personne et l'adresse : sous <Suspense>. Le titre reste statique. */}
       <Suspense fallback={<CalendrierChargement />}>
         <Calendrier searchParams={searchParams} />
@@ -39,9 +39,6 @@ async function Calendrier({ searchParams }: { searchParams: PageProps<"/sessions
         titre: s.titre,
         jour: s.jour,
         horaires: formaterHoraires(s.debut, s.fin),
-        lieu: s.lieu,
-        intervenants: s.intervenants,
-        coursTitre: s.cours?.titre ?? null,
         aPreparer: s.aPreparer,
         passee: s.passee,
       }))}

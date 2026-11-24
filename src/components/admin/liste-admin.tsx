@@ -7,7 +7,7 @@ import { ChevronDown, ShieldCheck } from "lucide-react";
 import { PAGES_ADMIN } from "@/lib/navigation";
 
 /**
- * Liste déroulante de l'administration, en haut à droite : tableau de bord, participants, séances, etc.
+ * Liste déroulante de l'administration, en haut à droite : tableau de bord, participants, sessions, etc.
  * Elle remplace un second menu : l'administrateur garde le menu des participants à gauche.
  * Lit l'adresse de la page : toujours sous <Suspense>.
  */

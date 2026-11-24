@@ -4,7 +4,7 @@ import { CalendrierChargement } from "@/components/sessions/calendrier-chargemen
 export default function Loading() {
   return (
     <div className="flex flex-col gap-4">
-      <TitrePage titre="Sessions" sousTitre="Votre calendrier et vos cours" />
+      <TitrePage titre="Sessions" sousTitre="Les 6 sessions du parcours, en visioconférence" />
       <CalendrierChargement />
     </div>
   );

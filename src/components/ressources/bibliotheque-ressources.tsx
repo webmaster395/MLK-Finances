@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BookOpen, Download, ExternalLink, FileText, FolderOpen, Link2, Search } from "lucide-react";
+import { CalendarDays, Download, ExternalLink, FileText, FolderOpen, Link2, Search } from "lucide-react";
 
 export type ElementBibliotheque = {
   id: string;
@@ -9,17 +9,17 @@ export type ElementBibliotheque = {
   type: "fichier" | "lien";
   /** Adresse du lien externe (null pour un fichier : le téléchargement passe par le site). */
   url: string | null;
-  coursId: string;
-  coursTitre: string;
-  /** Ex. « Séance du jeudi 26 novembre 2026 » (vide si le cours n'a pas de séance). */
-  seanceLibelle: string;
+  sessionId: string;
+  sessionTitre: string;
+  /** Ex. « Session du samedi 9 janvier 2027 » */
+  sessionLibelle: string;
 };
 
 type Format = "tous" | "fichier" | "lien";
 
 const FORMATS: { cle: Format; libelle: string }[] = [
   { cle: "tous", libelle: "Tous les formats" },
-  { cle: "fichier", libelle: "Documents" },
+  { cle: "fichier", libelle: "PDF" },
   { cle: "lien", libelle: "Liens" },
 ];
 
@@ -34,12 +34,12 @@ const INACTIVE = "border border-black/25 text-noir hover:bg-black/5";
 export function BibliothequeRessources({ elements, erreurFichier }: { elements: ElementBibliotheque[]; erreurFichier: boolean }) {
   const [recherche, setRecherche] = useState("");
   const [format, setFormat] = useState<Format>("tous");
-  const [coursChoisi, setCoursChoisi] = useState<string>("tous");
+  const [sessionChoisie, setSessionChoisie] = useState<string>("tous");
 
-  const cours = useMemo(() => {
-    const vus = new Map<string, string>();
-    for (const e of elements) vus.set(e.coursId, e.coursTitre);
-    return [...vus.entries()].map(([id, titre]) => ({ id, titre }));
+  const sessions = useMemo(() => {
+    const vues = new Map<string, string>();
+    for (const e of elements) vues.set(e.sessionId, e.sessionTitre);
+    return [...vues.entries()].map(([id, titre]) => ({ id, titre }));
   }, [elements]);
 
   const requete = recherche.trim().toLocaleLowerCase("fr-FR");
@@ -47,18 +47,18 @@ export function BibliothequeRessources({ elements, erreurFichier }: { elements: 
     () =>
       elements.filter((e) => {
         if (format !== "tous" && e.type !== format) return false;
-        if (coursChoisi !== "tous" && e.coursId !== coursChoisi) return false;
+        if (sessionChoisie !== "tous" && e.sessionId !== sessionChoisie) return false;
         if (!requete) return true;
-        return `${e.titre} ${e.coursTitre}`.toLocaleLowerCase("fr-FR").includes(requete);
+        return `${e.titre} ${e.sessionTitre}`.toLocaleLowerCase("fr-FR").includes(requete);
       }),
-    [elements, format, coursChoisi, requete],
+    [elements, format, sessionChoisie, requete],
   );
-  const filtreActif = Boolean(requete) || format !== "tous" || coursChoisi !== "tous";
+  const filtreActif = Boolean(requete) || format !== "tous" || sessionChoisie !== "tous";
 
   return (
     <div className="flex flex-col gap-5">
       {/* Bandeau d'introduction */}
-      <section className="overflow-hidden rounded-[0.65rem] bg-noir text-white shadow-md" aria-labelledby="titre-bibliotheque">
+      <section className="overflow-hidden rounded-[1.25rem] bg-noir text-white shadow-md" aria-labelledby="titre-bibliotheque">
         <div className="grid gap-6 p-5 sm:p-8 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-end">
           <div>
             <p className="text-[11px] font-semibold tracking-[0.18em] text-white/70">MA BIBLIOTHÈQUE</p>
@@ -66,12 +66,12 @@ export function BibliothequeRessources({ elements, erreurFichier }: { elements: 
               Tout ce qui vous aide à aller plus loin
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-white/80 sm:text-base">
-              Retrouvez ici les supports de vos séances : documents à télécharger et liens utiles, classés par cours.
+              Retrouvez ici les documents de vos sessions : PDF à télécharger et liens (Canva…), classés par session.
             </p>
           </div>
           <dl className="grid grid-cols-2 gap-3">
             <Compteur valeur={elements.length} libelle={elements.length > 1 ? "ressources" : "ressource"} />
-            <Compteur valeur={cours.length} libelle={cours.length > 1 ? "cours" : "cours"} />
+            <Compteur valeur={sessions.length} libelle={sessions.length > 1 ? "sessions" : "session"} />
           </dl>
         </div>
       </section>
@@ -88,7 +88,7 @@ export function BibliothequeRessources({ elements, erreurFichier }: { elements: 
             <FolderOpen aria-hidden className="size-7" />
           </span>
           <h2 className="titre-charte text-2xl">Aucune ressource pour le moment</h2>
-          <p className="max-w-md font-semibold">Les supports de vos séances (documents et liens utiles) apparaîtront ici dès qu&apos;ils seront publiés.</p>
+          <p className="max-w-md font-semibold">Les documents de vos sessions (PDF et liens) apparaîtront ici dès qu&apos;ils seront publiés.</p>
         </section>
       ) : (
         <>
@@ -112,13 +112,13 @@ export function BibliothequeRessources({ elements, erreurFichier }: { elements: 
                 </button>
               ))}
             </div>
-            {cours.length > 1 ? (
-              <div className="mt-3 flex gap-2 overflow-x-auto border-t border-black/10 pt-3 pb-1" role="group" aria-label="Filtrer par cours">
-                <button type="button" onClick={() => setCoursChoisi("tous")} aria-pressed={coursChoisi === "tous"} className={`${PASTILLE} ${coursChoisi === "tous" ? ACTIVE : INACTIVE}`}>
-                  Tous les cours
+            {sessions.length > 1 ? (
+              <div className="mt-3 flex gap-2 overflow-x-auto border-t border-black/10 pt-3 pb-1" role="group" aria-label="Filtrer par session">
+                <button type="button" onClick={() => setSessionChoisie("tous")} aria-pressed={sessionChoisie === "tous"} className={`${PASTILLE} ${sessionChoisie === "tous" ? ACTIVE : INACTIVE}`}>
+                  Toutes les sessions
                 </button>
-                {cours.map((c) => (
-                  <button key={c.id} type="button" onClick={() => setCoursChoisi(c.id)} aria-pressed={coursChoisi === c.id} className={`${PASTILLE} max-w-[16rem] truncate ${coursChoisi === c.id ? ACTIVE : INACTIVE}`}>
+                {sessions.map((c) => (
+                  <button key={c.id} type="button" onClick={() => setSessionChoisie(c.id)} aria-pressed={sessionChoisie === c.id} className={`${PASTILLE} max-w-[16rem] truncate ${sessionChoisie === c.id ? ACTIVE : INACTIVE}`}>
                     {c.titre}
                   </button>
                 ))}
@@ -136,7 +136,7 @@ export function BibliothequeRessources({ elements, erreurFichier }: { elements: 
                 onClick={() => {
                   setRecherche("");
                   setFormat("tous");
-                  setCoursChoisi("tous");
+                  setSessionChoisie("tous");
                 }}
                 className="text-sm font-semibold text-noir underline underline-offset-4"
               >
@@ -147,7 +147,7 @@ export function BibliothequeRessources({ elements, erreurFichier }: { elements: 
 
           {filtres.length > 0 ? (
             // La clé change avec les filtres : les cartes rejouent leur animation d'entrée
-            <ul key={`${format}|${coursChoisi}|${requete}`} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <ul key={`${format}|${sessionChoisie}|${requete}`} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {filtres.map((e, i) => (
                 <li key={e.id} className="entree-cascade" style={{ "--i": Math.min(i, 12) } as React.CSSProperties}>
                   <CarteRessource element={e} />
@@ -206,16 +206,16 @@ function CarteRessource({ element: e }: { element: ElementBibliotheque }) {
       </span>
 
       <span className="mt-6 flex-1">
-        <span className="block text-[10px] font-semibold uppercase tracking-[0.16em]">{estLien ? "Lien externe" : "Document à télécharger"}</span>
+        <span className="block text-[10px] font-semibold uppercase tracking-[0.16em]">{estLien ? "Lien (Canva…)" : "PDF à télécharger"}</span>
         <span className="titre-charte mt-2 block text-xl !leading-tight sm:text-2xl [overflow-wrap:anywhere]">{e.titre}</span>
         {estLien ? <span className="sr-only"> (s&apos;ouvre dans un nouvel onglet)</span> : null}
       </span>
 
       <span className="mt-5 flex items-start gap-2 border-t border-black/10 pt-3 text-xs font-semibold">
-        <BookOpen aria-hidden className="mt-0.5 size-3.5 shrink-0" />
+        <CalendarDays aria-hidden className="mt-0.5 size-3.5 shrink-0" />
         <span className="min-w-0">
-          <span className="block truncate">{e.coursTitre}</span>
-          {e.seanceLibelle ? <span className="block truncate font-normal">{e.seanceLibelle}</span> : null}
+          <span className="block truncate">{e.sessionTitre}</span>
+          <span className="block truncate font-normal">{e.sessionLibelle}</span>
         </span>
       </span>
     </a>

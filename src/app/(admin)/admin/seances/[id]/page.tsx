@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { ChargementPage } from "@/components/admin/chargement";
 import { FicheSeance } from "@/components/admin/seances";
 
-export const metadata: Metadata = { title: "Séance — Administration" };
+export const metadata: Metadata = { title: "Session — Administration" };
 
 export default function Page({ params, searchParams }: PageProps<"/admin/seances/[id]">) {
   return (

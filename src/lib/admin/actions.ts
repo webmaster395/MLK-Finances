@@ -10,9 +10,8 @@ import {
   validerTemoignage,
   validerAnnonce,
   estCheminSupport,
+  estPdf,
   estUuid,
-  validerCours,
-  validerDevoir,
   validerLien,
   validerSeance,
 } from "./validation";
@@ -93,23 +92,25 @@ export async function changerRole(_: EtatAdmin, formData: FormData): Promise<Eta
 }
 
 // ---------------------------------------------------------------
-// Séances
+// Sessions (cours et séances fusionnés)
 // ---------------------------------------------------------------
 
 function saisieSeance(formData: FormData) {
-  const brut = formData.get("description");
+  const brut = (nom: string) => {
+    const v = formData.get(nom);
+    return typeof v === "string" ? v : "";
+  };
   return {
     titre: texte(formData, "titre"),
     date: texte(formData, "date"),
     heureDebut: texte(formData, "heure_debut"),
     heureFin: texte(formData, "heure_fin"),
-    lieu: texte(formData, "lieu"),
-    description: typeof brut === "string" ? brut : "",
-    coursId: texte(formData, "cours_id"),
-    intervenants: (() => {
-      const v = formData.get("intervenants");
-      return typeof v === "string" ? v : "";
-    })(),
+    lienVisio: texte(formData, "lien_visio"),
+    description: brut("description"),
+    objectifs: brut("objectifs"),
+    travauxAvant: brut("travaux_avant"),
+    travauxApres: brut("travaux_apres"),
+    materiel: brut("materiel"),
     publie: formData.get("publie") === "on",
   };
 }
@@ -137,103 +138,36 @@ export async function modifierSeance(_: EtatAdmin, formData: FormData): Promise<
   const { data, error } = await supabase.from("sessions").update(v.seance).eq("id", id).select("id");
   if (error || !data?.length) return ECHEC;
   actualiser();
-  return { ok: true, message: "La séance est enregistrée." };
+  return { ok: true, message: "La session est enregistrée." };
 }
 
-/** Supprime une séance (le cours lié, ses supports et ses devoirs sont conservés). */
+/** Supprime une session et ses documents (fichiers compris). */
 export async function supprimerSeance(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
   const id = texte(formData, "id");
   if (!estUuid(id)) return ECHEC;
   const supabase = await clientAdmin();
   if (!supabase) return SESSION_EXPIREE;
+  const { data: fichiers } = await supabase.from("ressources").select("storage_path").eq("session_id", id).not("storage_path", "is", null);
   const { data, error } = await supabase.from("sessions").delete().eq("id", id).select("id");
   if (error || !data?.length) return ECHEC;
+  const chemins = (fichiers ?? []).flatMap((r) => (r.storage_path ? [r.storage_path] : []));
+  if (chemins.length > 0) await supabase.storage.from("ressources").remove(chemins);
   actualiser();
   redirect("/admin/seances");
 }
 
 // ---------------------------------------------------------------
-// Cours
-// ---------------------------------------------------------------
-
-function saisieCours(formData: FormData) {
-  const brut = (nom: string) => {
-    const v = formData.get(nom);
-    return typeof v === "string" ? v : "";
-  };
-  return {
-    titre: texte(formData, "titre"),
-    description: brut("description"),
-    objectifs: brut("objectifs"),
-    ordre: texte(formData, "ordre"),
-    publie: formData.get("publie") === "on",
-  };
-}
-
-export async function creerCours(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
-  const v = validerCours(saisieCours(formData));
-  if ("message" in v) return v;
-  const supabase = await clientAdmin();
-  if (!supabase) return SESSION_EXPIREE;
-  const { data, error } = await supabase.from("cours").insert(v.cours).select("id").single();
-  if (error || !data) return ECHEC;
-  actualiser();
-  redirect(`/admin/cours/${data.id}?cree=1`);
-}
-
-/** Modifie un cours. */
-export async function modifierCours(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
-  const id = texte(formData, "id");
-  if (!estUuid(id)) return ECHEC;
-  const v = validerCours(saisieCours(formData));
-  if ("message" in v) return v;
-  const supabase = await clientAdmin();
-  if (!supabase) return SESSION_EXPIREE;
-
-  const { data, error } = await supabase.from("cours").update(v.cours).eq("id", id).select("id");
-  if (error || !data?.length) return ECHEC;
-  actualiser();
-  return { ok: true, message: "Le cours est enregistré." };
-}
-
-/**
- * Supprime un cours SANS séance ni devoir (sinon des dépôts de participants seraient effacés).
- * Ses supports sont supprimés avec lui, fichiers compris.
- */
-export async function supprimerCours(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
-  const id = texte(formData, "id");
-  if (!estUuid(id)) return ECHEC;
-  const supabase = await clientAdmin();
-  if (!supabase) return SESSION_EXPIREE;
-
-  const [seances, devoirs, fichiers] = await Promise.all([
-    supabase.from("sessions").select("id", { count: "exact", head: true }).eq("cours_id", id),
-    supabase.from("devoirs").select("id", { count: "exact", head: true }).eq("cours_id", id),
-    supabase.from("ressources").select("storage_path").eq("cours_id", id).not("storage_path", "is", null),
-  ]);
-  if ((seances.count ?? 0) > 0 || (devoirs.count ?? 0) > 0) {
-    return { message: "Ce cours a des séances ou des devoirs : il ne peut pas être supprimé." };
-  }
-  const chemins = (fichiers.data ?? []).flatMap((r) => (r.storage_path ? [r.storage_path] : []));
-  const { data, error } = await supabase.from("cours").delete().eq("id", id).select("id");
-  if (error || !data?.length) return ECHEC;
-  if (chemins.length > 0) await supabase.storage.from("ressources").remove(chemins);
-  actualiser();
-  redirect("/admin/cours");
-}
-
-// ---------------------------------------------------------------
-// Supports d'un cours (liens et fichiers)
+// Documents d'une session (PDF ou lien, par exemple Canva)
 // ---------------------------------------------------------------
 
 export async function ajouterLien(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
-  const coursId = texte(formData, "cours_id");
-  if (!estUuid(coursId)) return ECHEC;
+  const sessionId = texte(formData, "session_id");
+  if (!estUuid(sessionId)) return ECHEC;
   const v = validerLien({ titre: texte(formData, "titre"), url: texte(formData, "url") });
   if ("message" in v) return v;
   const supabase = await clientAdmin();
   if (!supabase) return SESSION_EXPIREE;
-  const { error } = await supabase.from("ressources").insert({ cours_id: coursId, titre: v.titre, type: "lien", url: v.url });
+  const { error } = await supabase.from("ressources").insert({ session_id: sessionId, titre: v.titre, type: "lien", url: v.url });
   if (error) return ECHEC;
   actualiser();
   return { ok: true, message: "Lien ajouté." };
@@ -242,18 +176,19 @@ export async function ajouterLien(_: EtatAdmin, formData: FormData): Promise<Eta
 export type ResultatPreparation = { ok: true; chemin: string } | { ok: false; message: string };
 
 /** Étape 1 d'un envoi de fichier : le serveur choisit le chemin (le navigateur n'en choisit jamais). */
-export async function preparerFichierSupport(coursId: string, nomFichier: string): Promise<ResultatPreparation> {
-  if (!estUuid(coursId)) return { ok: false, message: "Cours introuvable." };
+export async function preparerFichierSupport(sessionId: string, nomFichier: string, typeFichier: string): Promise<ResultatPreparation> {
+  if (!estUuid(sessionId)) return { ok: false, message: "Session introuvable." };
+  if (!estPdf({ name: nomFichier, type: typeFichier })) return { ok: false, message: "Seuls les documents PDF sont acceptés." };
   const supabase = await clientAdmin();
   if (!supabase) return { ok: false, message: SESSION_EXPIREE.message! };
-  return { ok: true, chemin: cheminSupport(coursId, crypto.randomUUID(), nomFichier) };
+  return { ok: true, chemin: cheminSupport(sessionId, crypto.randomUUID(), nomFichier) };
 }
 
-/** Étape 3 : après l'envoi par le navigateur, on vérifie le fichier puis on enregistre le support. */
-export async function enregistrerFichierSupport(coursId: string, titre: string, chemin: string): Promise<EtatAdmin> {
-  if (!estUuid(coursId) || !estCheminSupport(chemin, coursId)) return ECHEC;
+/** Étape 3 : après l'envoi par le navigateur, on vérifie le fichier puis on enregistre le document. */
+export async function enregistrerFichierSupport(sessionId: string, titre: string, chemin: string): Promise<EtatAdmin> {
+  if (!estUuid(sessionId) || !estCheminSupport(chemin, sessionId)) return ECHEC;
   const t = titre.trim();
-  if (t.length === 0 || t.length > 200) return { message: "Donnez un titre au support (200 caractères au maximum)." };
+  if (t.length === 0 || t.length > 200) return { message: "Donnez un titre au document (200 caractères au maximum)." };
   const supabase = await clientAdmin();
   if (!supabase) return SESSION_EXPIREE;
 
@@ -262,16 +197,16 @@ export async function enregistrerFichierSupport(coursId: string, titre: string, 
   const { data: fichiers } = await supabase.storage.from("ressources").list(dossier);
   if (!fichiers?.some((f) => f.name === nom)) return { message: "Le fichier n'a pas été reçu. Réessayez." };
 
-  const { error } = await supabase.from("ressources").insert({ cours_id: coursId, titre: t, type: "fichier", storage_path: chemin });
+  const { error } = await supabase.from("ressources").insert({ session_id: sessionId, titre: t, type: "fichier", storage_path: chemin });
   if (error) {
     await supabase.storage.from("ressources").remove([chemin]);
     return ECHEC;
   }
   actualiser();
-  return { ok: true, message: "Fichier ajouté." };
+  return { ok: true, message: "Document ajouté." };
 }
 
-/** Supprime un support (et son fichier s'il en a un). */
+/** Supprime un document (et son fichier s'il en a un). */
 export async function supprimerSupport(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
   const id = texte(formData, "id");
   if (!estUuid(id)) return ECHEC;
@@ -282,80 +217,7 @@ export async function supprimerSupport(_: EtatAdmin, formData: FormData): Promis
   const chemin = data[0].storage_path;
   if (chemin) await supabase.storage.from("ressources").remove([chemin]);
   actualiser();
-  return { ok: true, message: "Support supprimé." };
-}
-
-// ---------------------------------------------------------------
-// Devoirs et corrections
-// ---------------------------------------------------------------
-
-function saisieDevoir(formData: FormData) {
-  const v = formData.get("consigne");
-  return {
-    coursId: texte(formData, "cours_id"),
-    titre: texte(formData, "titre"),
-    consigne: typeof v === "string" ? v : "",
-    date: texte(formData, "date"),
-    heure: texte(formData, "heure"),
-    publie: formData.get("publie") === "on",
-  };
-}
-
-export async function creerDevoir(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
-  const v = validerDevoir(saisieDevoir(formData));
-  if ("message" in v) return v;
-  const supabase = await clientAdmin();
-  if (!supabase) return SESSION_EXPIREE;
-  const { data, error } = await supabase.from("devoirs").insert(v.devoir).select("id").single();
-  if (error || !data) return ECHEC;
-  actualiser();
-  redirect(`/admin/devoirs/${data.id}?cree=1`);
-}
-
-/** Modifie un devoir. Il ne change pas de cours s'il a déjà des rendus. */
-export async function modifierDevoir(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
-  const id = texte(formData, "id");
-  if (!estUuid(id)) return ECHEC;
-  const v = validerDevoir(saisieDevoir(formData));
-  if ("message" in v) return v;
-  const supabase = await clientAdmin();
-  if (!supabase) return SESSION_EXPIREE;
-  const { data: actuel } = await supabase.from("devoirs").select("cours_id, rendus(count)").eq("id", id).maybeSingle();
-  if (!actuel) return ECHEC;
-  if (actuel.cours_id !== v.devoir.cours_id && (actuel.rendus[0]?.count ?? 0) > 0) {
-    return { message: "Des participants ont déjà rendu ce devoir : il ne peut pas changer de cours." };
-  }
-  const { data, error } = await supabase.from("devoirs").update(v.devoir).eq("id", id).select("id");
-  if (error || !data?.length) return ECHEC;
-  actualiser();
-  return { ok: true, message: "Le devoir est enregistré." };
-}
-
-/** Supprime un devoir SANS rendu (sinon les dépôts des participants seraient effacés). */
-export async function supprimerDevoir(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
-  const id = texte(formData, "id");
-  if (!estUuid(id)) return ECHEC;
-  const supabase = await clientAdmin();
-  if (!supabase) return SESSION_EXPIREE;
-  const { count } = await supabase.from("rendus").select("id", { count: "exact", head: true }).eq("devoir_id", id);
-  if ((count ?? 0) > 0) return { message: "Des participants ont rendu ce devoir : il ne peut pas être supprimé." };
-  const { data, error } = await supabase.from("devoirs").delete().eq("id", id).select("id");
-  if (error || !data?.length) return ECHEC;
-  actualiser();
-  redirect("/admin/devoirs");
-}
-
-/** Marque un rendu « corrigé » (le participant ne peut plus le remplacer), ou annule la correction. */
-export async function changerStatutRendu(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
-  const id = texte(formData, "id");
-  const statut = texte(formData, "statut");
-  if (!estUuid(id) || (statut !== "corrige" && statut !== "depose")) return ECHEC;
-  const supabase = await clientAdmin();
-  if (!supabase) return SESSION_EXPIREE;
-  const { data, error } = await supabase.from("rendus").update({ statut }).eq("id", id).select("id");
-  if (error || !data?.length) return ECHEC;
-  actualiser();
-  return { ok: true };
+  return { ok: true, message: "Document supprimé." };
 }
 
 // ---------------------------------------------------------------

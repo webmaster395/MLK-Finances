@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { CalendarDays, FilePen, MessageCircle, UserPlus, Users, type LucideIcon } from "lucide-react";
+import { CalendarDays, MessageCircle, UserPlus, Users, type LucideIcon } from "lucide-react";
 import { lireTableauDeBord } from "@/lib/donnees/admin";
-import { formaterCreneau, formaterJourComplet } from "@/lib/format";
+import { formaterJourComplet } from "@/lib/format";
 
 function Chiffre({ icone: Icone, valeur, libelle, href, alerte = false }: { icone: LucideIcon; valeur: number; libelle: string; href: string; alerte?: boolean }) {
   return (
@@ -44,34 +44,13 @@ export async function TableauDeBordAdmin() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-3">
         <Chiffre icone={Users} valeur={t.participants} libelle={t.participants > 1 ? "Participants" : "Participant"} href="/admin/participants" />
-        <Chiffre icone={CalendarDays} valeur={t.seancesAVenir} libelle="Séances à venir" href="/admin/seances" />
-        <Chiffre icone={FilePen} valeur={t.aCorriger.length} libelle="Devoirs à corriger" href="/admin/devoirs" alerte={t.aCorriger.length > 0} />
+        <Chiffre icone={CalendarDays} valeur={t.seancesAVenir} libelle="Sessions à venir" href="/admin/seances" />
         <Chiffre icone={MessageCircle} valeur={t.temoignagesAValider} libelle="Témoignages à valider" href="/admin/temoignages" alerte={t.temoignagesAValider > 0} />
       </div>
 
-      <div className="grid items-start gap-4 xl:grid-cols-2">
-        <Panneau id="titre-corrections" titre="Devoirs à corriger" compteur={t.aCorriger.length}>
-          {t.aCorriger.length > 0 ? (
-            <ul className="mt-3 divide-y divide-black/10">
-              {t.aCorriger.slice(0, 8).map((r) => (
-                <li key={r.id}>
-                  <Link href={`/admin/devoirs/${r.devoirId}`} className="group block py-3">
-                    <span className="block text-sm font-semibold text-noir group-hover:underline [overflow-wrap:anywhere]">{r.devoir}</span>
-                    <span className="mt-0.5 block text-xs">
-                      {r.participant} · déposé le {formaterCreneau(r.deposeLe)}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-3 text-sm font-semibold">Aucun devoir en attente de correction.</p>
-          )}
-          {t.aCorriger.length > 8 ? <p className="mt-2 text-xs">… et {t.aCorriger.length - 8} autres.</p> : null}
-        </Panneau>
-
+      <div className="grid items-start gap-4">
         <Panneau id="titre-inscrits" titre="Derniers inscrits">
           {t.derniersInscrits.length > 0 ? (
             <ul className="mt-3 divide-y divide-black/10">
@@ -99,15 +78,12 @@ export function TableauDeBordChargement() {
   return (
     <div className="flex flex-col gap-4" role="status" aria-live="polite">
       <span className="sr-only">Chargement du tableau de bord…</span>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="h-[5.5rem] rounded-[0.65rem] bg-black/10 motion-safe:animate-pulse" />
+      <div className="grid gap-4 sm:grid-cols-3">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-[5.5rem] rounded-[1.25rem] bg-black/10 motion-safe:animate-pulse" />
         ))}
       </div>
-      <div className="grid gap-4 xl:grid-cols-2">
-        <div className="h-64 rounded-[0.65rem] bg-black/10 motion-safe:animate-pulse" />
-        <div className="h-64 rounded-[0.65rem] bg-black/10 motion-safe:animate-pulse" />
-      </div>
+      <div className="h-64 rounded-[1.25rem] bg-black/10 motion-safe:animate-pulse" />
     </div>
   );
 }
