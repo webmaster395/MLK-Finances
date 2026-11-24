@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Témoignages — Administration" };
 export default function Page() {
   return (
     <div className="flex flex-col gap-5">
-      <TitrePage titre="Témoignages" sousTitre="Valider, refuser, ajouter une photo" />
+      <TitrePage titre="Témoignages" sousTitre="Choisir ce qui est affiché aux participants" />
       <Suspense fallback={<ChargementPage />}>
         <GestionTemoignages />
       </Suspense>

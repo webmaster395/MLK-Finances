@@ -40,8 +40,15 @@ export async function envoyerTemoignage(_: EtatTemoignage, formData: FormData): 
   const { data: utilisateur } = await supabase.auth.getUser();
   if (!utilisateur.user) return SESSION_EXPIREE;
 
-  // Le prénom affiché est remplacé par la base : la valeur envoyée ici est ignorée
-  const { error } = await supabase.from("temoignages").insert({ texte, confidentiel, nom_affiche: "-" });
+  // Pour un participant, la base impose l'auteur et le prénom. Pour un compte administrateur, elle laisse
+  // les valeurs telles quelles : on les renseigne donc ici (auteur = personne connectée, prénom de son profil).
+  const { data: profil } = await supabase.from("profils").select("prenom").eq("id", utilisateur.user.id).maybeSingle();
+  const { error } = await supabase.from("temoignages").insert({
+    texte,
+    confidentiel,
+    auteur_id: utilisateur.user.id,
+    nom_affiche: profil?.prenom.trim().slice(0, 100) || "Participant",
+  });
   if (error) return ECHEC;
 
   actualiser();
