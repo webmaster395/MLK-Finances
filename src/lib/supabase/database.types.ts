@@ -167,6 +167,7 @@ export type Database = {
           cree_le: string
           id: string
           nom_affiche: string
+          partage: boolean
           photo_path: string | null
           texte: string
           valide: boolean
@@ -176,6 +177,7 @@ export type Database = {
           cree_le?: string
           id?: string
           nom_affiche: string
+          partage?: boolean
           photo_path?: string | null
           texte: string
           valide?: boolean
@@ -185,6 +187,7 @@ export type Database = {
           cree_le?: string
           id?: string
           nom_affiche?: string
+          partage?: boolean
           photo_path?: string | null
           texte?: string
           valide?: boolean

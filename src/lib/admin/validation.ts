@@ -227,7 +227,7 @@ export type Temoignage = { nom_affiche: string; texte: string; valide: boolean }
 export function validerTemoignage(s: { nom: string; texte: string; valide: boolean }): { temoignage: Temoignage } | { message: string } {
   const nom = s.nom.trim();
   const texte = s.texte.trim();
-  if (nom.length === 0 || nom.length > 100) return { message: "Indiquez le nom affiché (100 caractères au maximum)." };
+  if (nom.length === 0 || nom.length > 100) return { message: "Indiquez le prénom affiché (100 caractères au maximum)." };
   if (texte.length === 0 || texte.length > 1000) return { message: "Écrivez le témoignage (1 000 caractères au maximum)." };
   return { temoignage: { nom_affiche: nom, texte, valide: s.valide } };
 }
@@ -246,4 +246,13 @@ export function verifierPhotoTemoignage(f: { size: number; type: string }): stri
 /** Chemin de la photo d'un témoignage : un seul fichier, remplacé à chaque changement. */
 export function cheminPhotoTemoignage(temoignageId: string) {
   return `temoignages/${temoignageId}/photo`;
+}
+
+// ---------------------------------------------------------------
+// Recherche d'un participant
+// ---------------------------------------------------------------
+
+/** Garde seulement des lettres, chiffres, espaces, tirets et apostrophes : la recherche ne peut pas casser la requête. */
+export function nettoyerRecherche(brut: string): string {
+  return brut.replace(/[^\p{L}\p{N} '\-]/gu, "").replace(/\s+/g, " ").trim().slice(0, 60);
 }

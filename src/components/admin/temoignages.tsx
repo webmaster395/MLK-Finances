@@ -1,9 +1,10 @@
+import Link from "next/link";
 import { CircleCheck, MessageCircle } from "lucide-react";
 import { Champ } from "@/components/auth/champ";
 import { Avatar } from "@/components/profil/avatar";
 import { EtatVide } from "@/components/coquille/etat-vide";
 import { changerValidation, creerTemoignage, modifierTemoignage, supprimerPhotoTemoignage, supprimerTemoignage } from "@/lib/admin/actions";
-import { lireTemoignagesAdmin, type TemoignageAdmin } from "@/lib/donnees/admin";
+import { lireTemoignagesAdmin, type OngletTemoignages, type TemoignageAdmin } from "@/lib/donnees/admin";
 import { formaterJourComplet } from "@/lib/format";
 import { EnvoiPhotoTemoignage } from "./envoi-photo-temoignage";
 import { FormulaireAction } from "./formulaire-action";
@@ -18,7 +19,7 @@ function initiales(nom: string) {
 function ChampsTemoignage({ prefixe, t }: { prefixe: string; t?: TemoignageAdmin }) {
   return (
     <>
-      <Champ id={`${prefixe}-nom`} name="nom" libelle="Nom affiché" required maxLength={100} defaultValue={t?.nom} placeholder="Ex. : Léa M., promotion 2026" />
+      <Champ id={`${prefixe}-nom`} name="nom" libelle="Prénom affiché" required maxLength={100} defaultValue={t?.nom} placeholder="Ex. : Léa (le prénom seul)" />
       <div className="flex flex-col gap-1.5">
         <label htmlFor={`${prefixe}-texte`} className="text-sm font-semibold text-noir">
           Témoignage
@@ -27,7 +28,7 @@ function ChampsTemoignage({ prefixe, t }: { prefixe: string; t?: TemoignageAdmin
       </div>
       <label className="flex min-h-11 cursor-pointer items-center gap-2.5 font-semibold text-noir">
         <input type="checkbox" name="valide" defaultChecked={t?.valide ?? false} className="size-5 accent-accent" />
-        Validé (visible par les participants)
+        Affiché aux participants
       </label>
     </>
   );
@@ -44,32 +45,39 @@ function CarteTemoignage({ t }: { t: TemoignageAdmin }) {
             {t.valide ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-accent-clair px-2 py-0.5 text-[11px] font-semibold text-noir">
                 <CircleCheck aria-hidden className="size-3.5" />
-                Validé
+                Affiché
               </span>
             ) : (
               <span className="rounded-full bg-orange px-2 py-0.5 text-[11px] font-semibold text-noir">À valider</span>
             )}
           </p>
-          <p className="text-xs">Ajouté le {formaterJourComplet(t.creeLe)}</p>
+          <p className="text-xs font-semibold">Écrit le {formaterJourComplet(t.creeLe)}</p>
         </div>
       </div>
       <blockquote className="mt-3 whitespace-pre-line text-sm font-semibold text-noir [overflow-wrap:anywhere]">« {t.texte} »</blockquote>
 
       <div className="mt-4 flex flex-wrap gap-2">
         {t.valide ? (
-          <FormulaireAction key="retirer" action={changerValidation} bouton="Retirer de la publication" enCoursTexte="…" style="secondaire" afficherSucces={false} className="items-start">
+          <FormulaireAction key="retirer" action={changerValidation} bouton="Ne plus afficher" enCoursTexte="…" style="secondaire" afficherSucces={false} className="items-start">
             <input type="hidden" name="id" value={t.id} />
             <input type="hidden" name="valide" value="non" />
           </FormulaireAction>
         ) : (
-          <FormulaireAction key="valider" action={changerValidation} bouton="Valider" enCoursTexte="…" afficherSucces={false} className="items-start">
+          <FormulaireAction
+            key="valider"
+            action={changerValidation}
+            bouton="Valider et afficher à tous"
+            enCoursTexte="…"
+            afficherSucces={false}
+            className="items-start"
+          >
             <input type="hidden" name="id" value={t.id} />
             <input type="hidden" name="valide" value="oui" />
           </FormulaireAction>
         )}
         <FormulaireAction
           action={supprimerTemoignage}
-          bouton={t.valide ? "Supprimer" : "Refuser et supprimer"}
+          bouton="Supprimer"
           enCoursTexte="…"
           style="danger"
           afficherSucces={false}
@@ -110,26 +118,82 @@ function CarteTemoignage({ t }: { t: TemoignageAdmin }) {
   );
 }
 
-/** Gestion des témoignages : valider, refuser, modifier, ajouter une photo. Sous <Suspense>. */
-export async function GestionTemoignages() {
-  const temoignages = await lireTemoignagesAdmin();
-  const aValider = temoignages.filter((t) => !t.valide).length;
+function adresse(onglet: OngletTemoignages, page: number) {
+  const params = new URLSearchParams();
+  if (onglet === "affiches") params.set("onglet", "affiches");
+  if (page > 1) params.set("page", String(page));
+  const texte = params.toString();
+  return texte ? `/admin/temoignages?${texte}` : "/admin/temoignages";
+}
+
+const LIEN_PAGE =
+  "inline-flex min-h-11 items-center gap-1.5 rounded-[0.9rem] border border-black/25 bg-white px-4 text-sm font-semibold text-noir hover:bg-black/5";
+
+/**
+ * Gestion des témoignages partagés : onglets « À valider » et « Affichés », 20 par page, modifier, ajouter une photo.
+ * Lit l'adresse et la base : sous <Suspense>.
+ */
+export async function GestionTemoignages({ searchParams }: { searchParams: Promise<{ [cle: string]: string | string[] | undefined }> }) {
+  const parametres = await searchParams;
+  const onglet: OngletTemoignages = parametres.onglet === "affiches" ? "affiches" : "a-valider";
+  const brutPage = typeof parametres.page === "string" ? Number(parametres.page) : 1;
+  const demandee = Number.isInteger(brutPage) && brutPage > 0 ? brutPage : 1;
+  const { temoignages, aValider, affiches, page, pages } = await lireTemoignagesAdmin(onglet, demandee);
+
+  const onglets = [
+    { cle: "a-valider" as const, libelle: "À valider", nombre: aValider },
+    { cle: "affiches" as const, libelle: "Affichés", nombre: affiches },
+  ];
 
   return (
     <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
       <div className="flex flex-col gap-4">
+        <nav aria-label="Témoignages" className="flex gap-2">
+          {onglets.map((o) => (
+            <Link
+              key={o.cle}
+              href={adresse(o.cle, 1)}
+              aria-current={onglet === o.cle ? "page" : undefined}
+              className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold ${
+                onglet === o.cle ? "bg-accent text-white" : "border border-black/25 text-noir hover:bg-black/5"
+              }`}
+            >
+              {o.libelle} ({o.nombre})
+            </Link>
+          ))}
+        </nav>
+
         {temoignages.length === 0 ? (
-          <EtatVide icone={MessageCircle} titre="Aucun témoignage" texte="Ajoutez un premier témoignage avec le formulaire." />
+          <EtatVide
+            icone={MessageCircle}
+            titre={onglet === "affiches" ? "Aucun témoignage affiché" : "Rien à valider"}
+            texte={onglet === "affiches" ? "Les témoignages validés apparaîtront ici." : "Les nouveaux témoignages partagés apparaîtront ici."}
+          />
         ) : (
-          <>
-            <p className="text-sm font-semibold">
-              {temoignages.length} témoignage{temoignages.length > 1 ? "s" : ""} · {aValider} à valider
-            </p>
-            {temoignages.map((t) => (
-              <CarteTemoignage key={t.id} t={t} />
-            ))}
-          </>
+          temoignages.map((t) => <CarteTemoignage key={t.id} t={t} />)
         )}
+
+        {pages > 1 ? (
+          <nav aria-label="Pages des témoignages" className="flex items-center justify-between gap-3">
+            {page > 1 ? (
+              <Link href={adresse(onglet, page - 1)} className={LIEN_PAGE} rel="prev">
+                Précédente
+              </Link>
+            ) : (
+              <span />
+            )}
+            <span className="text-sm font-semibold text-noir">
+              Page {page} sur {pages}
+            </span>
+            {page < pages ? (
+              <Link href={adresse(onglet, page + 1)} className={LIEN_PAGE} rel="next">
+                Suivante
+              </Link>
+            ) : (
+              <span />
+            )}
+          </nav>
+        ) : null}
       </div>
 
       <section className="accueil-carte p-5 sm:p-6" aria-labelledby="titre-nouveau-temoignage">

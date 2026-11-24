@@ -9,16 +9,17 @@
 ------------------------------------------------------------------- */
 @theme {
   /* Palette sobre : bleu-violet doux, noir, blanc, fond lavande très clair (d'après l'image des responsables) */
-  --color-accent: #6b78f5;
+  --color-accent: #4953d6; /* assez foncé pour du texte blanc (contraste 5,5 : 1) */
   --color-accent-clair: #dfe3fd;
   --color-orange: #e95609; /* uniquement pour les alertes et « à valider » */
   --color-noir: #0b0b10;
   --color-texte: #3b3d4f;
+  --color-doux: #565a73; /* texte secondaire lisible (jamais de gris pâle pour du texte) */
   --color-fond: #eceefa;
   --color-carte: #ffffff;
-  --font-logo: var(--font-antonio), "Arial Narrow", sans-serif; /* réservé au logo */
-  --font-titre: var(--font-inter), system-ui, Arial, sans-serif;
-  --font-corps: var(--font-inter), system-ui, Arial, sans-serif;
+  --font-logo: var(--font-antonio), "Arial Narrow", sans-serif;
+  --font-titre: var(--font-antonio), "Arial Narrow", sans-serif; /* titres condensés (police d'origine) */
+  --font-corps: var(--font-poppins), Arial, sans-serif;
 }
 
 @layer base {
@@ -41,12 +42,12 @@
 }
 
 @layer components {
-  /* Titres : police simple, gras moyen, sans majuscules */
+  /* Titres condensés en majuscules (police d'origine) */
   .titre-charte {
     font-family: var(--font-titre);
-    font-weight: 650;
-    letter-spacing: -0.025em;
-    line-height: 1.12;
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 0.95;
     color: var(--color-noir);
   }
 
@@ -78,6 +79,7 @@
     transform-origin: left;
   }
   .logo-mlk::before {
+    display: none; /* trait rose retiré : un nouveau logo sera fourni */
     content: "";
     position: absolute;
     z-index: -1;
@@ -240,6 +242,8 @@
     color-scheme: dark;
     --color-noir: #f3f4fb;
     --color-texte: #d4d6e6;
+    --color-doux: #b4b8d0;
+    --color-accent: #6b78f5;
     --color-fond: #101118;
     --color-carte: #1b1c27;
   }
@@ -279,6 +283,11 @@
   /* Champs de formulaire */
   #espace-connecte[data-theme="sombre"] .bg-white {
     background-color: #262626;
+  }
+  #espace-connecte[data-theme="sombre"] input::placeholder,
+  #espace-connecte[data-theme="sombre"] textarea::placeholder {
+    color: var(--color-doux);
+    opacity: 1;
   }
   #espace-connecte[data-theme="sombre"] input[type="file"]::file-selector-button {
     color: #070707;

@@ -4,7 +4,7 @@ import { Logo } from "@/components/logo";
 export const metadata: Metadata = { title: "Charte graphique" };
 
 const couleurs = [
-  { nom: "Bleu-violet", code: "#6b78f5", classe: "bg-accent" },
+  { nom: "Bleu-violet", code: "#4953d6", classe: "bg-accent" },
   { nom: "Bleu-violet clair", code: "#dfe3fd", classe: "bg-accent-clair" },
   { nom: "Noir", code: "#0b0b10", classe: "bg-noir" },
   { nom: "Texte", code: "#3b3d4f", classe: "bg-texte" },
@@ -36,9 +36,9 @@ export default function Page() {
       <section className="carte">
         <h2 className="titre-charte mb-4 text-3xl">Typographie</h2>
         <p className="titre-charte text-4xl sm:text-5xl">Bienvenue dans votre parcours</p>
-        <p className="mt-3 text-2xl font-semibold tracking-tight text-texte/60">MLK Parcours Finances</p>
+        <p className="mt-3 font-titre text-3xl font-medium tracking-wide text-doux">MLK Parcours Finances</p>
         <p className="mt-3 font-medium">
-          Texte courant en Inter : les informations de la prochaine session seront bientôt disponibles.
+          Texte courant en Poppins : les informations de la prochaine session seront bientôt disponibles.
         </p>
       </section>
 

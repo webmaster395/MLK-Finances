@@ -2,8 +2,8 @@
 export function TitrePage({ titre, sousTitre }: { titre: string; sousTitre?: string }) {
   return (
     <div>
-      <h1 className="titre-charte text-3xl sm:text-4xl lg:text-5xl">{titre}</h1>
-      {sousTitre ? <p className="mt-1.5 text-lg font-semibold tracking-tight text-texte/60 sm:text-2xl lg:text-3xl">{sousTitre}</p> : null}
+      <h1 className="titre-charte text-3xl sm:text-5xl lg:text-6xl">{titre}</h1>
+      {sousTitre ? <p className="mt-1.5 font-titre text-lg font-medium tracking-wide text-doux sm:text-2xl lg:text-3xl">{sousTitre}</p> : null}
     </div>
   );
 }

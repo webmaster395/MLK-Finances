@@ -12,6 +12,7 @@ import {
   estPdf,
   estUuid,
   isoVersParis,
+  nettoyerRecherche,
   nomFichierSur,
   parisVersIso,
   validerLien,
@@ -118,8 +119,8 @@ test("un message de l'équipe a un texte et un titre facultatif", () => {
 });
 
 test("un témoignage a un nom affiché et un texte ; la photo est une image légère", () => {
-  assert.deepEqual(validerTemoignage({ nom: " Léa M. ", texte: " Super parcours ", valide: false }), {
-    temoignage: { nom_affiche: "Léa M.", texte: "Super parcours", valide: false },
+  assert.deepEqual(validerTemoignage({ nom: " Léa ", texte: " Super parcours ", valide: false }), {
+    temoignage: { nom_affiche: "Léa", texte: "Super parcours", valide: false },
   });
   assert.ok("message" in validerTemoignage({ nom: "", texte: "x", valide: true }));
   assert.ok("message" in validerTemoignage({ nom: "x", texte: "y".repeat(1001), valide: true }));
@@ -127,4 +128,11 @@ test("un témoignage a un nom affiché et un texte ; la photo est une image lég
   assert.ok(verifierPhotoTemoignage({ size: 3 * 1024 * 1024, type: "image/png" }));
   assert.ok(verifierPhotoTemoignage({ size: 1000, type: "application/pdf" }));
   assert.equal(cheminPhotoTemoignage("abc"), "temoignages/abc/photo");
+});
+
+test("la recherche d'un participant ne garde que des caractères sûrs", () => {
+  assert.equal(nettoyerRecherche("  Léa   Martin "), "Léa Martin");
+  assert.equal(nettoyerRecherche("Jean-Pierre d'Arc"), "Jean-Pierre d'Arc");
+  assert.equal(nettoyerRecherche("a%,b(c)_d"), "abcd");
+  assert.equal(nettoyerRecherche("x".repeat(100)).length, 60);
 });

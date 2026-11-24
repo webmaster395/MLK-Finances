@@ -282,10 +282,11 @@ export async function creerTemoignage(_: EtatAdmin, formData: FormData): Promise
   if ("message" in v) return v;
   const supabase = await clientAdmin();
   if (!supabase) return SESSION_EXPIREE;
-  const { error } = await supabase.from("temoignages").insert(v.temoignage);
+  // Un témoignage saisi par l'équipe est destiné aux participants (jamais une note privée)
+  const { error } = await supabase.from("temoignages").insert({ ...v.temoignage, partage: true });
   if (error) return ECHEC;
   actualiser();
-  return { ok: true, message: v.temoignage.valide ? "Témoignage publié." : "Témoignage enregistré (à valider)." };
+  return { ok: true, message: v.temoignage.valide ? "Témoignage affiché aux participants." : "Témoignage enregistré (non affiché)." };
 }
 
 export async function modifierTemoignage(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {

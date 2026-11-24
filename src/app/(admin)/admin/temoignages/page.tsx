@@ -6,12 +6,12 @@ import { TitrePage } from "@/components/coquille/titre-page";
 
 export const metadata: Metadata = { title: "Témoignages — Administration" };
 
-export default function Page() {
+export default function Page({ searchParams }: PageProps<"/admin/temoignages">) {
   return (
     <div className="flex flex-col gap-5">
-      <TitrePage titre="Témoignages" sousTitre="Valider, refuser, ajouter une photo" />
+      <TitrePage titre="Témoignages" sousTitre="Valider les témoignages partagés par les participants" />
       <Suspense fallback={<ChargementPage />}>
-        <GestionTemoignages />
+        <GestionTemoignages searchParams={searchParams} />
       </Suspense>
     </div>
   );

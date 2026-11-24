@@ -1,7 +1,8 @@
-import { MessageCircle, PenLine, Quote } from "lucide-react";
+import { MessageCircle, PenLine } from "lucide-react";
 import { EtatVide } from "@/components/coquille/etat-vide";
-import { Avatar } from "@/components/profil/avatar";
 import { lireTemoignages } from "@/lib/donnees/temoignages";
+import { formaterJourComplet, formaterMois, jourParis } from "@/lib/format";
+import { GalerieTemoignages } from "./galerie-temoignages";
 
 /** Initiales pour l'avatar (le nom affiché peut commencer par un marqueur comme « [test] »). */
 function initiales(nom: string) {
@@ -21,17 +22,17 @@ function Bandeau({ nombre }: { nombre: number }) {
             Les expériences de ceux qui ont suivi le parcours
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-white/80 sm:text-base">
-            Des retours sincères, publiés après relecture par l&apos;équipe. Vous aussi, partagez ce que le parcours vous apporte.
+            Les témoignages partagés par les participants et validés par l&apos;équipe. Vous aussi, écrivez ce qui vous a parlé.
           </p>
-          <a href="#mon-temoignage" className="btn btn-principal mt-5 w-fit gap-2">
+          <a href="#mon-temoignage" className="btn btn-accent mt-5 w-fit gap-2">
             <PenLine aria-hidden className="size-4" />
-            Partager mon témoignage
+            Écrire un témoignage
           </a>
         </div>
         <dl className="grid grid-cols-1 gap-3">
           <div className="rounded-lg bg-white/10 p-4">
             <dd className="titre-charte text-4xl !leading-none text-white">{nombre}</dd>
-            <dt className="mt-1 text-xs font-semibold text-white/70">témoignage{nombre > 1 ? "s" : ""} publié{nombre > 1 ? "s" : ""}</dt>
+            <dt className="mt-1 text-xs font-semibold text-white/70">témoignage{nombre > 1 ? "s" : ""} partagé{nombre > 1 ? "s" : ""}</dt>
           </div>
         </dl>
       </div>
@@ -39,7 +40,7 @@ function Bandeau({ nombre }: { nombre: number }) {
   );
 }
 
-/** Témoignages publiés : bandeau puis grille de cartes. Lit la base : à placer sous <Suspense>. */
+/** Témoignages validés : bandeau puis galerie par mois. Lit la base : à placer sous <Suspense>. */
 export async function ListeTemoignages() {
   const temoignages = await lireTemoignages();
 
@@ -51,40 +52,21 @@ export async function ListeTemoignages() {
         <EtatVide
           icone={MessageCircle}
           titre="Aucun témoignage pour le moment"
-          texte="Les expériences des participants apparaîtront ici dès qu'elles seront publiées."
+          texte="Les témoignages partagés par l'équipe apparaîtront ici."
         />
       ) : (
-        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {temoignages.map((t, i) => (
-            <li key={t.id} className="entree-cascade" style={{ "--i": Math.min(i, 12) } as React.CSSProperties}>
-              <article className="carte-survol accueil-carte flex h-full flex-col justify-between gap-5 p-5 sm:p-6">
-                <div className="flex flex-col gap-4">
-                  <span aria-hidden className="flex size-12 items-center justify-center rounded-[0.6rem] bg-accent-clair text-noir">
-                    <Quote className="size-6" strokeWidth={1.75} />
-                  </span>
-                  <blockquote className="whitespace-pre-line text-sm font-semibold leading-relaxed text-noir sm:text-base [overflow-wrap:anywhere]">
-                    « {t.texte} »
-                  </blockquote>
-                </div>
-                <footer className="flex items-center gap-3 border-t border-black/10 pt-4">
-                  {t.photoUrl ? (
-                    <Avatar photoUrl={t.photoUrl} initiales={initiales(t.nom_affiche)} taille="size-10" texteTaille="text-xs" />
-                  ) : (
-                    <span
-                      aria-hidden
-                      className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent-clair text-xs font-semibold text-noir"
-                    >
-                      {initiales(t.nom_affiche)}
-                    </span>
-                  )}
-                  <cite className="min-w-0 text-sm font-semibold not-italic leading-snug text-noir [overflow-wrap:anywhere]">
-                    {t.nom_affiche}
-                  </cite>
-                </footer>
-              </article>
-            </li>
-          ))}
-        </ul>
+        <GalerieTemoignages
+          temoignages={temoignages.map((t) => ({
+            id: t.id,
+            nom: t.nom_affiche,
+            texte: t.texte,
+            initiales: initiales(t.nom_affiche),
+            photoUrl: t.photoUrl,
+            date: formaterJourComplet(t.creeLe),
+            moisCle: jourParis(t.creeLe).slice(0, 7),
+            moisLibelle: formaterMois(t.creeLe),
+          }))}
+        />
       )}
     </div>
   );
