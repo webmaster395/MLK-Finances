@@ -102,7 +102,7 @@ export function BibliothequeRessources({ elements, erreurFichier }: { elements: 
                 value={recherche}
                 onChange={(e) => setRecherche(e.target.value)}
                 placeholder="Rechercher une ressource…"
-                className="min-h-12 w-full rounded-md border border-black/25 bg-white pl-11 pr-4 text-sm font-semibold text-noir placeholder:font-normal placeholder:text-black/60"
+                className="min-h-12 w-full rounded-md border border-black/25 bg-white pl-11 pr-4 text-sm font-semibold text-noir placeholder:font-normal placeholder:text-doux"
               />
             </label>
             <div className="mt-4 flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Filtrer par format">
