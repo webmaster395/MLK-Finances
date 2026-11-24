@@ -2,7 +2,9 @@ import { CircleCheck, Clock, History, Lock, PenLine } from "lucide-react";
 import { obtenirPersonne } from "@/lib/auth/personne";
 import { lireMesTemoignages, type MonTemoignage } from "@/lib/donnees/temoignages";
 import { formaterJourComplet } from "@/lib/format";
+import { AfficherPlus } from "./afficher-plus";
 import { FormulaireTemoignage, RetirerTemoignage } from "./formulaire-temoignage";
+import { TexteRepliable } from "./texte-repliable";
 
 function Ligne({ t }: { t: MonTemoignage }) {
   return (
@@ -26,7 +28,9 @@ function Ligne({ t }: { t: MonTemoignage }) {
           </span>
         )}
       </p>
-      <p className="mt-2 whitespace-pre-line text-sm font-semibold leading-relaxed text-noir [overflow-wrap:anywhere]">« {t.texte} »</p>
+      <div className="mt-2">
+        <TexteRepliable texte={t.texte} />
+      </div>
 
       {t.valide ? null : (
         <div className="mt-3 flex flex-col gap-3 border-t border-black/10 pt-3">
@@ -69,12 +73,12 @@ export async function MonTemoignage() {
           Mes témoignages
         </h2>
         {miens.length > 0 ? (
-          <ul className="mt-4 flex flex-col gap-3">
-            {miens.map((t) => (
+          <AfficherPlus
+            elements={miens.map((t) => (
               // La clé change quand le contenu change : le formulaire « Modifier » repart des valeurs enregistrées
               <Ligne key={`${t.id}-${t.valide}-${t.partage}-${t.texte}`} t={t} />
             ))}
-          </ul>
+          />
         ) : (
           <p className="mt-3 text-sm font-semibold">Vous n&apos;avez pas encore écrit de témoignage.</p>
         )}

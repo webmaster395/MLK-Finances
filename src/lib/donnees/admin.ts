@@ -283,29 +283,64 @@ export type TemoignageAdmin = {
   creeLe: string;
 };
 
-/** Les témoignages partagés (jamais les notes privées) : ceux à valider d'abord, puis les validés. */
-export async function lireTemoignagesAdmin(): Promise<TemoignageAdmin[]> {
+export type OngletTemoignages = "a-valider" | "affiches";
+
+export type PageTemoignages = {
+  temoignages: TemoignageAdmin[];
+  onglet: OngletTemoignages;
+  aValider: number;
+  affiches: number;
+  page: number;
+  pages: number;
+};
+
+export const TEMOIGNAGES_PAR_PAGE = 20;
+
+/**
+ * Une page de témoignages partagés (jamais les notes privées), du plus récent au plus ancien,
+ * dans l'onglet « à valider » ou « affichés ».
+ */
+export async function lireTemoignagesAdmin(onglet: OngletTemoignages = "a-valider", pageDemandee = 1): Promise<PageTemoignages> {
   await exigerAdmin();
   await connection();
   const supabase = await creerClientServeur();
+  // Les notes privées ne concernent que leur auteur (la base les cache déjà ; on écarte aussi les siennes)
+  const compter = (valide: boolean) =>
+    supabase.from("temoignages").select("id", { count: "exact", head: true }).eq("partage", true).eq("valide", valide);
+  const [attente, publies] = await Promise.all([compter(false), compter(true)]);
+  const aValider = attente.count ?? 0;
+  const affiches = publies.count ?? 0;
+  const total = onglet === "affiches" ? affiches : aValider;
+  const pages = Math.max(1, Math.ceil(total / TEMOIGNAGES_PAR_PAGE));
+  const page = Math.min(Math.max(1, pageDemandee), pages);
+  const debut = (page - 1) * TEMOIGNAGES_PAR_PAGE;
+
   const { data } = await supabase
     .from("temoignages")
     .select("id, nom_affiche, texte, valide, photo_path, cree_le")
-    // Les notes privées ne concernent que leur auteur (la base les cache déjà ; on écarte aussi les siennes)
     .eq("partage", true)
-    .order("valide", { ascending: true })
-    .order("cree_le", { ascending: false });
+    .eq("valide", onglet === "affiches")
+    .order("cree_le", { ascending: false })
+    .order("id")
+    .range(debut, debut + TEMOIGNAGES_PAR_PAGE - 1);
   const liste = data ?? [];
   const chemins = liste.flatMap((t) => (t.photo_path ? [t.photo_path] : []));
   const liens = chemins.length > 0 ? ((await supabase.storage.from("photos").createSignedUrls(chemins, 300)).data ?? []) : [];
   const parChemin = new Map(liens.map((l) => [l.path, l.signedUrl]));
-  return liste.map((t) => ({
-    id: t.id,
-    nom: t.nom_affiche,
-    texte: t.texte,
-    valide: t.valide,
-    photoPath: t.photo_path,
-    photoUrl: t.photo_path ? (parChemin.get(t.photo_path) ?? null) : null,
-    creeLe: t.cree_le,
-  }));
+  return {
+    onglet,
+    aValider,
+    affiches,
+    page,
+    pages,
+    temoignages: liste.map((t) => ({
+      id: t.id,
+      nom: t.nom_affiche,
+      texte: t.texte,
+      valide: t.valide,
+      photoPath: t.photo_path,
+      photoUrl: t.photo_path ? (parChemin.get(t.photo_path) ?? null) : null,
+      creeLe: t.cree_le,
+    })),
+  };
 }
