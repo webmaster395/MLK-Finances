@@ -13,7 +13,8 @@ function lireSaisie(formData: FormData) {
   const brut = formData.get("texte");
   return {
     texte: typeof brut === "string" ? brut.trim() : "",
-    confidentiel: formData.get("destinataire") === "confidentiel",
+    // Sans choix explicite, le témoignage reste privé
+    partage: formData.get("visibilite") === "partage",
   };
 }
 
@@ -22,18 +23,18 @@ function actualiser() {
   revalidatePath("/admin", "layout");
 }
 
-function messageEnvoi(confidentiel: boolean) {
-  return confidentiel
-    ? "Merci, votre témoignage est envoyé à l'équipe, avec votre demande de confidentialité. Il n'apparaît pas aux autres participants : ce sont les administrateurs qui choisissent de l'afficher ou non."
-    : "Merci, votre témoignage est envoyé. Il n'apparaît pas tout de suite aux autres participants : ce sont les administrateurs qui choisissent de l'afficher ou non.";
+function messageEnvoi(partage: boolean) {
+  return partage
+    ? "Merci ! Votre témoignage est envoyé à l'équipe MLK Parcours Finances. Il n'apparaît pas tout de suite : l'équipe le valide avant qu'il soit visible par tous les participants."
+    : "Votre note est enregistrée. Vous seul pouvez la voir.";
 }
 
 /**
- * Écrit un nouveau témoignage (une personne peut en avoir plusieurs).
- * La base impose l'auteur, le prénom affiché, la date et l'état « non affiché » : rien de tout cela ne vient du formulaire.
+ * Écrit un nouveau témoignage (une personne peut en avoir plusieurs) : note privée, ou partagé avec validation de l'équipe.
+ * La base impose l'auteur, le prénom affiché, la date et l'état « non validé » : rien de tout cela ne vient du formulaire.
  */
 export async function envoyerTemoignage(_: EtatTemoignage, formData: FormData): Promise<EtatTemoignage> {
-  const { texte, confidentiel } = lireSaisie(formData);
+  const { texte, partage } = lireSaisie(formData);
   if (texte.length === 0 || texte.length > 1000) return { message: "Écrivez votre témoignage (1 000 caractères au maximum)." };
 
   const supabase = await creerClientServeur();
@@ -45,20 +46,20 @@ export async function envoyerTemoignage(_: EtatTemoignage, formData: FormData): 
   const { data: profil } = await supabase.from("profils").select("prenom").eq("id", utilisateur.user.id).maybeSingle();
   const { error } = await supabase.from("temoignages").insert({
     texte,
-    confidentiel,
+    partage,
     auteur_id: utilisateur.user.id,
     nom_affiche: profil?.prenom.trim().slice(0, 100) || "Participant",
   });
   if (error) return ECHEC;
 
   actualiser();
-  return { ok: true, message: messageEnvoi(confidentiel) };
+  return { ok: true, message: messageEnvoi(partage) };
 }
 
-/** Corrige un témoignage de la personne connectée, tant qu'il n'est pas affiché (la base le vérifie). */
+/** Corrige un témoignage de la personne connectée (ou le partage / le reprend en privé), tant qu'il n'est pas validé. */
 export async function modifierMonTemoignage(_: EtatTemoignage, formData: FormData): Promise<EtatTemoignage> {
   const id = formData.get("id");
-  const { texte, confidentiel } = lireSaisie(formData);
+  const { texte, partage } = lireSaisie(formData);
   if (typeof id !== "string" || !UUID.test(id)) return ECHEC;
   if (texte.length === 0 || texte.length > 1000) return { message: "Écrivez votre témoignage (1 000 caractères au maximum)." };
 
@@ -68,7 +69,7 @@ export async function modifierMonTemoignage(_: EtatTemoignage, formData: FormDat
 
   const { data, error } = await supabase
     .from("temoignages")
-    .update({ texte, confidentiel })
+    .update({ texte, partage })
     .eq("id", id)
     .eq("auteur_id", utilisateur.user.id)
     .eq("valide", false)
@@ -76,10 +77,10 @@ export async function modifierMonTemoignage(_: EtatTemoignage, formData: FormDat
   if (error || !data?.length) return ECHEC;
 
   actualiser();
-  return { ok: true, message: "Votre témoignage est mis à jour." };
+  return { ok: true, message: partage ? messageEnvoi(true) : "Votre note est mise à jour. Vous seul pouvez la voir." };
 }
 
-/** Retire un témoignage de la personne connectée, tant qu'il n'est pas affiché. */
+/** Supprime un témoignage de la personne connectée, tant qu'il n'est pas validé. */
 export async function retirerMonTemoignage(id: string): Promise<EtatTemoignage> {
   if (!UUID.test(id)) return ECHEC;
   const supabase = await creerClientServeur();
@@ -94,5 +95,5 @@ export async function retirerMonTemoignage(id: string): Promise<EtatTemoignage> 
     .select("id");
   if (error || !data?.length) return ECHEC;
   actualiser();
-  return { ok: true, message: "Votre témoignage est retiré." };
+  return { ok: true, message: "Votre témoignage est supprimé." };
 }

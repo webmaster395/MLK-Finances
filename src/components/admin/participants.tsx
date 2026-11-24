@@ -26,7 +26,7 @@ function RepereTemoignage({ etat }: { etat: "valide" | "attente" }) {
   return etat === "attente" ? (
     <span className="inline-flex items-center gap-1 rounded-full bg-orange px-2.5 py-0.5 text-[11px] font-semibold text-noir">
       <MessageCircle aria-hidden className="size-3.5" />
-      Témoignage non affiché
+      Témoignage à valider
     </span>
   ) : (
     <span className="inline-flex items-center gap-1 rounded-full bg-accent-clair px-2.5 py-0.5 text-[11px] font-semibold text-noir">

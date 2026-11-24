@@ -12,29 +12,30 @@ function Ligne({ t }: { t: MonTemoignage }) {
         {t.valide ? (
           <span className="inline-flex items-center gap-1 rounded-full bg-accent-clair px-2 py-0.5 text-[11px] font-semibold text-noir">
             <CircleCheck aria-hidden className="size-3.5" />
-            Affiché aux participants
+            Visible par tous
           </span>
-        ) : (
+        ) : t.partage ? (
           <span className="inline-flex items-center gap-1 rounded-full bg-orange px-2 py-0.5 text-[11px] font-semibold text-noir">
             <Clock aria-hidden className="size-3.5" />
-            Envoyé, non affiché
+            En attente de validation
           </span>
-        )}
-        {t.confidentiel ? (
+        ) : (
           <span className="inline-flex items-center gap-1 rounded-full bg-noir px-2 py-0.5 text-[11px] font-semibold text-white">
             <Lock aria-hidden className="size-3.5" />
-            Confidentiel
+            Pour moi seulement
           </span>
-        ) : null}
+        )}
       </p>
       <p className="mt-2 whitespace-pre-line text-sm font-semibold leading-relaxed text-noir [overflow-wrap:anywhere]">« {t.texte} »</p>
 
       {t.valide ? null : (
         <div className="mt-3 flex flex-col gap-3 border-t border-black/10 pt-3">
           <details>
-            <summary className="cursor-pointer text-sm font-semibold text-noir underline">Modifier</summary>
+            <summary className="cursor-pointer text-sm font-semibold text-noir underline">
+              {t.partage ? "Modifier" : "Modifier ou partager"}
+            </summary>
             <div className="mt-3">
-              <FormulaireTemoignage existant={{ id: t.id, texte: t.texte, confidentiel: t.confidentiel }} />
+              <FormulaireTemoignage existant={{ id: t.id, texte: t.texte, partage: t.partage }} />
             </div>
           </details>
           <RetirerTemoignage id={t.id} />
@@ -57,7 +58,7 @@ export async function MonTemoignage() {
           Écrire un témoignage
         </h2>
         <p className="mb-4 mt-2 text-sm">
-          Après une session, notez ce qui vous a parlé. S&apos;il est affiché, il le sera sous votre prénom, « {prenom} », avec sa date.
+          Après une session, notez ce qui vous a parlé : gardez-le comme une note, ou partagez-le. S&apos;il est partagé et validé, il apparaît sous votre prénom, « {prenom} », avec sa date.
         </p>
         <FormulaireTemoignage />
       </section>
@@ -71,7 +72,7 @@ export async function MonTemoignage() {
           <ul className="mt-4 flex flex-col gap-3">
             {miens.map((t) => (
               // La clé change quand le contenu change : le formulaire « Modifier » repart des valeurs enregistrées
-              <Ligne key={`${t.id}-${t.valide}-${t.confidentiel}-${t.texte}`} t={t} />
+              <Ligne key={`${t.id}-${t.valide}-${t.partage}-${t.texte}`} t={t} />
             ))}
           </ul>
         ) : (

@@ -22,7 +22,7 @@ function Bandeau({ nombre }: { nombre: number }) {
             Les expériences de ceux qui ont suivi le parcours
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-white/80 sm:text-base">
-            Les témoignages que l&apos;équipe a choisi de partager avec les participants. Vous aussi, écrivez ce qui vous a parlé.
+            Les témoignages partagés par les participants et validés par l&apos;équipe. Vous aussi, écrivez ce qui vous a parlé.
           </p>
           <a href="#mon-temoignage" className="btn btn-accent mt-5 w-fit gap-2">
             <PenLine aria-hidden className="size-4" />

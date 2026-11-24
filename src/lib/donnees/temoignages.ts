@@ -42,10 +42,10 @@ export async function lireTemoignages(): Promise<Temoignage[]> {
 export type MonTemoignage = {
   id: string;
   texte: string;
-  /** Affiché aux participants par l'équipe. */
+  /** Validé par l'équipe : visible par tous les participants. */
   valide: boolean;
-  /** La personne a demandé que ce soit confidentiel (équipe / pasteur). */
-  confidentiel: boolean;
+  /** Faux : note privée (visible par l'auteur seul). Vrai : envoyé à l'équipe pour être partagé. */
+  partage: boolean;
   creeLe: string;
 };
 
@@ -57,14 +57,14 @@ export async function lireMesTemoignages(): Promise<MonTemoignage[]> {
   if (!utilisateur.user) return [];
   const { data } = await supabase
     .from("temoignages")
-    .select("id, texte, valide, confidentiel, cree_le")
+    .select("id, texte, valide, partage, cree_le")
     .eq("auteur_id", utilisateur.user.id)
     .order("cree_le", { ascending: false });
   return (data ?? []).map((t) => ({
     id: t.id,
     texte: t.texte,
     valide: t.valide,
-    confidentiel: t.confidentiel,
+    partage: t.partage,
     creeLe: t.cree_le,
   }));
 }

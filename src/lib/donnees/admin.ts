@@ -32,7 +32,7 @@ export async function lireTableauDeBord(): Promise<TableauDeBord> {
   const [participants, seances, temoignages] = await Promise.all([
     supabase.from("profils").select("id, prenom, nom, cree_le").eq("role", "participant").order("cree_le", { ascending: false }),
     supabase.from("sessions").select("id", { count: "exact", head: true }).gte("debut", maintenant),
-    supabase.from("temoignages").select("id", { count: "exact", head: true }).eq("valide", false),
+    supabase.from("temoignages").select("id", { count: "exact", head: true }).eq("valide", false).eq("partage", true),
   ]);
 
   const liste = participants.data ?? [];
@@ -103,7 +103,7 @@ export async function lireParticipants(recherche = "", pageDemandee = 1): Promis
       .order("prenom")
       .order("id")
       .range(debut, debut + PARTICIPANTS_PAR_PAGE - 1),
-    supabase.from("temoignages").select("auteur_id, valide").not("auteur_id", "is", null),
+    supabase.from("temoignages").select("auteur_id, valide").eq("partage", true).not("auteur_id", "is", null),
   ]);
 
   // Une personne peut avoir plusieurs témoignages : un seul en attente suffit à le signaler
@@ -277,22 +277,22 @@ export type TemoignageAdmin = {
   nom: string;
   texte: string;
   valide: boolean;
-  /** L'auteur a demandé que ce soit confidentiel (équipe / pasteur). */
-  confidentiel: boolean;
   photoPath: string | null;
   /** Lien temporaire pour afficher la photo (null s'il n'y en a pas). */
   photoUrl: string | null;
   creeLe: string;
 };
 
-/** Tous les témoignages : ceux à valider d'abord, puis les validés. */
+/** Les témoignages partagés (jamais les notes privées) : ceux à valider d'abord, puis les validés. */
 export async function lireTemoignagesAdmin(): Promise<TemoignageAdmin[]> {
   await exigerAdmin();
   await connection();
   const supabase = await creerClientServeur();
   const { data } = await supabase
     .from("temoignages")
-    .select("id, nom_affiche, texte, valide, confidentiel, photo_path, cree_le")
+    .select("id, nom_affiche, texte, valide, photo_path, cree_le")
+    // Les notes privées ne concernent que leur auteur (la base les cache déjà ; on écarte aussi les siennes)
+    .eq("partage", true)
     .order("valide", { ascending: true })
     .order("cree_le", { ascending: false });
   const liste = data ?? [];
@@ -304,7 +304,6 @@ export async function lireTemoignagesAdmin(): Promise<TemoignageAdmin[]> {
     nom: t.nom_affiche,
     texte: t.texte,
     valide: t.valide,
-    confidentiel: t.confidentiel,
     photoPath: t.photo_path,
     photoUrl: t.photo_path ? (parChemin.get(t.photo_path) ?? null) : null,
     creeLe: t.cree_le,

@@ -7,15 +7,19 @@ import { envoyerTemoignage, modifierMonTemoignage, retirerMonTemoignage, type Et
 const etatInitial: EtatTemoignage = {};
 
 const CHOIX = [
-  { valeur: "partage", libelle: "Je souhaite le partager avec les participants", aide: "Les administrateurs choisissent de l'afficher." },
-  { valeur: "confidentiel", libelle: "Confidentiel : pour l'équipe ou un pasteur", aide: "Précisez dans votre texte à qui vous vous adressez." },
+  { valeur: "prive", libelle: "Le garder pour moi", aide: "Une note personnelle : personne d'autre ne la voit, pas même l'équipe." },
+  {
+    valeur: "partage",
+    libelle: "Le partager avec tous les participants",
+    aide: "L'équipe MLK Parcours Finances le valide avant qu'il apparaisse. Vous pouvez préciser dans le texte à qui il s'adresse (un pasteur, par exemple).",
+  },
 ] as const;
 
 /**
- * Écrire un nouveau témoignage, ou corriger l'un des siens tant qu'il n'est pas affiché.
+ * Écrire un nouveau témoignage, ou corriger l'un des siens (et choisir qui le voit) tant qu'il n'est pas validé.
  * L'envoi passe par onSubmit : React ne vide pas le champ, une saisie refusée reste à l'écran.
  */
-export function FormulaireTemoignage({ existant }: { existant?: { id: string; texte: string; confidentiel: boolean } }) {
+export function FormulaireTemoignage({ existant }: { existant?: { id: string; texte: string; partage: boolean } }) {
   const formulaire = useRef<HTMLFormElement>(null);
   const [etat, envoyer, enCours] = useActionState(async (precedent: EtatTemoignage, donnees: FormData) => {
     const resultat = existant ? await modifierMonTemoignage(precedent, donnees) : await envoyerTemoignage(precedent, donnees);
@@ -52,14 +56,14 @@ export function FormulaireTemoignage({ existant }: { existant?: { id: string; te
       <p className="text-xs">1 000 caractères au maximum.</p>
 
       <fieldset className="flex flex-col gap-1">
-        <legend className="mb-1 text-sm font-semibold text-noir">À qui l&apos;adressez-vous ?</legend>
+        <legend className="mb-1 text-sm font-semibold text-noir">Qui peut le voir ?</legend>
         {CHOIX.map((c) => (
           <label key={c.valeur} className="flex min-h-11 cursor-pointer items-start gap-2.5 py-1">
             <input
               type="radio"
-              name="destinataire"
+              name="visibilite"
               value={c.valeur}
-              defaultChecked={existant ? (c.valeur === "confidentiel") === existant.confidentiel : c.valeur === "partage"}
+              defaultChecked={existant ? (c.valeur === "partage") === existant.partage : c.valeur === "prive"}
               className="mt-0.5 size-5 shrink-0 accent-accent"
             />
             <span>
@@ -72,13 +76,13 @@ export function FormulaireTemoignage({ existant }: { existant?: { id: string; te
 
       <MessageFormulaire ok={etat.ok} message={etat.message} />
       <button type="submit" disabled={enCours} className="btn btn-principal w-fit disabled:opacity-60">
-        {enCours ? "Envoi…" : existant ? "Mettre à jour" : "Envoyer mon témoignage"}
+        {enCours ? "Enregistrement…" : existant ? "Mettre à jour" : "Enregistrer"}
       </button>
     </form>
   );
 }
 
-/** Bouton « Retirer » d'un témoignage non affiché, avec confirmation. */
+/** Bouton « Supprimer » d'un témoignage non validé, avec confirmation. */
 export function RetirerTemoignage({ id }: { id: string }) {
   const [etat, retirer, enCours] = useActionState(() => retirerMonTemoignage(id), etatInitial);
 
@@ -89,11 +93,11 @@ export function RetirerTemoignage({ id }: { id: string }) {
         type="button"
         disabled={enCours}
         onClick={() => {
-          if (window.confirm("Retirer ce témoignage ? Il sera supprimé.")) startTransition(() => retirer());
+          if (window.confirm("Supprimer définitivement ce témoignage ?")) startTransition(() => retirer());
         }}
         className="inline-flex min-h-10 w-fit items-center rounded-[0.6rem] border border-[#b42318]/40 px-4 text-sm font-semibold text-[#b42318] hover:bg-[#b42318]/10 disabled:opacity-60"
       >
-        {enCours ? "Retrait…" : "Retirer"}
+        {enCours ? "Suppression…" : "Supprimer"}
       </button>
     </div>
   );

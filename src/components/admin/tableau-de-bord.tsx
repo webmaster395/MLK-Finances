@@ -47,7 +47,7 @@ export async function TableauDeBordAdmin() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Chiffre icone={Users} valeur={t.participants} libelle={t.participants > 1 ? "Participants" : "Participant"} href="/admin/participants" />
         <Chiffre icone={CalendarDays} valeur={t.seancesAVenir} libelle="Sessions à venir" href="/admin/seances" />
-        <Chiffre icone={MessageCircle} valeur={t.temoignagesAValider} libelle="Témoignages non affichés" href="/admin/temoignages" alerte={t.temoignagesAValider > 0} />
+        <Chiffre icone={MessageCircle} valeur={t.temoignagesAValider} libelle="Témoignages à valider" href="/admin/temoignages" alerte={t.temoignagesAValider > 0} />
       </div>
 
       <div className="grid items-start gap-4">

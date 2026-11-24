@@ -386,9 +386,9 @@ describe("administrateur", () => {
     const valide = { id: "eeeeeeee-0000-4000-8000-000000000001" };
     const brouillon = { id: "eeeeeeee-0000-4000-8000-000000000002" };
     await db.exec(`
-      insert into public.temoignages (id, nom_affiche, texte, valide, photo_path) values
-        ('${valide.id}', 'Photo validée', 'x', true, 'temoignages/${valide.id}/photo'),
-        ('${brouillon.id}', 'Photo non validée', 'x', false, 'temoignages/${brouillon.id}/photo');
+      insert into public.temoignages (id, nom_affiche, texte, valide, partage, photo_path) values
+        ('${valide.id}', 'Photo validée', 'x', true, true, 'temoignages/${valide.id}/photo'),
+        ('${brouillon.id}', 'Photo non validée', 'x', false, true, 'temoignages/${brouillon.id}/photo');
       insert into storage.objects (bucket_id, name) values
         ('photos', 'temoignages/${valide.id}/photo'),
         ('photos', 'temoignages/${brouillon.id}/photo');`);
@@ -407,58 +407,76 @@ describe("administrateur", () => {
   });
 });
 
-describe("témoignages d'un participant (historique)", () => {
+describe("témoignages d'un participant : notes privées et partage", () => {
   const ADMIN = "77777777-7777-4777-8777-777777777777"; // créé dans le bloc « administrateur »
   const lesSiens = async (uid) =>
-    (await en(uid, `select id, texte, valide, confidentiel from public.temoignages where auteur_id = '${uid}' order by texte`)).rows;
+    (await en(uid, `select id, texte, valide, partage from public.temoignages where auteur_id = '${uid}' order by texte`)).rows;
+  const idDe = async (texte) => (await db.query(`select id from public.temoignages where texte = '${texte}'`)).rows[0].id;
 
-  test("A écrit un témoignage : « à valider », signé de son prénom, daté du jour, même s'il tente de tricher", async () => {
+  test("par défaut, ce que A écrit est une note privée, signée de son prénom et datée du jour, même s'il tente de tricher", async () => {
     const r = await en(A, `insert into public.temoignages (texte, nom_affiche, valide, photo_path, cree_le)
-      values ('Premier retour.', 'Quelqu''un d''autre', true, 'temoignages/pirate/photo', '2000-01-01')
-      returning nom_affiche, valide, photo_path, auteur_id, confidentiel, cree_le > now() - interval '1 minute' as du_jour`);
-    assert.deepEqual(r.rows[0], { nom_affiche: "Alex", valide: false, photo_path: null, auteur_id: A, confidentiel: false, du_jour: true });
+      values ('Ma note.', 'Quelqu''un d''autre', true, 'temoignages/pirate/photo', '2000-01-01')
+      returning nom_affiche, valide, partage, photo_path, auteur_id, cree_le > now() - interval '1 minute' as du_jour`);
+    assert.deepEqual(r.rows[0], { nom_affiche: "Alex", valide: false, partage: false, photo_path: null, auteur_id: A, du_jour: true });
   });
 
-  test("A peut en écrire plusieurs, dont un confidentiel, et les retrouve tous", async () => {
-    await en(A, "insert into public.temoignages (texte, nom_affiche, confidentiel) values ('Second retour, pour un pasteur.', 'x', true)");
-    const siens = await lesSiens(A);
-    assert.deepEqual(siens.map((l) => l.confidentiel), [false, true]);
+  test("ni un autre participant ni l'administrateur ne voient la note privée de A", async () => {
+    const id = await idDe("Ma note.");
+    assert.equal((await en(B, `select id from public.temoignages where id = '${id}'`)).rows.length, 0);
+    assert.equal((await en(ADMIN, `select id from public.temoignages where id = '${id}'`)).rows.length, 0);
+    assert.equal((await en(ADMIN, `select id from public.temoignages where auteur_id = '${A}'`)).rows.length, 0);
   });
 
-  test("A ne peut pas écrire au nom de B", async () => {
-    await en(A, `insert into public.temoignages (texte, nom_affiche, auteur_id) values ('Tentative au nom de B', 'x', '${B}')`);
-    assert.equal((await lesSiens(B)).length, 0);
-    await en(A, "delete from public.temoignages where texte = 'Tentative au nom de B'");
+  test("l'administrateur ne peut ni modifier, ni afficher, ni supprimer une note privée", async () => {
+    const id = await idDe("Ma note.");
+    assert.equal((await en(ADMIN, `update public.temoignages set valide = true, partage = true where id = '${id}' returning id`)).rows.length, 0);
+    assert.equal((await en(ADMIN, `delete from public.temoignages where id = '${id}' returning id`)).rows.length, 0);
+    assert.equal((await lesSiens(A)).length, 1);
   });
 
-  test("B ne voit pas les témoignages en attente de A, confidentiels ou non", async () => {
-    assert.equal((await en(B, `select id from public.temoignages where auteur_id = '${A}'`)).rows.length, 0);
+  test("une note privée ne peut jamais être affichée, même hors du site", async () => {
+    await assert.rejects(db.exec("update public.temoignages set valide = true where texte = 'Ma note.'"), /check constraint/i);
   });
 
-  test("A peut modifier le sien sans pouvoir le valider ni changer sa date", async () => {
-    const r = await en(A, `update public.temoignages set texte = 'Premier retour corrigé.', valide = true, cree_le = '2000-01-01'
-      where texte = 'Premier retour.' returning valide, cree_le > now() - interval '1 hour' as date_gardee`);
-    assert.deepEqual(r.rows[0], { valide: false, date_gardee: true });
+  test("A décide de partager : l'administrateur le voit alors, les autres pas encore", async () => {
+    const r = await en(A, "update public.temoignages set partage = true where texte = 'Ma note.' returning partage, valide");
+    assert.deepEqual(r.rows[0], { partage: true, valide: false });
+    const id = await idDe("Ma note.");
+    assert.equal((await en(ADMIN, `select id from public.temoignages where id = '${id}'`)).rows.length, 1);
+    assert.equal((await en(B, `select id from public.temoignages where id = '${id}'`)).rows.length, 0);
   });
 
-  test("l'admin voit la demande de confidentialité et décide : tant qu'il n'affiche pas, personne d'autre ne le voit", async () => {
-    const vu = await en(ADMIN, "select id, confidentiel, valide from public.temoignages where texte = 'Second retour, pour un pasteur.'");
-    assert.deepEqual([vu.rows[0].confidentiel, vu.rows[0].valide], [true, false]);
-    assert.equal((await en(B, `select id from public.temoignages where id = '${vu.rows[0].id}'`)).rows.length, 0);
+  test("tant qu'il n'est pas validé, A peut le reprendre en privé : l'administrateur ne le voit plus", async () => {
+    await en(A, "update public.temoignages set partage = false where texte = 'Ma note.'");
+    assert.equal((await en(ADMIN, "select id from public.temoignages where texte = 'Ma note.'")).rows.length, 0);
+    await en(A, "update public.temoignages set partage = true where texte = 'Ma note.'");
   });
 
-  test("une fois affiché par l'admin, B le voit et A ne peut plus le modifier ni le retirer", async () => {
-    const id = (await lesSiens(A)).find((l) => l.texte === "Premier retour corrigé.").id;
+  test("l'administrateur ne peut pas rendre privé (et s'approprier) le témoignage partagé d'une autre personne", async () => {
+    const id = await idDe("Ma note.");
+    await assert.rejects(en(ADMIN, `update public.temoignages set partage = false where id = '${id}'`), REFUS);
+  });
+
+  test("une fois validé, B le voit et A ne peut plus le modifier, le reprendre ni le retirer", async () => {
+    const id = await idDe("Ma note.");
     await en(ADMIN, `update public.temoignages set valide = true where id = '${id}'`);
     assert.equal((await en(B, `select id from public.temoignages where id = '${id}'`)).rows.length, 1);
-    assert.equal((await en(A, `update public.temoignages set texte = 'Après coup' where id = '${id}' returning id`)).rows.length, 0);
+    assert.equal((await en(A, `update public.temoignages set partage = false where id = '${id}' returning id`)).rows.length, 0);
     assert.equal((await en(A, `delete from public.temoignages where id = '${id}' returning id`)).rows.length, 0);
   });
 
-  test("B peut retirer un témoignage non affiché ; il ne peut pas retirer celui de A", async () => {
+  test("A ne peut pas écrire au nom de B ; B peut retirer sa propre note, pas celle de A", async () => {
+    await en(A, `insert into public.temoignages (texte, nom_affiche, auteur_id) values ('Tentative au nom de B', 'x', '${B}')`);
+    assert.equal((await lesSiens(B)).length, 0);
     await en(B, "insert into public.temoignages (texte, nom_affiche) values ('À retirer', 'x')");
     assert.equal((await en(B, `delete from public.temoignages where auteur_id = '${A}' returning id`)).rows.length, 0);
     assert.equal((await en(B, `delete from public.temoignages where auteur_id = '${B}' returning id`)).rows.length, 1);
+  });
+
+  test("la note privée d'un administrateur n'est visible que par lui", async () => {
+    await en(ADMIN, `insert into public.temoignages (texte, nom_affiche, auteur_id) values ('Note de l''admin', 'Adèle', '${ADMIN}')`);
+    assert.equal((await en(ADMIN, "select id from public.temoignages where texte = 'Note de l''admin'")).rows.length, 1);
+    assert.equal((await en(A, "select id from public.temoignages where texte = 'Note de l''admin'")).rows.length, 0);
   });
 
   test("un visiteur sans compte ne peut ni lire ni écrire de témoignage", async () => {

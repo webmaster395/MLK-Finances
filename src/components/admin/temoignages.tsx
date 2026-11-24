@@ -1,4 +1,4 @@
-import { CircleCheck, Lock, MessageCircle } from "lucide-react";
+import { CircleCheck, MessageCircle } from "lucide-react";
 import { Champ } from "@/components/auth/champ";
 import { Avatar } from "@/components/profil/avatar";
 import { EtatVide } from "@/components/coquille/etat-vide";
@@ -29,9 +29,6 @@ function ChampsTemoignage({ prefixe, t }: { prefixe: string; t?: TemoignageAdmin
         <input type="checkbox" name="valide" defaultChecked={t?.valide ?? false} className="size-5 accent-accent" />
         Affiché aux participants
       </label>
-      {t?.confidentiel ? (
-        <p className="text-xs">L&apos;auteur a demandé la confidentialité (équipe / pasteur) : réfléchissez avant de l&apos;afficher.</p>
-      ) : null}
     </>
   );
 }
@@ -50,14 +47,8 @@ function CarteTemoignage({ t }: { t: TemoignageAdmin }) {
                 Affiché
               </span>
             ) : (
-              <span className="rounded-full bg-orange px-2 py-0.5 text-[11px] font-semibold text-noir">Non affiché</span>
+              <span className="rounded-full bg-orange px-2 py-0.5 text-[11px] font-semibold text-noir">À valider</span>
             )}
-            {t.confidentiel ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-noir px-2 py-0.5 text-[11px] font-semibold text-white">
-                <Lock aria-hidden className="size-3.5" />
-                Confidentiel : équipe / pasteur
-              </span>
-            ) : null}
           </p>
           <p className="text-xs font-semibold">Écrit le {formaterJourComplet(t.creeLe)}</p>
         </div>
@@ -74,10 +65,9 @@ function CarteTemoignage({ t }: { t: TemoignageAdmin }) {
           <FormulaireAction
             key="valider"
             action={changerValidation}
-            bouton="Afficher aux participants"
+            bouton="Valider et afficher à tous"
             enCoursTexte="…"
             afficherSucces={false}
-            confirmation={t.confidentiel ? "Cette personne a demandé la confidentialité (équipe / pasteur). L'afficher quand même à tous les participants ?" : undefined}
             className="items-start"
           >
             <input type="hidden" name="id" value={t.id} />
@@ -140,7 +130,7 @@ export async function GestionTemoignages() {
         ) : (
           <>
             <p className="text-sm font-semibold">
-              {temoignages.length} témoignage{temoignages.length > 1 ? "s" : ""} · {aValider} non affiché{aValider > 1 ? "s" : ""}
+              {temoignages.length} témoignage{temoignages.length > 1 ? "s" : ""} · {aValider} à valider
             </p>
             {temoignages.map((t) => (
               <CarteTemoignage key={t.id} t={t} />
