@@ -1,4 +1,4 @@
-// Vérifie que la fusion cours + séances (migration 20261124100000) reprend bien le contenu existant :
+// Vérifie que la fusion cours + séances (migration 20261124154212) reprend bien le contenu existant :
 // description et objectifs du cours, devoirs devenus « travaux à faire après », documents rattachés à la session.
 // Lancé avec `npm run test:rls`.
 
@@ -12,7 +12,7 @@ import { pgcrypto } from "@electric-sql/pglite/contrib/pgcrypto";
 
 const racine = join(dirname(fileURLToPath(import.meta.url)), "..");
 const lire = (chemin) => readFileSync(join(racine, chemin), "utf8");
-const FUSION = "20261124100000_sessions_fusionnees.sql";
+const FUSION = "20261124154212_sessions_fusionnees.sql";
 
 let db;
 
