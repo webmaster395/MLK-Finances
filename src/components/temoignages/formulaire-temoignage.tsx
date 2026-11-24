@@ -37,7 +37,7 @@ export function FormulaireTemoignage({ texte, enAttente }: { texte: string; enAt
           defaultValue={texte}
           placeholder="Ce que le parcours vous a apporté, en quelques phrases…"
           aria-describedby="aide-temoignage"
-          className="min-h-11 w-full rounded-md border border-black/25 bg-white px-3 py-2 text-base font-semibold text-noir placeholder:font-normal placeholder:text-black/40"
+          className="min-h-11 w-full rounded-md border border-black/25 bg-white px-3 py-2 text-base font-semibold text-noir placeholder:font-normal placeholder:text-black/60"
         />
         <p id="aide-temoignage" className="text-xs">
           1 000 caractères au maximum. L&apos;équipe le relit avant de le publier.

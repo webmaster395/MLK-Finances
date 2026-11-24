@@ -2,7 +2,7 @@
  * Couleurs d'accent des séances (liseré des cartes, points de la frise et du calendrier).
  * Permet de distinguer visuellement les séances du matin, de l'après-midi / du soir et l'accueil.
  */
-export const PALETTE_SEANCES = ["#6b78f5", "#9a7cf0", "#4f9cf0"] as const;
+export const PALETTE_SEANCES = ["#4953d6", "#8a5cf0", "#2f86e8"] as const;
 export const COULEUR_ACCUEIL = "#6b6560";
 export const COULEUR_SEANCE = PALETTE_SEANCES[0];
 

@@ -54,7 +54,7 @@ export function BoutonMessages({ messages = [] }: { messages?: Annonce[] }) {
         {nb > 0 ? (
           <span
             aria-hidden
-            className="absolute -right-0.5 -top-0.5 flex h-[1.15rem] min-w-[1.15rem] items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold leading-none text-white"
+            className="absolute -right-0.5 -top-0.5 flex h-[1.15rem] min-w-[1.15rem] items-center justify-center rounded-full bg-accent px-1 text-[11px] font-bold leading-none text-white"
           >
             {nb}
           </span>

@@ -32,9 +32,10 @@ Feuille de route, schéma de base prévu et avancement : voir `PLAN.md` (le teni
 - Lint React : pas d'appel à `Date.now()` dans le rendu d'un composant ; les calculs qui dépendent de l'heure se font dans `src/lib/donnees/` après `await connection()`.
 
 ## Charte graphique (nouvelle charte : style épuré d'après l'image des responsables, novembre 2026)
-- Couleurs : bleu-violet `#6b78f5` (`accent`), bleu-violet clair `#dfe3fd`, noir `#0b0b10`, texte `#3b3d4f`, fond lavande `#eceefa`, cartes blanches. L'orange `#e95609` ne sert plus qu'aux alertes et à « à valider ».
+- Couleurs : bleu-violet `#4953d6` (`accent`, assez foncé pour du texte blanc ; `#6b78f5` en mode sombre), bleu-violet clair `#dfe3fd`, noir `#0b0b10`, texte `#3b3d4f`, fond lavande `#eceefa`, cartes blanches. L'orange `#e95609` ne sert plus qu'aux alertes et à « à valider ».
 - Police : **Inter** pour tout le site (titres sans majuscules). **Antonio** ne sert plus qu'au logo.
-- Éléments : logo MLK / Parcours / Finances conservé tel quel (avec son trait de pinceau rose), boutons principaux noirs (`btn-principal`) ou bleu-violet (`btn-accent`) très arrondis, cartes blanches très arrondies, menu blanc.
+- Lisibilité (demande de l'utilisateur) : le gris ne sert que de fond, jamais de texte pâle ; texte secondaire = `text-doux`. Tout nouveau texte doit rester lisible en mode clair ET sombre.
+- Éléments : logo MLK / Parcours / Finances sans trait de pinceau rose (un nouveau logo sera fourni par l'équipe), boutons principaux noirs (`btn-principal`) ou bleu-violet (`btn-accent`) très arrondis, cartes blanches très arrondies, menu blanc.
 - Ne reprendre **ni style, ni icônes, ni logos, ni textes** d'un autre projet (notamment `Campus-MLK-Portail`). Un logo fourni sous forme de fichier est utilisé tel quel, jamais redessiné.
 - Mode sombre : réservé à l'espace connecté, via `data-theme="sombre"` sur le conteneur `#espace-connecte` (bouton lune / soleil en haut à droite, choix mémorisé sur l'appareil). Les surcharges sombres sont dans `@layer utilities` à la fin de `src/app/globals.css` ; toute nouvelle couleur doit y être vérifiée.
 - Page de référence visuelle : `/charte`. Ancien site HTML de référence : `archive/maquette-html/`.

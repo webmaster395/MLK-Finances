@@ -9,11 +9,12 @@
 ------------------------------------------------------------------- */
 @theme {
   /* Palette sobre : bleu-violet doux, noir, blanc, fond lavande très clair (d'après l'image des responsables) */
-  --color-accent: #6b78f5;
+  --color-accent: #4953d6; /* assez foncé pour du texte blanc (contraste 5,5 : 1) */
   --color-accent-clair: #dfe3fd;
   --color-orange: #e95609; /* uniquement pour les alertes et « à valider » */
   --color-noir: #0b0b10;
   --color-texte: #3b3d4f;
+  --color-doux: #565a73; /* texte secondaire lisible (jamais de gris pâle pour du texte) */
   --color-fond: #eceefa;
   --color-carte: #ffffff;
   --font-logo: var(--font-antonio), "Arial Narrow", sans-serif; /* réservé au logo */
@@ -78,6 +79,7 @@
     transform-origin: left;
   }
   .logo-mlk::before {
+    display: none; /* trait rose retiré : un nouveau logo sera fourni */
     content: "";
     position: absolute;
     z-index: -1;
@@ -240,6 +242,8 @@
     color-scheme: dark;
     --color-noir: #f3f4fb;
     --color-texte: #d4d6e6;
+    --color-doux: #b4b8d0;
+    --color-accent: #6b78f5;
     --color-fond: #101118;
     --color-carte: #1b1c27;
   }

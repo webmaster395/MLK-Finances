@@ -17,7 +17,7 @@ export function Champ({ id, libelle, aide, className = "", ...reste }: Props) {
         id={id}
         name={id}
         aria-describedby={aide ? `${id}-aide` : undefined}
-        className={`min-h-11 w-full rounded-md border border-black/25 bg-white px-3 text-base font-semibold text-noir placeholder:font-normal placeholder:text-black/40 ${className}`}
+        className={`min-h-11 w-full rounded-md border border-black/25 bg-white px-3 text-base font-semibold text-noir placeholder:font-normal placeholder:text-black/60 ${className}`}
         {...reste}
       />
       {aide ? (

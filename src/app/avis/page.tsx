@@ -24,7 +24,7 @@ export default function Page() {
 
         <header>
           <h1 className="titre-charte text-3xl sm:text-5xl">Ils ont suivi le parcours</h1>
-          <p className="mt-2 text-lg font-semibold tracking-tight text-texte/60 sm:text-2xl">
+          <p className="mt-2 text-lg font-semibold tracking-tight text-doux sm:text-2xl">
             (Re)prendre le contrôle de mes finances
           </p>
         </header>
