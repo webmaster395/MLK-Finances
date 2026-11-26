@@ -4,7 +4,6 @@ import type { MonTemoignage } from "@/lib/donnees/temoignages";
 import { formaterJourComplet, partiesDate } from "@/lib/format";
 import { ActionsTemoignage } from "./actions-temoignage";
 import { AfficherPlus } from "./afficher-plus";
-import { EcritureTemoignage } from "./ecriture-temoignage";
 import { TexteRepliable } from "./texte-repliable";
 
 const ETAT = "flex items-center gap-1.5 text-xs font-semibold";
@@ -50,11 +49,10 @@ function Entree({ t }: { t: MonTemoignage }) {
   );
 }
 
-/** « Mon journal » : la barre d'écriture, puis mes témoignages du plus récent au plus ancien. */
-export function MonJournal({ prenom, temoignages }: { prenom: string; temoignages: MonTemoignage[] }) {
+/** « Mon journal » : mes témoignages du plus récent au plus ancien. */
+export function MonJournal({ temoignages }: { temoignages: MonTemoignage[] }) {
   return (
     <div className="flex flex-col gap-4">
-      <EcritureTemoignage prenom={prenom} />
       {temoignages.length > 0 ? (
         <AfficherPlus
           elements={temoignages.map((t) => (
@@ -63,7 +61,11 @@ export function MonJournal({ prenom, temoignages }: { prenom: string; temoignage
           ))}
         />
       ) : (
-        <EtatVide icone={NotebookPen} titre="Votre journal est vide" texte="Après une session, notez ce qui vous a parlé avec le bouton « Écrire »." />
+        <EtatVide
+          icone={NotebookPen}
+          titre="Votre journal est vide"
+          texte="Après une session, notez ce qui vous a parlé avec le bouton « Écrire un témoignage »."
+        />
       )}
     </div>
   );

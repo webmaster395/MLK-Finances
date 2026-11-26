@@ -14,7 +14,7 @@ function initiales(nom: string) {
   return lettres.join("") || "?";
 }
 
-/** Page Témoignages : « Mon journal » et « Partagés par tous ». Lit la base : à placer sous <Suspense>. */
+/** Page Témoignages : en-tête, sous-onglets « Mon journal » et « Partagés par tous ». Lit la base : à placer sous <Suspense>. */
 export async function ListeTemoignages() {
   const [personne, miens, partages] = await Promise.all([obtenirPersonne(), lireMesTemoignages(), lireTemoignages()]);
 
@@ -38,21 +38,21 @@ export async function ListeTemoignages() {
 
   return (
     <OngletsTemoignages
-      onglets={[
-        { cle: "journal", libelle: `Mon journal (${miens.length})`, contenu: <MonJournal prenom={personne.prenom.trim() || "vous"} temoignages={miens} /> },
-        { cle: "partages", libelle: `Partagés par tous (${partages.length})`, contenu: galerie },
-      ]}
+      prenom={personne.prenom.trim() || "vous"}
+      nombreJournal={miens.length}
+      nombrePartages={partages.length}
+      journal={<MonJournal temoignages={miens} />}
+      partages={galerie}
     />
   );
 }
 
-/** Squelette pendant le chargement : les onglets, la barre d'écriture et deux entrées en gris. */
+/** Squelette pendant le chargement : l'en-tête et deux entrées en gris. */
 export function ListeTemoignagesChargement() {
   return (
     <div className="flex flex-col gap-4" role="status" aria-live="polite">
       <span className="sr-only">Chargement des témoignages…</span>
-      <div className="h-11 w-72 max-w-full rounded-full bg-black/10 motion-safe:animate-pulse" />
-      <div className="h-20 rounded-[1.25rem] bg-black/10 motion-safe:animate-pulse" />
+      <div className="h-72 rounded-[1.25rem] bg-black/10 motion-safe:animate-pulse" />
       {[0, 1].map((i) => (
         <div key={i} className="h-36 rounded-[1.25rem] bg-black/10 motion-safe:animate-pulse" />
       ))}
