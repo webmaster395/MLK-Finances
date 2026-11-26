@@ -97,3 +97,21 @@ export async function retirerMonTemoignage(id: string): Promise<EtatTemoignage> 
   actualiser();
   return { ok: true, message: "Votre témoignage est supprimé." };
 }
+
+/** Partage une note privée de la personne connectée : elle part à l'équipe pour validation. */
+export async function partagerMonTemoignage(id: string): Promise<EtatTemoignage> {
+  if (!UUID.test(id)) return ECHEC;
+  const supabase = await creerClientServeur();
+  const { data: utilisateur } = await supabase.auth.getUser();
+  if (!utilisateur.user) return SESSION_EXPIREE;
+  const { data, error } = await supabase
+    .from("temoignages")
+    .update({ partage: true })
+    .eq("id", id)
+    .eq("auteur_id", utilisateur.user.id)
+    .eq("valide", false)
+    .select("id");
+  if (error || !data?.length) return ECHEC;
+  actualiser();
+  return { ok: true, message: messageEnvoi(true) };
+}

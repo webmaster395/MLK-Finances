@@ -2,7 +2,7 @@
 
 import { startTransition, useActionState, useRef } from "react";
 import { MessageFormulaire } from "@/components/auth/champ";
-import { envoyerTemoignage, modifierMonTemoignage, retirerMonTemoignage, type EtatTemoignage } from "@/lib/temoignages-actions";
+import { envoyerTemoignage, modifierMonTemoignage, type EtatTemoignage } from "@/lib/temoignages-actions";
 
 const etatInitial: EtatTemoignage = {};
 
@@ -79,26 +79,5 @@ export function FormulaireTemoignage({ existant }: { existant?: { id: string; te
         {enCours ? "Enregistrement…" : existant ? "Mettre à jour" : "Enregistrer"}
       </button>
     </form>
-  );
-}
-
-/** Bouton « Supprimer » d'un témoignage non validé, avec confirmation. */
-export function RetirerTemoignage({ id }: { id: string }) {
-  const [etat, retirer, enCours] = useActionState(() => retirerMonTemoignage(id), etatInitial);
-
-  return (
-    <div className="flex flex-col gap-2">
-      <MessageFormulaire ok={etat.ok} message={etat.ok ? undefined : etat.message} />
-      <button
-        type="button"
-        disabled={enCours}
-        onClick={() => {
-          if (window.confirm("Supprimer définitivement ce témoignage ?")) startTransition(() => retirer());
-        }}
-        className="inline-flex min-h-10 w-fit items-center rounded-[0.6rem] border border-[#b42318]/40 px-4 text-sm font-semibold text-[#b42318] hover:bg-[#b42318]/10 disabled:opacity-60"
-      >
-        {enCours ? "Suppression…" : "Supprimer"}
-      </button>
-    </div>
   );
 }

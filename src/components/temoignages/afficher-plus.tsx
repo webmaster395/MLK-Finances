@@ -9,12 +9,12 @@ export function AfficherPlus({ elements, pas = 5 }: { elements: React.ReactNode[
 
   return (
     <>
-      <ul className="mt-4 flex flex-col gap-3">{elements.slice(0, visibles)}</ul>
+      <ul className="flex flex-col gap-4">{elements.slice(0, visibles)}</ul>
       {reste > 0 ? (
         <button
           type="button"
           onClick={() => setVisibles((v) => v + pas)}
-          className="mt-3 inline-flex min-h-11 items-center rounded-[0.9rem] border border-black/25 px-4 text-sm font-semibold text-noir hover:bg-black/5"
+          className="inline-flex min-h-11 w-fit items-center self-center rounded-[0.9rem] border border-black/25 px-4 text-sm font-semibold text-noir hover:bg-black/5"
         >
           Voir plus ({reste} de plus)
         </button>
