@@ -169,6 +169,7 @@ export type Database = {
           nom_affiche: string
           partage: boolean
           photo_path: string | null
+          session_id: string | null
           texte: string
           valide: boolean
         }
@@ -179,6 +180,7 @@ export type Database = {
           nom_affiche: string
           partage?: boolean
           photo_path?: string | null
+          session_id?: string | null
           texte: string
           valide?: boolean
         }
@@ -189,10 +191,18 @@ export type Database = {
           nom_affiche?: string
           partage?: boolean
           photo_path?: string | null
+          session_id?: string | null
           texte?: string
           valide?: boolean
         }
         Relationships: [
+          {
+            foreignKeyName: "temoignages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "temoignages_auteur_id_fkey"
             columns: ["auteur_id"]

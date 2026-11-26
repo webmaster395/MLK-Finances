@@ -10,8 +10,8 @@ const etatInitial: EtatTemoignage = {};
 const BOUTON = "inline-flex min-h-11 items-center gap-2 rounded-[0.9rem] px-4 text-sm font-semibold disabled:opacity-60";
 const SECONDAIRE = `${BOUTON} border border-black/25 text-noir hover:bg-black/5`;
 
-/** Actions d'un témoignage non validé : partager (note privée), modifier, supprimer (corbeille). */
-export function ActionsTemoignage({ id, texte, partage }: { id: string; texte: string; partage: boolean }) {
+/** Actions d'un témoignage non validé : proposer à tous (note privée), modifier, supprimer (corbeille). */
+export function ActionsTemoignage({ id, texte, partage, sessionId }: { id: string; texte: string; partage: boolean; sessionId: string }) {
   const [modification, setModification] = useState(false);
   const [etatPartage, partager, partageEnCours] = useActionState(() => partagerMonTemoignage(id), etatInitial);
   const [etatRetrait, retirer, retraitEnCours] = useActionState(() => retirerMonTemoignage(id), etatInitial);
@@ -26,14 +26,14 @@ export function ActionsTemoignage({ id, texte, partage }: { id: string; texte: s
             type="button"
             disabled={partageEnCours}
             onClick={() => {
-              if (window.confirm("Partager avec tous les participants ? L'équipe le valide avant qu'il apparaisse.")) {
+              if (window.confirm("Proposer ce témoignage à tous les participants ? L'équipe le valide avant qu'il apparaisse.")) {
                 startTransition(() => partager());
               }
             }}
             className={`${BOUTON} bg-accent text-white hover:brightness-110`}
           >
             <Share2 aria-hidden className="size-4" />
-            {partageEnCours ? "Envoi…" : "Partager"}
+            {partageEnCours ? "Envoi…" : "Proposer à tous"}
           </button>
         )}
         <button type="button" onClick={() => setModification((v) => !v)} aria-expanded={modification} className={SECONDAIRE}>
@@ -53,7 +53,7 @@ export function ActionsTemoignage({ id, texte, partage }: { id: string; texte: s
           <Trash2 aria-hidden className="size-5" />
         </button>
       </div>
-      {modification ? <FormulaireTemoignage existant={{ id, texte, partage }} /> : null}
+      {modification ? <FormulaireTemoignage existant={{ id, texte, partage, sessionId }} /> : null}
     </div>
   );
 }

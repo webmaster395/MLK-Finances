@@ -81,26 +81,27 @@ async function Detail({ params }: { params: PageProps<"/sessions/[id]">["params"
       </Link>
 
       {/* En-tête : titre, date, visioconférence */}
-      <header className="accueil-carte border-l-4 p-5 sm:p-7" style={{ borderLeftColor: couleur }}>
-        <div className="flex justify-end">
-          <span className="rounded-full bg-black/5 px-3.5 py-1.5 text-xs font-semibold tracking-[0.06em] text-noir">
+      <header className="rounded-[1.25rem] bg-[#0b0b10] p-5 text-white shadow-md sm:p-8">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-[11px] font-semibold tracking-[0.18em] text-white/70">SESSION</p>
+          <span className="rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-semibold tracking-[0.06em] text-white">
             {seance.passee ? "Session passée" : formaterHoraires(seance.debut, seance.fin)}
           </span>
         </div>
 
-        <h1 className="titre-charte mt-3 text-3xl !leading-tight sm:text-5xl">{seance.titre}</h1>
+        <h1 className="titre-charte mt-3 text-3xl !leading-[1.05] !text-white sm:text-5xl [overflow-wrap:anywhere]">{seance.titre}</h1>
 
-        <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-black/10 pt-4 text-sm font-semibold text-noir">
+        <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-white/15 pt-4 text-sm font-semibold text-white/90">
           <span className="flex items-center gap-2">
-            <CalendarDays aria-hidden className="size-4 shrink-0 text-accent" />
+            <CalendarDays aria-hidden className="size-4 shrink-0" />
             <span className="first-letter:uppercase">{formaterJourIso(seance.jour, true)}</span>
           </span>
           <span className="flex items-center gap-2">
-            <Clock aria-hidden className="size-4 shrink-0 text-accent" />
+            <Clock aria-hidden className="size-4 shrink-0" />
             <span>{formaterHoraires(seance.debut, seance.fin)} (heure de Paris)</span>
           </span>
           <span className="flex items-center gap-2">
-            <Video aria-hidden className="size-4 shrink-0 text-accent" />
+            <Video aria-hidden className="size-4 shrink-0" />
             <span>En visioconférence</span>
           </span>
         </div>
@@ -110,7 +111,7 @@ async function Detail({ params }: { params: PageProps<"/sessions/[id]">["params"
             href={seance.lienVisio}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-principal mt-5 w-full gap-2 sm:w-auto"
+            className="btn btn-accent mt-5 w-full gap-2 sm:w-auto"
           >
             <Video aria-hidden className="size-5" />
             Rejoindre la visioconférence

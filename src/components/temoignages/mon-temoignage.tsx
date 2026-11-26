@@ -40,10 +40,11 @@ function Entree({ t }: { t: MonTemoignage }) {
             Pour moi seulement
           </p>
         )}
+        <p className="mt-1 text-xs font-semibold text-noir [overflow-wrap:anywhere]">{t.session?.titre ?? "En général"}</p>
         <div className="mt-2">
           <TexteRepliable texte={t.texte} />
         </div>
-        {t.valide ? null : <ActionsTemoignage id={t.id} texte={t.texte} partage={t.partage} />}
+        {t.valide ? null : <ActionsTemoignage id={t.id} texte={t.texte} partage={t.partage} sessionId={t.session?.id ?? ""} />}
       </article>
     </li>
   );
@@ -57,7 +58,7 @@ export function MonJournal({ temoignages }: { temoignages: MonTemoignage[] }) {
         <AfficherPlus
           elements={temoignages.map((t) => (
             // La clé change quand le contenu change : le formulaire « Modifier » repart des valeurs enregistrées
-            <Entree key={`${t.id}-${t.valide}-${t.partage}-${t.texte}`} t={t} />
+            <Entree key={`${t.id}-${t.valide}-${t.partage}-${t.session?.id}-${t.texte}`} t={t} />
           ))}
         />
       ) : (

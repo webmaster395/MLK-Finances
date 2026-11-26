@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { civiliteValide, trancheAgeValide } from "@/lib/auth/profil";
 import { creerClientServeur } from "@/lib/supabase/serveur";
 import {
   cheminPhotoTemoignage,
@@ -45,33 +44,8 @@ function actualiser() {
 }
 
 // ---------------------------------------------------------------
-// Fiche d'un participant
+// Rôle d'une personne (ses données personnelles ne sont pas modifiables par l'administration)
 // ---------------------------------------------------------------
-
-export async function modifierParticipant(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
-  const id = texte(formData, "id");
-  const civilite = texte(formData, "civilite");
-  const prenom = texte(formData, "prenom");
-  const nom = texte(formData, "nom");
-  const trancheAge = texte(formData, "tranche_age");
-  if (!estUuid(id)) return ECHEC;
-  if (prenom.length === 0 || prenom.length > 100 || nom.length === 0 || nom.length > 100) {
-    return { message: "Saisissez le prénom et le nom (100 caractères au maximum)." };
-  }
-  if (civilite && !civiliteValide(civilite)) return { message: "Civilité non valide." };
-  if (trancheAge && !trancheAgeValide(trancheAge)) return { message: "Tranche d'âge non valide." };
-  const supabase = await clientAdmin();
-  if (!supabase) return SESSION_EXPIREE;
-
-  const { data, error } = await supabase
-    .from("profils")
-    .update({ prenom, nom, civilite: civilite || null, tranche_age: trancheAge || null })
-    .eq("id", id)
-    .select("id");
-  if (error || !data?.length) return ECHEC;
-  actualiser();
-  return { ok: true, message: "La fiche est enregistrée." };
-}
 
 /** Nomme ou retire un administrateur. La base refuse qu'un admin change son propre rôle. */
 export async function changerRole(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {
@@ -274,7 +248,12 @@ export async function supprimerAnnonce(_: EtatAdmin, formData: FormData): Promis
 
 function saisieTemoignage(formData: FormData) {
   const v = formData.get("texte");
-  return { nom: texte(formData, "nom"), texte: typeof v === "string" ? v : "", valide: formData.get("valide") === "on" };
+  return {
+    nom: texte(formData, "nom"),
+    texte: typeof v === "string" ? v : "",
+    valide: formData.get("valide") === "on",
+    sessionId: texte(formData, "session_id"),
+  };
 }
 
 export async function creerTemoignage(_: EtatAdmin, formData: FormData): Promise<EtatAdmin> {

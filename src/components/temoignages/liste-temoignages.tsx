@@ -1,8 +1,8 @@
 import { MessageCircle } from "lucide-react";
 import { EtatVide } from "@/components/coquille/etat-vide";
 import { obtenirPersonne } from "@/lib/auth/personne";
-import { lireMesTemoignages, lireTemoignages } from "@/lib/donnees/temoignages";
-import { formaterJourComplet, formaterMois, jourParis } from "@/lib/format";
+import { lireChoixSessions, lireMesTemoignages, lireTemoignages } from "@/lib/donnees/temoignages";
+import { formaterJourComplet } from "@/lib/format";
 import { GalerieTemoignages } from "./galerie-temoignages";
 import { MonJournal } from "./mon-temoignage";
 import { OngletsTemoignages } from "./onglets-temoignages";
@@ -16,28 +16,38 @@ function initiales(nom: string) {
 
 /** Page Témoignages : en-tête, sous-onglets « Mon journal » et « Partagés par tous ». Lit la base : à placer sous <Suspense>. */
 export async function ListeTemoignages() {
-  const [personne, miens, partages] = await Promise.all([obtenirPersonne(), lireMesTemoignages(), lireTemoignages()]);
+  const [personne, miens, partages, choixSessions] = await Promise.all([
+    obtenirPersonne(),
+    lireMesTemoignages(),
+    lireTemoignages(),
+    lireChoixSessions(),
+  ]);
+  // Groupes de la galerie : « En général » d'abord, puis les sessions de la 1 à la 6 (dates croissantes) ;
+  // dans chaque groupe, les témoignages les plus récents restent en tête
+  const classes = [...partages].sort((a, b) => (a.session?.debut ?? "").localeCompare(b.session?.debut ?? ""));
 
   const galerie =
     partages.length === 0 ? (
       <EtatVide icone={MessageCircle} titre="Aucun témoignage pour le moment" texte="Les témoignages partagés et validés par l'équipe apparaîtront ici." />
     ) : (
       <GalerieTemoignages
-        temoignages={partages.map((t) => ({
+        temoignages={classes.map((t) => ({
           id: t.id,
           nom: t.nom_affiche,
           texte: t.texte,
           initiales: initiales(t.nom_affiche),
           photoUrl: t.photoUrl,
           date: formaterJourComplet(t.creeLe),
-          moisCle: jourParis(t.creeLe).slice(0, 7),
-          moisLibelle: formaterMois(t.creeLe),
+          groupeCle: t.session?.id ?? "general",
+          groupeLibelle: t.session?.titre ?? "En général",
+          groupeCourt: t.session?.court ?? "En général",
         }))}
       />
     );
 
   return (
     <OngletsTemoignages
+      choixSessions={choixSessions}
       prenom={personne.prenom.trim() || "vous"}
       nombreJournal={miens.length}
       nombrePartages={partages.length}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PenLine, X } from "lucide-react";
+import { ContexteSessions, type ChoixSessions } from "./choix-sessions";
 import { FormulaireTemoignage } from "./formulaire-temoignage";
 
 type Onglet = "journal" | "partages";
@@ -16,20 +17,22 @@ export function OngletsTemoignages({
   nombrePartages,
   journal,
   partages,
+  choixSessions,
 }: {
+  choixSessions: ChoixSessions;
   prenom: string;
   nombreJournal: number;
   nombrePartages: number;
   journal: React.ReactNode;
   partages: React.ReactNode;
 }) {
-  const [actif, setActif] = useState<Onglet>("journal");
+  const [actif, setActif] = useState<Onglet>("partages");
   const [ecriture, setEcriture] = useState(false);
   const formulaireVisible = ecriture && actif === "journal";
 
   const onglets = [
-    { cle: "journal" as const, libelle: `Mon journal (${nombreJournal})` },
     { cle: "partages" as const, libelle: `Partagés par tous (${nombrePartages})` },
+    { cle: "journal" as const, libelle: `Mon journal (${nombreJournal})` },
   ];
 
   function basculerEcriture() {
@@ -38,6 +41,7 @@ export function OngletsTemoignages({
   }
 
   return (
+    <ContexteSessions value={choixSessions}>
     <div className="flex flex-col gap-4">
       <section className="overflow-hidden rounded-[1.25rem] bg-[#0b0b10] text-white shadow-md" aria-labelledby="titre-temoignages">
         <div className="grid gap-5 p-5 sm:p-8 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-end">
@@ -100,5 +104,6 @@ export function OngletsTemoignages({
         {partages}
       </div>
     </div>
+    </ContexteSessions>
   );
 }

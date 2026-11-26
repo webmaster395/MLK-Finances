@@ -58,7 +58,7 @@ export function BibliothequeRessources({ elements, erreurFichier }: { elements: 
   return (
     <div className="flex flex-col gap-5">
       {/* Bandeau d'introduction */}
-      <section className="overflow-hidden rounded-[1.25rem] bg-noir text-white shadow-md" aria-labelledby="titre-bibliotheque">
+      <section className="overflow-hidden rounded-[1.25rem] bg-[#0b0b10] text-white shadow-md" aria-labelledby="titre-bibliotheque">
         <div className="grid gap-6 p-5 sm:p-8 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-end">
           <div>
             <p className="text-[11px] font-semibold tracking-[0.18em] text-white/70">MA BIBLIOTHÈQUE</p>
@@ -147,9 +147,9 @@ export function BibliothequeRessources({ elements, erreurFichier }: { elements: 
 
           {filtres.length > 0 ? (
             // La clé change avec les filtres : les cartes rejouent leur animation d'entrée
-            <ul key={`${format}|${sessionChoisie}|${requete}`} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <ul key={`${format}|${sessionChoisie}|${requete}`} className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {filtres.map((e, i) => (
-                <li key={e.id} className="entree-cascade" style={{ "--i": Math.min(i, 12) } as React.CSSProperties}>
+                <li key={e.id} className="entree-cascade min-w-0" style={{ "--i": Math.min(i, 12) } as React.CSSProperties}>
                   <CarteRessource element={e} />
                 </li>
               ))}
@@ -194,7 +194,7 @@ function CarteRessource({ element: e }: { element: ElementBibliotheque }) {
       <span className="flex items-start justify-between gap-3">
         <span
           aria-hidden
-          className={`flex size-12 items-center justify-center rounded-[0.6rem] text-noir ${estLien ? "bg-orange/20" : "bg-accent-clair"}`}
+          className={`flex size-12 items-center justify-center rounded-[0.6rem] text-noir ${"bg-accent-clair"}`}
         >
           <Icone className="size-6" strokeWidth={1.75} />
         </span>

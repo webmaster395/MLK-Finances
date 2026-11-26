@@ -13,10 +13,12 @@ export type CarteGalerie = {
   photoUrl: string | null;
   /** « mardi 24 novembre 2026 » */
   date: string;
-  /** « 2026-11 », pour filtrer et regrouper */
-  moisCle: string;
-  /** « novembre 2026 » */
-  moisLibelle: string;
+  /** Identifiant de la session (ou « general »), pour filtrer et regrouper */
+  groupeCle: string;
+  /** Titre complet de la session */
+  groupeLibelle: string;
+  /** « Session 2 », pour le bouton de filtre */
+  groupeCourt: string;
 };
 
 const PAR_PAS = 9;
@@ -25,43 +27,49 @@ const ACTIVE = "bg-accent text-white";
 const INACTIVE = "border border-black/25 text-noir hover:bg-black/5";
 
 /**
- * Témoignages validés, du plus récent au plus ancien : filtre par mois, regroupement par mois,
+ * Témoignages validés : filtre et regroupement par session,
  * 9 cartes puis « Voir plus ». Les données arrivent déjà lues par le serveur.
  */
 export function GalerieTemoignages({ temoignages }: { temoignages: CarteGalerie[] }) {
-  const [mois, setMois] = useState("tous");
+  const [choisi, setChoisi] = useState("tous");
   const [visibles, setVisibles] = useState(PAR_PAS);
 
-  const listeMois = [...new Map(temoignages.map((t) => [t.moisCle, t.moisLibelle])).entries()];
-  const filtres = mois === "tous" ? temoignages : temoignages.filter((t) => t.moisCle === mois);
+  const sessions = [...new Map(temoignages.map((t) => [t.groupeCle, t])).values()];
+  const filtres = choisi === "tous" ? temoignages : temoignages.filter((t) => t.groupeCle === choisi);
   const affiches = filtres.slice(0, visibles);
-  const groupes = listeMois
-    .map(([cle, libelle]) => ({ cle, libelle, cartes: affiches.filter((t) => t.moisCle === cle) }))
+  const groupes = sessions
+    .map((s) => ({ cle: s.groupeCle, libelle: s.groupeLibelle, cartes: affiches.filter((t) => t.groupeCle === s.groupeCle) }))
     .filter((g) => g.cartes.length > 0);
 
   function choisir(cle: string) {
-    setMois(cle);
+    setChoisi(cle);
     setVisibles(PAR_PAS);
   }
 
   return (
     <div className="flex flex-col gap-5">
-      {listeMois.length > 1 ? (
-        <div className="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Filtrer par mois">
-          <button type="button" onClick={() => choisir("tous")} aria-pressed={mois === "tous"} className={`${PASTILLE} ${mois === "tous" ? ACTIVE : INACTIVE}`}>
-            Tous
+      {sessions.length > 1 ? (
+        <div className="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Filtrer par session">
+          <button type="button" onClick={() => choisir("tous")} aria-pressed={choisi === "tous"} className={`${PASTILLE} ${choisi === "tous" ? ACTIVE : INACTIVE}`}>
+            Toutes
           </button>
-          {listeMois.map(([cle, libelle]) => (
-            <button key={cle} type="button" onClick={() => choisir(cle)} aria-pressed={mois === cle} className={`${PASTILLE} ${mois === cle ? ACTIVE : INACTIVE}`}>
-              {libelle}
+          {sessions.map((s) => (
+            <button
+              key={s.groupeCle}
+              type="button"
+              onClick={() => choisir(s.groupeCle)}
+              aria-pressed={choisi === s.groupeCle}
+              className={`${PASTILLE} ${choisi === s.groupeCle ? ACTIVE : INACTIVE}`}
+            >
+              {s.groupeCourt}
             </button>
           ))}
         </div>
       ) : null}
 
       {groupes.map((g) => (
-        <section key={g.cle} className="flex flex-col gap-3" aria-labelledby={`mois-${g.cle}`}>
-          <h2 id={`mois-${g.cle}`} className="titre-charte text-2xl sm:text-3xl">
+        <section key={g.cle} className="flex flex-col gap-3" aria-labelledby={`groupe-${g.cle}`}>
+          <h2 id={`groupe-${g.cle}`} className="titre-charte text-2xl sm:text-3xl">
             {g.libelle}
           </h2>
           <ul className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
