@@ -251,8 +251,15 @@
 
 @layer utilities {
   /* Sur un fond de couleur de la charte, le texte « noir » reste foncé */
-  #espace-connecte[data-theme="sombre"] :is(.bg-accent-clair, .bg-orange, .bg-accent) {
+  #espace-connecte[data-theme="sombre"] :is(.bg-accent-clair, .bg-orange) {
     --color-noir: #0b0b10;
+  }
+  /* Contraste en sombre : fond bleu-violet plus foncé sous du texte blanc, texte bleu-violet plus clair */
+  #espace-connecte[data-theme="sombre"] :is(.bg-accent, .btn-accent) {
+    background-color: #4953d6;
+  }
+  #espace-connecte[data-theme="sombre"] .text-accent {
+    color: #9aa5ff;
   }
   /* Menu et cartes d'accueil : fond uni sombre */
   #espace-connecte[data-theme="sombre"] :is(.menu-fond, .accueil-carte) {

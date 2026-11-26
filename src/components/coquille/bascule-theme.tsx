@@ -7,18 +7,41 @@ const CLE = "theme";
 const EVENEMENT = "theme-change";
 const ID_CONTENEUR = "espace-connecte";
 
-/** Applique le thème au conteneur de l'espace connecté (les pages publiques restent claires). */
+// Copie en mémoire du choix, au cas où le navigateur refuse le stockage
+let choixEnMemoire: boolean | null = null;
+
+/**
+ * Applique le thème à TOUS les conteneurs de l'espace connecté (les pages publiques restent claires).
+ * Next.js garde les pages déjà visitées en arrière-plan : il peut y avoir plusieurs conteneurs en même temps,
+ * un seul choix doit valoir pour tous (participant comme administration).
+ */
 function appliquer(sombre: boolean) {
-  document.getElementById(ID_CONTENEUR)?.setAttribute("data-theme", sombre ? "sombre" : "clair");
+  document.querySelectorAll(`[id="${ID_CONTENEUR}"]`).forEach((c) => c.setAttribute("data-theme", sombre ? "sombre" : "clair"));
 }
 
+/** Le choix de la personne sur cet appareil ; à défaut, le réglage du système. */
 function lireSombre() {
-  return document.getElementById(ID_CONTENEUR)?.getAttribute("data-theme") === "sombre";
+  let choix: string | null = null;
+  try {
+    choix = localStorage.getItem(CLE);
+  } catch {}
+  if (choix === "sombre" || choix === "clair") return choix === "sombre";
+  return choixEnMemoire ?? matchMedia("(prefers-color-scheme: dark)").matches;
 }
 
 function abonner(rappel: () => void) {
+  // Un changement fait dans un autre onglet du navigateur s'applique aussi ici
+  const surAutreOnglet = (e: StorageEvent) => {
+    if (e.key !== CLE) return;
+    appliquer(lireSombre());
+    rappel();
+  };
   window.addEventListener(EVENEMENT, rappel);
-  return () => window.removeEventListener(EVENEMENT, rappel);
+  window.addEventListener("storage", surAutreOnglet);
+  return () => {
+    window.removeEventListener(EVENEMENT, rappel);
+    window.removeEventListener("storage", surAutreOnglet);
+  };
 }
 
 /**
@@ -28,22 +51,14 @@ function abonner(rappel: () => void) {
 export const SCRIPT_THEME = `(function(){try{var t=localStorage.getItem("${CLE}");if(t!=="sombre"&&t!=="clair"){t=matchMedia("(prefers-color-scheme: dark)").matches?"sombre":"clair"}document.getElementById("${ID_CONTENEUR}").setAttribute("data-theme",t)}catch(e){}})()`;
 
 /**
- * Applique le thème choisi quand on ARRIVE dans l'espace connecté par un changement de page du site
- * (par exemple de l'espace participant à l'administration) : dans ce cas le script ci-dessus ne
- * s'exécute pas, car la page n'est pas chargée depuis le serveur. Ne fait rien s'il a déjà été appliqué.
+ * Réapplique le choix à chaque arrivée sur un espace (participant ou administration), y compris quand on revient
+ * sur une page gardée en arrière-plan : le script ci-dessus ne s'exécute qu'au chargement depuis le serveur.
  */
 export function InitialiserTheme() {
   useLayoutEffect(() => {
-    const conteneur = document.getElementById(ID_CONTENEUR);
-    if (!conteneur || conteneur.getAttribute("data-theme")) return;
-    let choix: string | null = null;
-    try {
-      choix = localStorage.getItem(CLE);
-    } catch {}
-    const sombre = choix === "sombre" || (choix !== "clair" && matchMedia("(prefers-color-scheme: dark)").matches);
-    appliquer(sombre);
+    appliquer(lireSombre());
     window.dispatchEvent(new Event(EVENEMENT));
-  }, []);
+  });
   return null;
 }
 
@@ -53,6 +68,7 @@ export function BasculeTheme() {
 
   function basculer() {
     const suivant = !lireSombre();
+    choixEnMemoire = suivant;
     appliquer(suivant);
     try {
       localStorage.setItem(CLE, suivant ? "sombre" : "clair");

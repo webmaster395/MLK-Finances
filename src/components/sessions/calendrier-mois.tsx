@@ -144,7 +144,7 @@ export function CalendrierMois({
                         >
                           <span
                             className={`flex size-8 items-center justify-center rounded-full text-sm font-semibold text-noir ${
-                              estChoisi ? "bg-noir !text-carte" : estAujourdhui ? "ring-2 ring-accent" : ""
+                              estChoisi ? "bg-accent !text-white" : estAujourdhui ? "ring-2 ring-accent" : ""
                             }`}
                           >
                             {jour}

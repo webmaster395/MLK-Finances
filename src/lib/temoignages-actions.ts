@@ -11,7 +11,10 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function lireSaisie(formData: FormData) {
   const brut = formData.get("texte");
+  const session = formData.get("session_id");
   return {
+    // Vide ou valeur inattendue : « en général »
+    session_id: typeof session === "string" && UUID.test(session) ? session : null,
     texte: typeof brut === "string" ? brut.trim() : "",
     // Sans choix explicite, le témoignage reste privé
     partage: formData.get("visibilite") === "partage",
@@ -34,7 +37,7 @@ function messageEnvoi(partage: boolean) {
  * La base impose l'auteur, le prénom affiché, la date et l'état « non validé » : rien de tout cela ne vient du formulaire.
  */
 export async function envoyerTemoignage(_: EtatTemoignage, formData: FormData): Promise<EtatTemoignage> {
-  const { texte, partage } = lireSaisie(formData);
+  const { texte, partage, session_id } = lireSaisie(formData);
   if (texte.length === 0 || texte.length > 1000) return { message: "Écrivez votre témoignage (1 000 caractères au maximum)." };
 
   const supabase = await creerClientServeur();
@@ -47,6 +50,7 @@ export async function envoyerTemoignage(_: EtatTemoignage, formData: FormData): 
   const { error } = await supabase.from("temoignages").insert({
     texte,
     partage,
+    session_id,
     auteur_id: utilisateur.user.id,
     nom_affiche: profil?.prenom.trim().slice(0, 100) || "Participant",
   });
@@ -59,7 +63,7 @@ export async function envoyerTemoignage(_: EtatTemoignage, formData: FormData): 
 /** Corrige un témoignage de la personne connectée (ou le partage / le reprend en privé), tant qu'il n'est pas validé. */
 export async function modifierMonTemoignage(_: EtatTemoignage, formData: FormData): Promise<EtatTemoignage> {
   const id = formData.get("id");
-  const { texte, partage } = lireSaisie(formData);
+  const { texte, partage, session_id } = lireSaisie(formData);
   if (typeof id !== "string" || !UUID.test(id)) return ECHEC;
   if (texte.length === 0 || texte.length > 1000) return { message: "Écrivez votre témoignage (1 000 caractères au maximum)." };
 
@@ -69,7 +73,7 @@ export async function modifierMonTemoignage(_: EtatTemoignage, formData: FormDat
 
   const { data, error } = await supabase
     .from("temoignages")
-    .update({ texte, partage })
+    .update({ texte, partage, session_id })
     .eq("id", id)
     .eq("auteur_id", utilisateur.user.id)
     .eq("valide", false)
@@ -96,4 +100,22 @@ export async function retirerMonTemoignage(id: string): Promise<EtatTemoignage> 
   if (error || !data?.length) return ECHEC;
   actualiser();
   return { ok: true, message: "Votre témoignage est supprimé." };
+}
+
+/** Partage une note privée de la personne connectée : elle part à l'équipe pour validation. */
+export async function partagerMonTemoignage(id: string): Promise<EtatTemoignage> {
+  if (!UUID.test(id)) return ECHEC;
+  const supabase = await creerClientServeur();
+  const { data: utilisateur } = await supabase.auth.getUser();
+  if (!utilisateur.user) return SESSION_EXPIREE;
+  const { data, error } = await supabase
+    .from("temoignages")
+    .update({ partage: true })
+    .eq("id", id)
+    .eq("auteur_id", utilisateur.user.id)
+    .eq("valide", false)
+    .select("id");
+  if (error || !data?.length) return ECHEC;
+  actualiser();
+  return { ok: true, message: messageEnvoi(true) };
 }

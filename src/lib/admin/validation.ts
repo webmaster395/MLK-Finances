@@ -222,14 +222,15 @@ export function validerAnnonce(s: { titre: string; message: string; publie: bool
 // Témoignages
 // ---------------------------------------------------------------
 
-export type Temoignage = { nom_affiche: string; texte: string; valide: boolean };
+export type Temoignage = { nom_affiche: string; texte: string; valide: boolean; session_id: string | null };
 
-export function validerTemoignage(s: { nom: string; texte: string; valide: boolean }): { temoignage: Temoignage } | { message: string } {
+export function validerTemoignage(s: { nom: string; texte: string; valide: boolean; sessionId: string }): { temoignage: Temoignage } | { message: string } {
   const nom = s.nom.trim();
   const texte = s.texte.trim();
   if (nom.length === 0 || nom.length > 100) return { message: "Indiquez le prénom affiché (100 caractères au maximum)." };
   if (texte.length === 0 || texte.length > 1000) return { message: "Écrivez le témoignage (1 000 caractères au maximum)." };
-  return { temoignage: { nom_affiche: nom, texte, valide: s.valide } };
+  if (s.sessionId && !estUuid(s.sessionId)) return { message: "Session non valide." };
+  return { temoignage: { nom_affiche: nom, texte, valide: s.valide, session_id: s.sessionId || null } };
 }
 
 /** Photo d'un témoignage : mêmes limites que le seau « photos ». */

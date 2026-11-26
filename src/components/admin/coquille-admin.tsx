@@ -22,7 +22,7 @@ export async function EnTeteAdmin() {
 
   return (
     <header className="flex items-center justify-between gap-x-4 gap-y-2 px-4 py-2 sm:px-6 sm:py-3 lg:px-8">
-      <p className="min-w-0 truncate text-lg font-semibold text-noir sm:text-2xl">Bonjour {prenom}</p>
+      <p className="min-w-0 text-base font-semibold leading-tight text-noir [overflow-wrap:anywhere] sm:text-2xl">Bonjour {prenom}</p>
       <div className="flex shrink-0 items-center gap-2.5">
         <ListeAdmin />
         <div className="hidden md:block">

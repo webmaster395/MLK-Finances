@@ -1,8 +1,9 @@
 "use client";
 
-import { startTransition, useActionState, useRef } from "react";
+import { startTransition, useActionState, useContext, useRef } from "react";
 import { MessageFormulaire } from "@/components/auth/champ";
-import { envoyerTemoignage, modifierMonTemoignage, retirerMonTemoignage, type EtatTemoignage } from "@/lib/temoignages-actions";
+import { envoyerTemoignage, modifierMonTemoignage, type EtatTemoignage } from "@/lib/temoignages-actions";
+import { ContexteSessions } from "./choix-sessions";
 
 const etatInitial: EtatTemoignage = {};
 
@@ -19,7 +20,8 @@ const CHOIX = [
  * Écrire un nouveau témoignage, ou corriger l'un des siens (et choisir qui le voit) tant qu'il n'est pas validé.
  * L'envoi passe par onSubmit : React ne vide pas le champ, une saisie refusée reste à l'écran.
  */
-export function FormulaireTemoignage({ existant }: { existant?: { id: string; texte: string; partage: boolean } }) {
+export function FormulaireTemoignage({ existant }: { existant?: { id: string; texte: string; partage: boolean; sessionId: string } }) {
+  const { sessions, parDefaut } = useContext(ContexteSessions);
   const formulaire = useRef<HTMLFormElement>(null);
   const [etat, envoyer, enCours] = useActionState(async (precedent: EtatTemoignage, donnees: FormData) => {
     const resultat = existant ? await modifierMonTemoignage(precedent, donnees) : await envoyerTemoignage(precedent, donnees);
@@ -40,6 +42,22 @@ export function FormulaireTemoignage({ existant }: { existant?: { id: string; te
       className="flex flex-col gap-3"
     >
       {existant ? <input type="hidden" name="id" value={existant.id} /> : null}
+      <label htmlFor={`session-${prefixe}`} className="text-sm font-semibold text-noir">
+        Quelle session ?
+      </label>
+      <select
+        id={`session-${prefixe}`}
+        name="session_id"
+        defaultValue={existant ? existant.sessionId : parDefaut}
+        className="min-h-11 w-full rounded-md border border-black/25 bg-white px-3 text-base font-semibold text-noir"
+      >
+        <option value="">En général (tout le parcours)</option>
+        {sessions.map((s) => (
+          <option key={s.id} value={s.id}>
+            {s.titre}
+          </option>
+        ))}
+      </select>
       <label htmlFor={`texte-${prefixe}`} className="text-sm font-semibold text-noir">
         Votre témoignage
       </label>
@@ -79,26 +97,5 @@ export function FormulaireTemoignage({ existant }: { existant?: { id: string; te
         {enCours ? "Enregistrement…" : existant ? "Mettre à jour" : "Enregistrer"}
       </button>
     </form>
-  );
-}
-
-/** Bouton « Supprimer » d'un témoignage non validé, avec confirmation. */
-export function RetirerTemoignage({ id }: { id: string }) {
-  const [etat, retirer, enCours] = useActionState(() => retirerMonTemoignage(id), etatInitial);
-
-  return (
-    <div className="flex flex-col gap-2">
-      <MessageFormulaire ok={etat.ok} message={etat.ok ? undefined : etat.message} />
-      <button
-        type="button"
-        disabled={enCours}
-        onClick={() => {
-          if (window.confirm("Supprimer définitivement ce témoignage ?")) startTransition(() => retirer());
-        }}
-        className="inline-flex min-h-10 w-fit items-center rounded-[0.6rem] border border-[#b42318]/40 px-4 text-sm font-semibold text-[#b42318] hover:bg-[#b42318]/10 disabled:opacity-60"
-      >
-        {enCours ? "Suppression…" : "Supprimer"}
-      </button>
-    </div>
   );
 }

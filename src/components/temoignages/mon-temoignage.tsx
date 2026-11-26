@@ -1,92 +1,73 @@
-import { CircleCheck, Clock, History, Lock, PenLine } from "lucide-react";
-import { obtenirPersonne } from "@/lib/auth/personne";
-import { lireMesTemoignages, type MonTemoignage } from "@/lib/donnees/temoignages";
-import { formaterJourComplet } from "@/lib/format";
+import { CircleCheck, Clock, Lock, NotebookPen } from "lucide-react";
+import { EtatVide } from "@/components/coquille/etat-vide";
+import type { MonTemoignage } from "@/lib/donnees/temoignages";
+import { formaterJourComplet, partiesDate } from "@/lib/format";
+import { ActionsTemoignage } from "./actions-temoignage";
 import { AfficherPlus } from "./afficher-plus";
-import { FormulaireTemoignage, RetirerTemoignage } from "./formulaire-temoignage";
 import { TexteRepliable } from "./texte-repliable";
 
-function Ligne({ t }: { t: MonTemoignage }) {
-  return (
-    <li className="rounded-lg border border-black/15 bg-white/40 p-4">
-      <p className="flex flex-wrap items-center gap-2">
-        <span className="text-sm font-semibold text-noir">Écrit le {formaterJourComplet(t.creeLe)}</span>
-        {t.valide ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-accent-clair px-2 py-0.5 text-[11px] font-semibold text-noir">
-            <CircleCheck aria-hidden className="size-3.5" />
-            Visible par tous
-          </span>
-        ) : t.partage ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-orange px-2 py-0.5 text-[11px] font-semibold text-noir">
-            <Clock aria-hidden className="size-3.5" />
-            En attente de validation
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1 rounded-full bg-noir px-2 py-0.5 text-[11px] font-semibold text-white">
-            <Lock aria-hidden className="size-3.5" />
-            Pour moi seulement
-          </span>
-        )}
-      </p>
-      <div className="mt-2">
-        <TexteRepliable texte={t.texte} />
-      </div>
+const ETAT = "flex items-center gap-1.5 text-xs font-semibold";
 
-      {t.valide ? null : (
-        <div className="mt-3 flex flex-col gap-3 border-t border-black/10 pt-3">
-          <details>
-            <summary className="cursor-pointer text-sm font-semibold text-noir underline">
-              {t.partage ? "Modifier" : "Modifier ou partager"}
-            </summary>
-            <div className="mt-3">
-              <FormulaireTemoignage existant={{ id: t.id, texte: t.texte, partage: t.partage }} />
-            </div>
-          </details>
-          <RetirerTemoignage id={t.id} />
+/** Une entrée du journal : la date en grand à gauche (pour repérer la session), le témoignage à droite. */
+function Entree({ t }: { t: MonTemoignage }) {
+  const { jour, mois } = partiesDate(t.creeLe);
+
+  return (
+    <li className="flex gap-3 sm:gap-4">
+      <p className="w-12 shrink-0 pt-3 text-center sm:w-16">
+        <span aria-hidden className="titre-charte block text-3xl !leading-none sm:text-4xl">
+          {jour}
+        </span>
+        <span aria-hidden className="mt-1 block text-xs font-semibold">
+          {mois}
+        </span>
+        <span className="sr-only">Écrit le {formaterJourComplet(t.creeLe)}</span>
+      </p>
+      <article className="accueil-carte min-w-0 flex-1 p-4 sm:p-5">
+        {t.valide ? (
+          <p className={`${ETAT} text-accent`}>
+            <CircleCheck aria-hidden className="size-4" />
+            Visible par tous
+          </p>
+        ) : t.partage ? (
+          <p className={`${ETAT} text-[#8f3306]`}>
+            <Clock aria-hidden className="size-4" />
+            En attente de validation
+          </p>
+        ) : (
+          <p className={`${ETAT} text-doux`}>
+            <Lock aria-hidden className="size-4" />
+            Pour moi seulement
+          </p>
+        )}
+        <p className="mt-1 text-xs font-semibold text-noir [overflow-wrap:anywhere]">{t.session?.titre ?? "En général"}</p>
+        <div className="mt-2">
+          <TexteRepliable texte={t.texte} />
         </div>
-      )}
+        {t.valide ? null : <ActionsTemoignage id={t.id} texte={t.texte} partage={t.partage} sessionId={t.session?.id ?? ""} />}
+      </article>
     </li>
   );
 }
 
-/** Écrire un témoignage, puis l'historique de ses témoignages. Lit les données de la personne : sous <Suspense>. */
-export async function MonTemoignage() {
-  const [personne, miens] = await Promise.all([obtenirPersonne(), lireMesTemoignages()]);
-  const prenom = personne.prenom.trim() || "Participant";
-
+/** « Mon journal » : mes témoignages du plus récent au plus ancien. */
+export function MonJournal({ temoignages }: { temoignages: MonTemoignage[] }) {
   return (
-    <div className="grid items-start gap-5 xl:grid-cols-2">
-      <section id="mon-temoignage" className="accueil-carte scroll-mt-4 p-5 sm:p-7" aria-labelledby="titre-ecrire">
-        <h2 id="titre-ecrire" className="titre-charte flex items-center gap-2.5 text-2xl sm:text-3xl">
-          <PenLine aria-hidden className="size-6 text-accent" />
-          Écrire un témoignage
-        </h2>
-        <p className="mb-4 mt-2 text-sm">
-          Après une session, notez ce qui vous a parlé : gardez-le comme une note, ou partagez-le. S&apos;il est partagé et validé, il apparaît sous votre prénom, « {prenom} », avec sa date.
-        </p>
-        <FormulaireTemoignage />
-      </section>
-
-      <section className="accueil-carte p-5 sm:p-7" aria-labelledby="titre-historique">
-        <h2 id="titre-historique" className="titre-charte flex items-center gap-2.5 text-2xl sm:text-3xl">
-          <History aria-hidden className="size-6 text-accent" />
-          Mes témoignages
-        </h2>
-        {miens.length > 0 ? (
-          <AfficherPlus
-            elements={miens.map((t) => (
-              // La clé change quand le contenu change : le formulaire « Modifier » repart des valeurs enregistrées
-              <Ligne key={`${t.id}-${t.valide}-${t.partage}-${t.texte}`} t={t} />
-            ))}
-          />
-        ) : (
-          <p className="mt-3 text-sm font-semibold">Vous n&apos;avez pas encore écrit de témoignage.</p>
-        )}
-      </section>
+    <div className="flex flex-col gap-4">
+      {temoignages.length > 0 ? (
+        <AfficherPlus
+          elements={temoignages.map((t) => (
+            // La clé change quand le contenu change : le formulaire « Modifier » repart des valeurs enregistrées
+            <Entree key={`${t.id}-${t.valide}-${t.partage}-${t.session?.id}-${t.texte}`} t={t} />
+          ))}
+        />
+      ) : (
+        <EtatVide
+          icone={NotebookPen}
+          titre="Votre journal est vide"
+          texte="Après une session, notez ce qui vous a parlé avec le bouton « Écrire un témoignage »."
+        />
+      )}
     </div>
   );
-}
-
-export function MonTemoignageChargement() {
-  return <div className="h-56 rounded-[1.25rem] bg-black/10 motion-safe:animate-pulse" role="status" aria-label="Chargement…" />;
 }

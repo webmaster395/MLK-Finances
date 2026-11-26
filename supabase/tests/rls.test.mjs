@@ -48,6 +48,7 @@ async function anonyme(sql) {
 }
 
 const REFUS = /permission denied|row-level security/i;
+const PROTEGE = /données personnelles/i;
 const titres = (r) => r.rows.map((l) => l.titre).sort();
 
 before(async () => {
@@ -358,6 +359,21 @@ describe("administrateur", () => {
     assert.equal((await en(B, "select private.est_admin() as v")).rows[0].v, false);
   });
 
+  test("l'admin ne peut modifier aucune donnée personnelle d'une autre personne", async () => {
+    for (const champ of ["prenom = 'Changé'", "nom = 'Changé'", "civilite = 'madame'", "tranche_age = '46_55'", "photo_path = 'x'"]) {
+      await assert.rejects(en(ADMIN, `update public.profils set ${champ} where id = '${A}'`), PROTEGE, champ);
+    }
+    // Même en changeant le rôle au passage
+    await assert.rejects(en(ADMIN, `update public.profils set role = 'admin', civilite = 'madame' where id = '${A}'`), PROTEGE);
+    const r = await db.query(`select civilite, role from public.profils where id = '${A}'`);
+    assert.deepEqual(r.rows[0], { civilite: "monsieur", role: "participant" });
+  });
+
+  test("l'admin peut corriger ses propres informations ; l'équipe le peut dans la base", async () => {
+    assert.equal((await en(ADMIN, `update public.profils set prenom = 'Adèle' where id = '${ADMIN}' returning id`)).rows.length, 1);
+    await db.exec(`update public.profils set nom = 'Test Un' where id = '${A}'`);
+  });
+
   test("l'admin ne peut pas changer son propre rôle", async () => {
     await assert.rejects(en(ADMIN, `update public.profils set role = 'participant' where id = '${ADMIN}'`), REFUS);
   });
@@ -477,6 +493,15 @@ describe("témoignages d'un participant : notes privées et partage", () => {
     await en(ADMIN, `insert into public.temoignages (texte, nom_affiche, auteur_id) values ('Note de l''admin', 'Adèle', '${ADMIN}')`);
     assert.equal((await en(ADMIN, "select id from public.temoignages where texte = 'Note de l''admin'")).rows.length, 1);
     assert.equal((await en(A, "select id from public.temoignages where texte = 'Note de l''admin'")).rows.length, 0);
+  });
+
+  test("A peut indiquer la session ; supprimer la session conserve le témoignage", async () => {
+    await db.exec("insert into public.sessions (id, titre, debut) values ('55555555-0000-4000-8000-0000000000c1', 'Session à supprimer', now())");
+    const r = await en(A, "insert into public.temoignages (texte, nom_affiche, session_id) values ('Sur une session', 'x', '55555555-0000-4000-8000-0000000000c1') returning session_id");
+    assert.equal(r.rows[0].session_id, "55555555-0000-4000-8000-0000000000c1");
+    await db.exec("delete from public.sessions where id = '55555555-0000-4000-8000-0000000000c1'");
+    const apres = await db.query("select session_id from public.temoignages where texte = 'Sur une session'");
+    assert.deepEqual(apres.rows, [{ session_id: null }]);
   });
 
   test("un visiteur sans compte ne peut ni lire ni écrire de témoignage", async () => {

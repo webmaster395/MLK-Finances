@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Sessions — Administration" };
 export default function Page() {
   return (
     <div className="flex flex-col gap-5">
-      <TitrePage titre="Sessions" sousTitre="Les sessions du parcours, leur contenu et leurs documents" />
+      <TitrePage surtitre="ADMINISTRATION" titre="Sessions" sousTitre="Les sessions du parcours, leur contenu et leurs documents" />
       <Suspense fallback={<ChargementListe />}>
         <ListeSeances />
       </Suspense>

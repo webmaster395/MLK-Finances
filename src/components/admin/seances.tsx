@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarPlus, CalendarX, ChevronRight, Download, ExternalLink, EyeOff, FileText, Link2, Video } from "lucide-react";
 import { Champ } from "@/components/auth/champ";
 import { EtatVide } from "@/components/coquille/etat-vide";
+import { TitrePage } from "@/components/coquille/titre-page";
 import { COULEUR_SEANCE } from "@/components/seances/couleur-seance";
 import { ajouterLien, creerSeance, modifierSeance, supprimerSeance, supprimerSupport } from "@/lib/admin/actions";
 import { isoVersParis } from "@/lib/admin/validation";
@@ -157,7 +158,7 @@ export function NouvelleSeance() {
   return (
     <div className="flex flex-col gap-5">
       <Retour />
-      <h1 className="titre-charte text-3xl sm:text-5xl">Nouvelle session</h1>
+      <TitrePage surtitre="ADMINISTRATION" titre="Nouvelle session" />
       <section className="accueil-carte max-w-3xl p-5 sm:p-6">
         <FormulaireAction action={creerSeance} bouton="Créer la session" enCoursTexte="Création…">
           <ChampsSeance />
@@ -176,13 +177,11 @@ export async function FicheSeance({ id, creee }: { id: string; creee: boolean })
   return (
     <div className="flex flex-col gap-5">
       <Retour />
-      <div>
-        <h1 className="titre-charte text-3xl sm:text-5xl [overflow-wrap:anywhere]">{seance.titre}</h1>
-        <p className="mt-2 text-sm font-semibold">
-          {formaterCreneau(seance.debut, seance.fin)}
-          {seance.publie ? "" : " · non publiée"}
-        </p>
-      </div>
+      <TitrePage
+        surtitre="ADMINISTRATION"
+        titre={seance.titre}
+        sousTitre={`${formaterCreneau(seance.debut, seance.fin)}${seance.publie ? "" : " · non publiée"}`}
+      />
       {creee ? (
         <p role="status" className="w-fit rounded-md bg-accent-clair px-3 py-2 text-sm font-semibold text-noir">
           La session est créée. Ajoutez-lui des documents ci-dessous.

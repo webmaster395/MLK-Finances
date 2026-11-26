@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Messages — Administration" };
 export default function Page() {
   return (
     <div className="flex flex-col gap-5">
-      <TitrePage titre="Messages" sousTitre="Les annonces de l’équipe" />
+      <TitrePage surtitre="ADMINISTRATION" titre="Messages" sousTitre="Les annonces de l’équipe" />
       <Suspense fallback={<ChargementPage />}>
         <GestionMessages />
       </Suspense>
