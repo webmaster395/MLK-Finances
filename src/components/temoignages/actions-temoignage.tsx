@@ -7,10 +7,9 @@ import { partagerMonTemoignage, retirerMonTemoignage, type EtatTemoignage } from
 import { FormulaireTemoignage } from "./formulaire-temoignage";
 
 const etatInitial: EtatTemoignage = {};
-const BOUTON = "inline-flex min-h-11 items-center gap-2 rounded-[0.9rem] px-4 text-sm font-semibold disabled:opacity-60";
-const SECONDAIRE = `${BOUTON} border border-black/25 text-noir hover:bg-black/5`;
+const ICONE = "flex size-11 shrink-0 items-center justify-center rounded-[0.9rem] disabled:opacity-60";
 
-/** Actions d'un témoignage non validé : proposer à tous (note privée), modifier, supprimer (corbeille). */
+/** Actions d'un témoignage non validé : proposer à tous (note privée), puis modifier et supprimer en icônes. */
 export function ActionsTemoignage({ id, texte, partage, sessionId }: { id: string; texte: string; partage: boolean; sessionId: string }) {
   const [modification, setModification] = useState(false);
   const [etatPartage, partager, partageEnCours] = useActionState(() => partagerMonTemoignage(id), etatInitial);
@@ -20,8 +19,10 @@ export function ActionsTemoignage({ id, texte, partage, sessionId }: { id: strin
   return (
     <div className="mt-3 flex flex-col gap-3 border-t border-black/10 pt-3">
       <MessageFormulaire message={erreur} />
-      <div className="flex flex-wrap items-center gap-2">
-        {partage ? null : (
+      <div className="flex items-center gap-1">
+        {partage ? (
+          <p className="text-sm text-doux">L&apos;équipe va le relire.</p>
+        ) : (
           <button
             type="button"
             disabled={partageEnCours}
@@ -30,15 +31,21 @@ export function ActionsTemoignage({ id, texte, partage, sessionId }: { id: strin
                 startTransition(() => partager());
               }
             }}
-            className={`${BOUTON} bg-accent text-white hover:brightness-110`}
+            className="inline-flex min-h-11 items-center gap-2 rounded-[0.9rem] border border-black/25 px-4 text-sm font-semibold text-accent hover:bg-black/5 disabled:opacity-60"
           >
             <Share2 aria-hidden className="size-4" />
             {partageEnCours ? "Envoi…" : "Proposer à tous"}
           </button>
         )}
-        <button type="button" onClick={() => setModification((v) => !v)} aria-expanded={modification} className={SECONDAIRE}>
-          {modification ? <X aria-hidden className="size-4" /> : <Pencil aria-hidden className="size-4" />}
-          {modification ? "Fermer" : "Modifier"}
+        <button
+          type="button"
+          onClick={() => setModification((v) => !v)}
+          aria-expanded={modification}
+          aria-label={modification ? "Fermer la modification" : "Modifier ce témoignage"}
+          title={modification ? "Fermer" : "Modifier"}
+          className={`${ICONE} ml-auto text-noir hover:bg-black/5`}
+        >
+          {modification ? <X aria-hidden className="size-5" /> : <Pencil aria-hidden className="size-5" />}
         </button>
         <button
           type="button"
@@ -48,7 +55,7 @@ export function ActionsTemoignage({ id, texte, partage, sessionId }: { id: strin
           onClick={() => {
             if (window.confirm("Supprimer définitivement ce témoignage ?")) startTransition(() => retirer());
           }}
-          className="ml-auto flex size-11 items-center justify-center rounded-[0.9rem] text-[#b42318] hover:bg-[#b42318]/10 disabled:opacity-60"
+          className={`${ICONE} text-[#b42318] hover:bg-[#b42318]/10`}
         >
           <Trash2 aria-hidden className="size-5" />
         </button>
