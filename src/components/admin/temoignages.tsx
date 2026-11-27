@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MessageCircle, Plus } from "lucide-react";
+import { MessageCircle, Plus, Quote, Trash2 } from "lucide-react";
 import { Champ } from "@/components/auth/champ";
 import { Avatar } from "@/components/profil/avatar";
 import { EtatVide } from "@/components/coquille/etat-vide";
@@ -7,6 +7,7 @@ import { TexteRepliable } from "@/components/temoignages/texte-repliable";
 import { changerValidation, creerTemoignage, modifierTemoignage, supprimerPhotoTemoignage, supprimerTemoignage } from "@/lib/admin/actions";
 import { lireTemoignagesAdmin, type OngletTemoignages, type TemoignageAdmin } from "@/lib/donnees/admin";
 import { formaterJourComplet, partiesDate } from "@/lib/format";
+import { ActionsCarte } from "./actions-carte";
 import { EnvoiPhotoTemoignage } from "./envoi-photo-temoignage";
 import { FormulaireAction } from "./formulaire-action";
 
@@ -50,61 +51,67 @@ function ChampsTemoignage({ prefixe, sessions, t }: { prefixe: string; sessions:
   );
 }
 
-/** Un témoignage à relire : la date en grand à gauche (comme dans le journal des participants), les actions en bas. */
+/** Un témoignage à relire, présenté comme dans le journal : guillemets, date et session, texte, signature, actions. */
 function CarteTemoignage({ t, sessions }: { t: TemoignageAdmin; sessions: Sessions }) {
   const { jour, mois } = partiesDate(t.creeLe);
 
   return (
-    <li className="flex gap-3 sm:gap-4">
-      <p className="w-12 shrink-0 pt-3 text-center sm:w-16">
-        <span aria-hidden className="titre-charte block text-3xl !leading-none sm:text-4xl">
-          {jour}
+    <li className="min-w-0">
+      <article className="accueil-carte flex flex-col gap-3 p-4 sm:p-5" aria-label={`Témoignage de ${t.nom}`}>
+        <span aria-hidden className="flex size-12 items-center justify-center rounded-[0.9rem] bg-accent-clair text-noir">
+          <Quote className="size-6" strokeWidth={1.75} />
         </span>
-        <span aria-hidden className="mt-1 block text-xs font-semibold">
-          {mois}
-        </span>
-        <span className="sr-only">Écrit le {formaterJourComplet(t.creeLe)}</span>
-      </p>
-      <article className="accueil-carte min-w-0 flex-1 p-4 sm:p-5" aria-label={`Témoignage de ${t.nom}`}>
+        <header className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <p className="shrink-0">
+            <span aria-hidden className="titre-charte text-2xl !leading-none">
+              {jour} {mois}
+            </span>
+            <span className="sr-only">Écrit le {formaterJourComplet(t.creeLe)}</span>
+          </p>
+          <p
+            title={t.session ?? undefined}
+            className="rounded-full border border-black/25 px-3 py-1 text-xs font-semibold text-noir [overflow-wrap:anywhere]"
+          >
+            {t.session?.split(" — ")[0] ?? "En général"}
+          </p>
+        </header>
+        <TexteRepliable texte={t.texte} grand />
         <div className="flex items-center gap-3">
           <Avatar photoUrl={t.photoUrl} initiales={initiales(t.nom)} taille="size-10" texteTaille="text-sm" />
-          <div className="min-w-0 flex-1">
-            <p className="text-base font-semibold text-noir [overflow-wrap:anywhere]">{t.nom}</p>
-            <p className="text-xs font-semibold [overflow-wrap:anywhere]">{t.session ?? "En général"}</p>
-          </div>
-        </div>
-        <div className="mt-3">
-          <TexteRepliable texte={t.texte} />
+          <p className="min-w-0 text-base font-semibold text-noir [overflow-wrap:anywhere]">{t.nom}</p>
         </div>
 
-        <div className="mt-3 flex flex-wrap items-start gap-2 border-t border-black/10 pt-3">
-          {t.valide ? (
-            <FormulaireAction key="retirer" action={changerValidation} bouton="Ne plus afficher" enCoursTexte="…" style="secondaire" afficherSucces={false} className="items-start">
+        <ActionsCarte
+          principale={
+            <FormulaireAction
+              key={t.valide ? "retirer" : "valider"}
+              action={changerValidation}
+              bouton={t.valide ? "Ne plus afficher" : "Valider"}
+              enCoursTexte="…"
+              style={t.valide ? "secondaire" : "principal"}
+              afficherSucces={false}
+              className="items-start"
+            >
               <input type="hidden" name="id" value={t.id} />
-              <input type="hidden" name="valide" value="non" />
+              <input type="hidden" name="valide" value={t.valide ? "non" : "oui"} />
             </FormulaireAction>
-          ) : (
-            <FormulaireAction key="valider" action={changerValidation} bouton="Valider" enCoursTexte="…" afficherSucces={false} className="items-start">
+          }
+          suppression={
+            <FormulaireAction
+              action={supprimerTemoignage}
+              bouton={<Trash2 aria-hidden className="size-5" />}
+              etiquette="Supprimer ce témoignage"
+              enCoursTexte="…"
+              style="icone-danger"
+              afficherSucces={false}
+              confirmation="Supprimer définitivement ce témoignage (et sa photo) ?"
+              className="items-end"
+            >
               <input type="hidden" name="id" value={t.id} />
-              <input type="hidden" name="valide" value="oui" />
             </FormulaireAction>
-          )}
-          <FormulaireAction
-            action={supprimerTemoignage}
-            bouton="Supprimer"
-            enCoursTexte="…"
-            style="danger"
-            afficherSucces={false}
-            confirmation="Supprimer définitivement ce témoignage (et sa photo) ?"
-            className="ml-auto items-end"
-          >
-            <input type="hidden" name="id" value={t.id} />
-          </FormulaireAction>
-        </div>
-
-        <details className="mt-3">
-          <summary className="min-h-11 cursor-pointer content-center text-sm font-semibold text-noir underline">Modifier le texte ou la photo</summary>
-          <div className="mt-3 flex flex-col gap-5">
+          }
+        >
+          <div className="flex flex-col gap-5">
             <FormulaireAction action={modifierTemoignage} bouton="Enregistrer">
               <input type="hidden" name="id" value={t.id} />
               <ChampsTemoignage prefixe={t.id} sessions={sessions} t={t} />
@@ -127,7 +134,7 @@ function CarteTemoignage({ t, sessions }: { t: TemoignageAdmin; sessions: Sessio
               ) : null}
             </div>
           </div>
-        </details>
+        </ActionsCarte>
       </article>
     </li>
   );
@@ -196,7 +203,7 @@ export async function GestionTemoignages({ searchParams }: { searchParams: Promi
         </nav>
       </section>
 
-      <nav aria-label="Filtrer par session" className="flex gap-2 overflow-x-auto pb-1">
+      <nav aria-label="Filtrer par session" className="flex flex-wrap gap-2">
         {filtres.map((f) => (
           <Link
             key={f.cle || "toutes"}
@@ -218,7 +225,7 @@ export async function GestionTemoignages({ searchParams }: { searchParams: Promi
           <FormulaireAction action={creerTemoignage} bouton="Ajouter" enCoursTexte="Ajout…" viderApresSucces>
             <ChampsTemoignage prefixe="nouveau" sessions={sessions} />
           </FormulaireAction>
-          <p className="mt-3 text-xs">La photo s&apos;ajoute une fois le témoignage enregistré (bouton « Modifier le texte ou la photo »).</p>
+          <p className="mt-3 text-xs">La photo s&apos;ajoute une fois le témoignage enregistré (bouton crayon « Modifier »).</p>
         </div>
       </details>
 

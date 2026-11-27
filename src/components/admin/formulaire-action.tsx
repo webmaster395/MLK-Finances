@@ -8,11 +8,13 @@ type Props = {
   action: (etat: EtatAdmin, formData: FormData) => Promise<EtatAdmin>;
   /** Champs du formulaire (dont les champs cachés). */
   children: ReactNode;
-  /** Texte du bouton, et texte pendant l'envoi. */
-  bouton: string;
+  /** Contenu du bouton (texte ou icône), et texte pendant l'envoi. */
+  bouton: ReactNode;
   enCoursTexte?: string;
-  /** Style du bouton : principal (orange), secondaire (bordure) ou danger (rouge discret). */
-  style?: "principal" | "secondaire" | "danger";
+  /** Style du bouton : principal, secondaire (bordure), danger (rouge discret) ou icône rouge. */
+  style?: "principal" | "secondaire" | "danger" | "icone-danger";
+  /** Nom du bouton quand il ne montre qu'une icône. */
+  etiquette?: string;
   /** Demande une confirmation avant l'envoi. */
   confirmation?: string;
   className?: string;
@@ -28,6 +30,7 @@ const STYLES = {
     "inline-flex min-h-10 w-fit items-center rounded-[0.6rem] border border-black/25 px-4 text-sm font-semibold text-noir hover:bg-black/5 disabled:opacity-60",
   danger:
     "inline-flex min-h-10 w-fit items-center rounded-[0.6rem] border border-[#b42318]/40 px-4 text-sm font-semibold text-[#b42318] hover:bg-[#b42318]/10 disabled:opacity-60",
+  "icone-danger": "flex size-11 items-center justify-center rounded-[0.9rem] text-[#b42318] hover:bg-[#b42318]/10 disabled:opacity-60",
 };
 
 /**
@@ -42,6 +45,7 @@ export function FormulaireAction({
   enCoursTexte,
   style = "principal",
   confirmation,
+  etiquette,
   className = "",
   afficherSucces = true,
   viderApresSucces = false,
@@ -66,7 +70,7 @@ export function FormulaireAction({
     >
       {etat.ok && !afficherSucces ? null : <MessageFormulaire ok={etat.ok} message={etat.message} />}
       {children}
-      <button type="submit" disabled={enCours} className={STYLES[style]}>
+      <button type="submit" disabled={enCours} aria-label={etiquette} title={etiquette} className={STYLES[style]}>
         {enCours ? (enCoursTexte ?? "Enregistrement…") : bouton}
       </button>
     </form>
